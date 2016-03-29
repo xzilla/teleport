@@ -29,8 +29,10 @@ CREATE OR REPLACE FUNCTION get_current_schema() RETURNS text AS $$
 BEGIN
 	RETURN (
 		SELECT json_agg(row_to_json(schema))
-			FROM (SELECT table_schema, table_name, column_name, data_type, udt_schema, udt_name, character_maximum_length
-				FROM INFORMATION_SCHEMA.COLUMNS
+			FROM (SELECT c.table_schema, c.table_name, c.column_name, c.data_type, c.udt_schema, c.udt_name, c.character_maximum_length, tc.constraint_type
+				FROM INFORMATION_SCHEMA.COLUMNS c
+				LEFT JOIN INFORMATION_SCHEMA.TABLE_CONSTRAINTS tc
+				ON c.table_schema = tc.constraint_schema AND c.table_name = tc.table_name
 			) AS schema
 		-- Ignore postgres' and teleport internal schemas
 		WHERE table_schema NOT IN ('pg_catalog', 'information_schema', 'teleport')
