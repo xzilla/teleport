@@ -17,7 +17,7 @@ type Database struct {
 }
 
 // Open connection with database and setup internal tables
-func (db *Database) Connect() error {
+func (db *Database) Start() error {
 	var err error
 
 	db.db, err = sql.Open("postgres", fmt.Sprintf(

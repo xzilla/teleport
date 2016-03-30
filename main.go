@@ -12,8 +12,8 @@ func main() {
 
 	source := config.Databases["source"]
 
-	if err := source.Connect(); err != nil {
-		fmt.Printf("ERROR CONNECTING TO DATABASE: %v\n", err)
+	if err := source.Start(); err != nil {
+		fmt.Printf("ERROR STARTING DATABASE: %v\n", err)
 	}
 
 	fmt.Printf("source: %v\n", source)
