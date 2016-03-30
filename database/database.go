@@ -4,6 +4,8 @@ import (
 	"database/sql"
 	"fmt"
 	_ "github.com/lib/pq"
+	"io/ioutil"
+	"os"
 )
 
 // Database definition
@@ -46,4 +48,28 @@ func (db *Database) Start() error {
 func (db *Database) setupTables() error {
 	_, err := db.runQueryFromFile("database/sql/setup.sql")
 	return err
+}
+
+// Run query on database
+func (db *Database) runQuery(query string, args ...interface{}) (*sql.Rows, error) {
+	return db.db.Query(query, args...)
+}
+
+// Open file and run query
+func (db *Database) runQueryFromFile(path string) (*sql.Rows, error) {
+	// Get current directory
+	pwd, err := os.Getwd()
+
+	if err != nil {
+		return nil, err
+	}
+
+	// Read file
+	content, err := ioutil.ReadFile(pwd + "/" + path)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return db.runQuery(string(content))
 }
