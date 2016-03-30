@@ -1,7 +1,7 @@
-package host
+package database
 
-type Host struct {
-	Type     string
+// Database definition
+type Database struct {
 	Database string
 	Hostname string
 	Username string

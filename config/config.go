@@ -2,12 +2,12 @@ package config
 
 import (
 	"github.com/go-yaml/yaml"
-	"github.com/pagarme/teleport/host"
+	"github.com/pagarme/teleport/database"
 	"io/ioutil"
 )
 
 type Config struct {
-	Hosts map[string]host.Host
+	Databases map[string]database.Database
 }
 
 func New() *Config {

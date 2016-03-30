@@ -1,15 +1,13 @@
-hosts:
-    source-host:
-        type: "source"
-        database: "pagarme"
-        hostname: "postgres"
-        username: "root"
-        password: "root"
-        port: 5432
-    target-host:
-        type: "target"
-        database: "pagarme"
-        hostname: "postgres"
-        username: "root"
-        password: "root"
-        port: 5432
+databases:
+  source:
+    database: "pagarme"
+    hostname: "postgres"
+    username: "root"
+    password: "root"
+    port: 5432
+  target:
+    database: "pagarme"
+    hostname: "postgres"
+    username: "root"
+    password: "root"
+    port: 5432
