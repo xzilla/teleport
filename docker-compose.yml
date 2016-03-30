@@ -1,7 +1,18 @@
-version:    '2'
+version: '2'
+
+volumes:
+  goroot: {}
 
 services:
-     postgres:
-       image: postgres:9.4
-       volumes:
-           - .:/code
+  common:
+    build: .
+    command: go run main.go
+    volumes:
+      - goroot:/go
+      - .:/go/src/github.com/pagarme/teleport/
+
+  # Databases
+  postgres:
+    image: postgres:9.4
+    volumes:
+        - .:/code
