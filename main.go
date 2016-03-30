@@ -10,5 +10,15 @@ func main() {
 
 	config.ReadFromFile("config.yml")
 
-	fmt.Printf("config: %v\n", config)
+	source := config.Databases["source"]
+
+	if err := source.Connect(); err != nil {
+		fmt.Printf("ERROR CONNECTING TO DATABASE: %v\n", err)
+	}
+
+	rows, err := source.RunQuery("SELECT 5+5;")
+
+	fmt.Printf("err: %v\nrows: %v\n", err, rows)
+
+	fmt.Printf("source: %v\n", source)
 }
