@@ -1,36 +1,3 @@
--- Create schema for teleport tables teleport
-CREATE SCHEMA IF NOT EXISTS teleport;
-
--- Define event_kind type.
--- ddl = schema changes
--- dml = data manipulation changes
--- outgoing events are created by triggers on the source
--- incoming events are created and consumed by teleport on the target
-CREATE TYPE teleport.event_kind AS ENUM ('outgoing_ddl', 'outgoing_dml', 'incoming_ddl', 'incoming_dml');
-
--- Define event_status type.
--- building = DDL/DML started and the previous state is saved
--- waiting_replication = events that need to be replayed to target
--- replicated = replicated events to target
-CREATE TYPE teleport.event_status AS ENUM ('building', 'waiting_replication', 'replicated');
-
--- Create table to store teleport events
-CREATE TABLE IF NOT EXISTS teleport.event (
-	id serial primary key,
-	batch_id int,
-	kind teleport.event_kind,
-	status teleport.event_status,
-	trigger_tag text,
-	trigger_event text,
-	transaction_id int
-);
-
--- Create table to store batches of data
-CREATE TABLE IF NOT EXISTS teleport.batch (
-	id serial primary key,
-	data text
-);
-
 -- Returns current schema of all tables in all schemas as a JSON
 -- JSON array containing each column's definition.
 CREATE OR REPLACE FUNCTION get_current_schema() RETURNS text AS $$
@@ -95,5 +62,11 @@ $$
 LANGUAGE plpgsql;
 
 -- Install ddl event when it starts and ends
-CREATE EVENT TRIGGER teleport_start_ddl_trigger ON ddl_command_start EXECUTE PROCEDURE ddl_event_start();
-CREATE EVENT TRIGGER teleport_end_ddl_trigger ON ddl_command_end EXECUTE PROCEDURE ddl_event_end();
+DO $$
+BEGIN
+	IF NOT EXISTS (SELECT 1 FROM pg_event_trigger WHERE evtname = 'teleport_start_ddl_trigger') THEN
+		CREATE EVENT TRIGGER teleport_start_ddl_trigger ON ddl_command_start EXECUTE PROCEDURE ddl_event_start();
+		CREATE EVENT TRIGGER teleport_end_ddl_trigger ON ddl_command_end EXECUTE PROCEDURE ddl_event_end();
+	END IF;
+END
+$$;
