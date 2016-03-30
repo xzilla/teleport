@@ -29,16 +29,19 @@ $$;
 -- Create table to store teleport events
 CREATE TABLE IF NOT EXISTS teleport.event (
 	id serial primary key,
-	batch_id int,
 	kind teleport.event_kind,
 	status teleport.event_status,
 	trigger_tag text,
 	trigger_event text,
-	transaction_id int
+	transaction_id int,
+	batch_id int,
+	data text
 );
 
 -- Create table to store batches of data
 CREATE TABLE IF NOT EXISTS teleport.batch (
 	id serial primary key,
-	data text
+	data text,
+	source text,
+	target text
 );

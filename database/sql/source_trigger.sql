@@ -19,12 +19,9 @@ $$ LANGUAGE plpgsql;
 -- to a event describing a outgoing DDL change.
 CREATE OR REPLACE FUNCTION ddl_event_start() RETURNS event_trigger AS $$
 BEGIN
-	WITH batch_rows AS (
-		INSERT INTO teleport.batch (data) VALUES (get_current_schema()) RETURNING id
-	)
-	INSERT INTO teleport.event (batch_id, kind, trigger_tag, trigger_event, transaction_id, status) VALUES
+	INSERT INTO teleport.event (data, kind, trigger_tag, trigger_event, transaction_id, status) VALUES
 	(
-		(SELECT id FROM batch_rows)::integer,
+		get_current_schema()::text,
 		'outgoing_ddl',
 		tg_tag,
 		tg_event,
@@ -44,18 +41,15 @@ BEGIN
 	SELECT * INTO event_row FROM teleport.event WHERE status = 'building' AND transaction_id = txid_current();
 
 	WITH all_json_key_value AS (
-		SELECT 'pre' AS key, data::text AS value FROM teleport.batch WHERE id = event_row.batch_id
+		SELECT 'pre' AS key, data::text AS value FROM teleport.event WHERE id = event_row.id
 		UNION
 		SELECT 'post' AS key, get_current_schema()::text AS value
 	)
-	UPDATE teleport.batch
-	SET data = (SELECT json_object_agg(s.key, s.value)
-		FROM all_json_key_value s
-	)
-	WHERE id = event_row.batch_id;
-
 	UPDATE teleport.event
-		SET status = 'waiting_replication'
+		SET status = 'waiting_replication',
+			data = (SELECT json_object_agg(s.key, s.value)
+				FROM all_json_key_value s
+			)
 	WHERE id = event_row.id;
 END;
 $$
