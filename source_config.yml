@@ -1,0 +1,14 @@
+database:
+  database: "postgres"
+  hostname: "postgres"
+  username: "postgres"
+  password: "root"
+  port: 5432
+http:
+  hostname: "localhost"
+  port: 3000
+  # auth: asd
+targets:
+  - source_schema: "live"
+    endpoint: "http://localhost:3000"
+    apply_schema: "live"
