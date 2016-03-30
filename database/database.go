@@ -16,7 +16,7 @@ type Database struct {
 	db *sql.DB
 }
 
-// Open connection with database
+// Open connection with database and setup internal tables
 func (db *Database) Connect() error {
 	var err error
 
@@ -33,9 +33,17 @@ func (db *Database) Connect() error {
 		return err
 	}
 
-	return db.db.Ping()
+	// Ping database to check for connetivity
+	err = db.db.Ping()
+	if err != nil {
+		return err
+	}
+
+	return db.setupTables()
 }
 
-func (db *Database) runQuery(query string, args ...interface{}) (*sql.Rows, error)  {
-	return db.db.Query(query, args...)
+// Setup internal tables using setup script
+func (db *Database) setupTables() error {
+	_, err := db.runQueryFromFile("database/sql/setup.sql")
+	return err
 }
