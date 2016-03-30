@@ -1,20 +1,28 @@
 -- Create schema for teleport tables teleport
 CREATE SCHEMA IF NOT EXISTS teleport;
 
--- Define Event_kind type.
+-- Define event_kind type.
 -- ddl = schema changes
 -- dml = data manipulation changes
 -- outgoing events are created by triggers on the source
 -- incoming events are created and consumed by teleport on the target
 CREATE TYPE teleport.event_kind AS ENUM ('outgoing_ddl', 'outgoing_dml', 'incoming_ddl', 'incoming_dml');
 
+-- Define event_status type.
+-- building = DDL/DML started and the previous state is saved
+-- waiting_replication = events that need to be replayed to target
+-- replicated = replicated events to target
+CREATE TYPE teleport.event_status AS ENUM ('building', 'waiting_replication', 'replicated');
+
 -- Create table to store teleport events
 CREATE TABLE IF NOT EXISTS teleport.event (
 	id serial primary key,
 	batch_id int,
 	kind teleport.event_kind,
+	status teleport.event_status,
 	trigger_tag text,
-	trigger_event text
+	trigger_event text,
+	transaction_id int
 );
 
 -- Create table to store batches of data
@@ -40,23 +48,52 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
--- Creates a batch with the new schema definition and attaches it
+-- Creates a batch with the previous schema definition and attaches it
 -- to a event describing a outgoing DDL change.
-CREATE OR REPLACE FUNCTION ddl_event_end() RETURNS event_trigger AS $$
+CREATE OR REPLACE FUNCTION ddl_event_start() RETURNS event_trigger AS $$
 BEGIN
 	WITH batch_rows AS (
 		INSERT INTO teleport.batch (data) VALUES (get_current_schema()) RETURNING id
 	)
-	INSERT INTO teleport.event (batch_id, kind, trigger_tag, trigger_event) VALUES
+	INSERT INTO teleport.event (batch_id, kind, trigger_tag, trigger_event, transaction_id, status) VALUES
 	(
 		(SELECT id FROM batch_rows)::integer,
 		'outgoing_ddl',
 		tg_tag,
-		tg_event
+		tg_event,
+		txid_current(),
+		'building'
 	);
 END;
 $$
 LANGUAGE plpgsql;
 
--- Install ddl event when it ends
+-- Updates a batch and event with the schema after the DDL execution
+-- and update event's status to waiting_replication
+CREATE OR REPLACE FUNCTION ddl_event_end() RETURNS event_trigger AS $$
+DECLARE
+	event_row teleport.event%ROWTYPE;
+BEGIN
+	SELECT * INTO event_row FROM teleport.event WHERE status = 'building' AND transaction_id = txid_current();
+
+	WITH all_json_key_value AS (
+		SELECT 'pre' AS key, data::text AS value FROM teleport.batch WHERE id = event_row.batch_id
+		UNION
+		SELECT 'post' AS key, get_current_schema()::text AS value
+	)
+	UPDATE teleport.batch
+	SET data = (SELECT json_object_agg(s.key, s.value)
+		FROM all_json_key_value s
+	)
+	WHERE id = event_row.batch_id;
+
+	UPDATE teleport.event
+		SET status = 'waiting_replication'
+	WHERE id = event_row.id;
+END;
+$$
+LANGUAGE plpgsql;
+
+-- Install ddl event when it starts and ends
+CREATE EVENT TRIGGER teleport_start_ddl_trigger ON ddl_command_start EXECUTE PROCEDURE ddl_event_start();
 CREATE EVENT TRIGGER teleport_end_ddl_trigger ON ddl_command_end EXECUTE PROCEDURE ddl_event_end();
