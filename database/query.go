@@ -7,7 +7,7 @@ import (
 )
 
 // Run query on database
-func (db *Database) runQuery(query string, args ...interface{}) (*sql.Rows, error)  {
+func (db *Database) runQuery(query string, args ...interface{}) (*sql.Rows, error) {
 	return db.db.Query(query, args...)
 }
 

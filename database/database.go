@@ -2,8 +2,8 @@ package database
 
 import (
 	"database/sql"
-	_ "github.com/lib/pq"
 	"fmt"
+	_ "github.com/lib/pq"
 )
 
 // Database definition
@@ -13,7 +13,7 @@ type Database struct {
 	Username string
 	Password string
 	Port     int
-	db *sql.DB
+	db       *sql.DB
 }
 
 // Open connection with database and setup internal tables
