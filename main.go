@@ -16,9 +16,5 @@ func main() {
 		fmt.Printf("ERROR CONNECTING TO DATABASE: %v\n", err)
 	}
 
-	rows, err := source.RunQuery("SELECT 5+5;")
-
-	fmt.Printf("err: %v\nrows: %v\n", err, rows)
-
 	fmt.Printf("source: %v\n", source)
 }

@@ -1,8 +1,8 @@
 databases:
   source:
-    database: "pagarme"
+    database: "postgres"
     hostname: "postgres"
-    username: "root"
+    username: "postgres"
     password: "root"
     port: 5432
   target:
