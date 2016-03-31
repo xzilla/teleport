@@ -3,6 +3,7 @@ package database
 import (
 	"encoding/json"
 	"fmt"
+	"strings"
 )
 
 // Define a database schema
@@ -11,7 +12,7 @@ type Schema struct {
 	Tables map[string]*Table
 }
 
-// Define the
+// Define the sqlColumn returned inside get_current_schema() query
 type sqlColumn struct {
 	TableSchema            string `json:"table_schema"`
 	TableName              string `json:"table_name"`
@@ -31,17 +32,45 @@ func NewSchema(name string) *Schema {
 	return &s
 }
 
-// Fetches the tables from
-func (db *Database) parseSourceTables(sourceTables string) []*Table {
+// Parses a string in the form "schemaname.table*" and returns all
+// the tables under this schema
+func (db *Database) tablesForSourceTables(sourceTables string) ([]*Table, error) {
+	separator := strings.Split(sourceTables, ".")
+	schemaName := separator[0]
+
+	// Fetch schema from database if it's not already loaded
+	if db.Schemas[schemaName] == nil {
+		if err := db.fetchSchema(schemaName); err != nil {
+			return nil, err
+		}
+	}
+
+	schema := db.Schemas[schemaName]
+
+	fmt.Printf("schema: %v\n", schema)
+	
+	prefix := strings.Split(separator[1], "*")[0]
+
+	var tables []*Table
+
+	// Fetch tables with prefix before *
+	for _, table := range schema.Tables {
+		if strings.HasPrefix(table.Name, prefix) {
+			tables = append(tables, table)
+		}
+	}
+
+	return tables, nil
 }
 
-func (db *Database) fetchSchema(schema string) (*Schema, error) {
+// Fetches the schema from the database and update Schema
+func (db *Database) fetchSchema(schema string) error {
 	// Get schema from query
 	rows, err := db.runQuery("SELECT get_current_schema();")
 	defer rows.Close()
 
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	// Read schema content from sql.Row
@@ -50,7 +79,7 @@ func (db *Database) fetchSchema(schema string) (*Schema, error) {
 	err = rows.Scan(&schemaContent)
 
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	// Parse JSON array of rows into sqlColumns
@@ -58,20 +87,20 @@ func (db *Database) fetchSchema(schema string) (*Schema, error) {
 	err = json.Unmarshal(schemaContent, &parsedColumns)
 
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	// Populate db's schema
 	for _, sqlCol := range parsedColumns {
 		// Create schema if not exists
-		if db.Schemas[sqlCol.TableSchema] == nil {
+		if _, ok := db.Schemas[sqlCol.TableSchema]; !ok {
 			db.Schemas[sqlCol.TableSchema] = NewSchema(sqlCol.TableSchema)
 		}
 
 		schema := db.Schemas[sqlCol.TableSchema]
 
 		// Create table if not exists
-		if schema.Tables[sqlCol.TableName] == nil {
+		if _, ok := schema.Tables[sqlCol.TableName]; !ok {
 			schema.Tables[sqlCol.TableName] = NewTable(sqlCol.TableName)
 		}
 
@@ -87,5 +116,5 @@ func (db *Database) fetchSchema(schema string) (*Schema, error) {
 		})
 	}
 
-	return db.Schema[schema], nil
+	return nil
 }

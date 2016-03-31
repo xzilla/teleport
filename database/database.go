@@ -6,7 +6,6 @@ import (
 	_ "github.com/lib/pq"
 	"io/ioutil"
 	"os"
-	"strings"
 )
 
 // Database definition
@@ -48,23 +47,19 @@ func (db *Database) Start() error {
 	return db.setupTables()
 }
 
-// Install triggers on a a
+// Install triggers on a source table
 func (db *Database) InstallTriggers(sourceTables string) error {
-	schemaName := strings.Split(sourceTables, ".")[0]
+	// Get tables for sourceTables string
+	tables, err := db.tablesForSourceTables(sourceTables)
 
-	// Fetch schema from database if it's not already loaded
-	if db.Schemas[schemaName] == nil {
-		var err error
-		db.Schemas[schemaName], err = db.fetchSchema(schemaName)
-
-		if err != nil {
-			return err
-		}
+	if err != nil {
+		return err
 	}
 
-	schema := db.Schemas[schemaName]
-
-	_ = schema
+	// Install triggers for each table/schema
+	for _, table := range tables {
+		fmt.Printf("Tables! %v\n", table.Name)
+	}
 
 	return nil
 }

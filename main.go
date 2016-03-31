@@ -17,6 +17,6 @@ func main() {
 	}
 
 	for _, target := range config.Targets {
-		config.Database.InstallTriggers(target.SourceSchema)
+		config.Database.InstallTriggers(target.SourceTables)
 	}
 }

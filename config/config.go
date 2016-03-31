@@ -8,21 +8,21 @@ import (
 
 // Define HTTP server config
 type HTTP struct {
-	Hostname string
-	Port     int
+	Hostname string `yaml:"hostname"`
+	Port     int    `yaml:"port"`
 }
 
 // Define target
 type Target struct {
-	SourceSchema string
-	Endpoint     HTTP
-	ApplySchema  string
+	SourceTables string `yaml:"source_tables"`
+	Endpoint     HTTP   `yaml:"endpoint"`
+	ApplySchema  string `yaml:"apply_schema"`
 }
 
 type Config struct {
-	Database database.Database
-	HTTP     HTTP
-	Targets  []Target
+	Database database.Database `yaml:"database"`
+	HTTP     HTTP              `yaml:"http"`
+	Targets  []Target          `yaml:"targets"`
 }
 
 func New() *Config {
