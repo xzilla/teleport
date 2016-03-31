@@ -8,13 +8,15 @@ import (
 func main() {
 	config := config.New()
 
-	config.ReadFromFile("config.yml")
+	// Load config file
+	err := config.ReadFromFile("source_config.yml")
 
-	source := config.Databases["source"]
-
-	if err := source.Start(); err != nil {
+	// Start db
+	if err = config.Database.Start(); err != nil {
 		fmt.Printf("ERROR STARTING DATABASE: %v\n", err)
 	}
 
-	fmt.Printf("source: %v\n", source)
+	for _, target := range config.Targets {
+		config.Database.InstallTriggers(target.SourceSchema)
+	}
 }

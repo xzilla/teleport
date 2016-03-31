@@ -9,6 +9,8 @@ http:
   port: 3000
   # auth: asd
 targets:
-  - source_schema: "live"
-    endpoint: "http://localhost:3000"
+  - source_tables: "live.*"
+    endpoint:
+      hostname: "localhost"
+      port: 3000
     apply_schema: "live"

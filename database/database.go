@@ -6,6 +6,7 @@ import (
 	_ "github.com/lib/pq"
 	"io/ioutil"
 	"os"
+	"strings"
 )
 
 // Database definition
@@ -15,6 +16,7 @@ type Database struct {
 	Username string
 	Password string
 	Port     int
+	Schemas  map[string]*Schema
 	db       *sql.DB
 }
 
@@ -41,7 +43,30 @@ func (db *Database) Start() error {
 		return err
 	}
 
+	db.Schemas = make(map[string]*Schema)
+
 	return db.setupTables()
+}
+
+// Install triggers on a a
+func (db *Database) InstallTriggers(sourceTables string) error {
+	schemaName := strings.Split(sourceTables, ".")[0]
+
+	// Fetch schema from database if it's not already loaded
+	if db.Schemas[schemaName] == nil {
+		var err error
+		db.Schemas[schemaName], err = db.fetchSchema(schemaName)
+
+		if err != nil {
+			return err
+		}
+	}
+
+	schema := db.Schemas[schemaName]
+
+	_ = schema
+
+	return nil
 }
 
 // Setup internal tables using setup script

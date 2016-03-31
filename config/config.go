@@ -6,8 +6,23 @@ import (
 	"io/ioutil"
 )
 
+// Define HTTP server config
+type HTTP struct {
+	Hostname string
+	Port     int
+}
+
+// Define target
+type Target struct {
+	SourceSchema string
+	Endpoint     HTTP
+	ApplySchema  string
+}
+
 type Config struct {
-	Databases map[string]database.Database
+	Database database.Database
+	HTTP     HTTP
+	Targets  []Target
 }
 
 func New() *Config {

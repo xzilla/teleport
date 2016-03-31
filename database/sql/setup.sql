@@ -45,3 +45,20 @@ CREATE TABLE IF NOT EXISTS teleport.batch (
 	source text,
 	target text
 );
+
+-- Returns current schema of all tables in all schemas as a JSON
+-- JSON array containing each column's definition.
+CREATE OR REPLACE FUNCTION get_current_schema() RETURNS text AS $$
+BEGIN
+	RETURN (
+		SELECT json_agg(row_to_json(schema))
+			FROM (SELECT c.table_schema, c.table_name, c.column_name, c.data_type, c.udt_schema, c.udt_name, c.character_maximum_length, tc.constraint_type
+				FROM INFORMATION_SCHEMA.COLUMNS c
+				LEFT JOIN INFORMATION_SCHEMA.TABLE_CONSTRAINTS tc
+				ON c.table_schema = tc.constraint_schema AND c.table_name = tc.table_name
+			) AS schema
+		-- Ignore postgres' and teleport internal schemas
+		WHERE table_schema NOT IN ('pg_catalog', 'information_schema', 'teleport')
+	);
+END;
+$$ LANGUAGE plpgsql;
