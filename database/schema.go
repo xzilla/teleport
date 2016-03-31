@@ -10,6 +10,7 @@ import (
 type Schema struct {
 	Name   string
 	Tables map[string]*Table
+	database *Database
 }
 
 // Define the sqlColumn returned inside get_current_schema() query
@@ -25,11 +26,12 @@ type sqlColumn struct {
 }
 
 // Initializes new schema
-func NewSchema(name string) *Schema {
-	var s Schema
-	s.Name = name
-	s.Tables = make(map[string]*Table)
-	return &s
+func NewSchema(name string, db *Database) *Schema {
+	return &Schema{
+		Name: name,
+		Tables: make(map[string]*Table),
+		database: db,
+	}
 }
 
 // Parses a string in the form "schemaname.table*" and returns all
@@ -47,8 +49,6 @@ func (db *Database) tablesForSourceTables(sourceTables string) ([]*Table, error)
 
 	schema := db.Schemas[schemaName]
 
-	fmt.Printf("schema: %v\n", schema)
-	
 	prefix := strings.Split(separator[1], "*")[0]
 
 	var tables []*Table
@@ -94,26 +94,27 @@ func (db *Database) fetchSchema(schema string) error {
 	for _, sqlCol := range parsedColumns {
 		// Create schema if not exists
 		if _, ok := db.Schemas[sqlCol.TableSchema]; !ok {
-			db.Schemas[sqlCol.TableSchema] = NewSchema(sqlCol.TableSchema)
+			db.Schemas[sqlCol.TableSchema] = NewSchema(sqlCol.TableSchema, db)
 		}
 
 		schema := db.Schemas[sqlCol.TableSchema]
 
 		// Create table if not exists
 		if _, ok := schema.Tables[sqlCol.TableName]; !ok {
-			schema.Tables[sqlCol.TableName] = NewTable(sqlCol.TableName)
+			schema.Tables[sqlCol.TableName] = NewTable(sqlCol.TableName, schema)
 		}
 
 		table := schema.Tables[sqlCol.TableName]
 
 		// Add column
-		table.Columns = append(table.Columns, Column{
-			Name:                   sqlCol.ColumnName,
-			DataTypeSchema:         sqlCol.UdtSchema,
-			DataTypeName:           sqlCol.UdtName,
-			CharacterMaximumLength: sqlCol.CharacterMaximumLength,
-			ConstraintType:         sqlCol.ContraintType,
-		})
+		table.Columns = append(table.Columns, NewColumn(
+			sqlCol.ColumnName,
+			sqlCol.UdtSchema,
+			sqlCol.UdtName,
+			sqlCol.CharacterMaximumLength,
+			sqlCol.ContraintType,
+			table,
+		))
 	}
 
 	return nil
