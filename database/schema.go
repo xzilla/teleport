@@ -2,15 +2,16 @@ package database
 
 import (
 	"encoding/json"
-	"fmt"
 	"strings"
+	"log"
 )
 
 // Define a database schema
 type Schema struct {
 	Name   string
 	Tables map[string]*Table
-	database *Database
+	HasTriggers bool
+	Database *Database
 }
 
 // Define the sqlColumn returned inside get_current_schema() query
@@ -30,7 +31,8 @@ func NewSchema(name string, db *Database) *Schema {
 	return &Schema{
 		Name: name,
 		Tables: make(map[string]*Table),
-		database: db,
+		HasTriggers: false,
+		Database: db,
 	}
 }
 
@@ -118,4 +120,18 @@ func (db *Database) fetchSchema(schema string) error {
 	}
 
 	return nil
+}
+
+// Install triggers in schema
+func (s *Schema) InstallTriggers() error {
+	_, err := s.Database.runQueryFromFile("database/sql/source_trigger.sql")
+
+	if err == nil {
+		log.Printf("Installed triggers on schema '%s'", s.Name)
+		s.HasTriggers = true
+	} else {
+		log.Printf("Failed to install triggers on schema '%s': %v", s.Name, err)
+	}
+
+	return err
 }

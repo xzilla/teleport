@@ -4,13 +4,17 @@ package database
 type Table struct {
 	Name    string
 	Columns []*Column
-	schema  *Schema
+	Schema  *Schema
 }
 
 func NewTable(name string, schema *Schema) *Table {
 	return &Table{
 		Name: name,
 		Columns: make([]*Column, 0),
-		schema: schema,
+		Schema: schema,
 	}
+}
+
+func (t *Table) InstallTriggers() error {
+	return nil
 }

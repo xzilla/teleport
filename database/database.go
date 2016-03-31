@@ -58,6 +58,12 @@ func (db *Database) InstallTriggers(sourceTables string) error {
 
 	// Install triggers for each table/schema
 	for _, table := range tables {
+		if !table.Schema.HasTriggers {
+			table.Schema.InstallTriggers()
+		}
+
+		table.InstallTriggers();
+
 		fmt.Printf("Tables! %v\n", table.Name)
 	}
 

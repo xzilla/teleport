@@ -7,7 +7,7 @@ type Column struct {
 	DataTypeName           string
 	CharacterMaximumLength int
 	ConstraintType         string
-	table *Table
+	Table *Table
 }
 
 func NewColumn(name string, dataTypeSchema string, dataTypeName string, characterMaximumLength int, constraintType string, table *Table) *Column {
@@ -17,6 +17,6 @@ func NewColumn(name string, dataTypeSchema string, dataTypeName string, characte
 		DataTypeName:           dataTypeName,
 		CharacterMaximumLength: characterMaximumLength,
 		ConstraintType:         constraintType,
-		table: table,
+		Table: table,
 	}
 }
