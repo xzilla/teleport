@@ -6,14 +6,14 @@ import (
 )
 
 type Event struct {
-	Id            string `db:"id"`
-	Kind          string `db:"kind"`
-	Status        string `db:"status"`
-	TriggerTag    string `db:"trigger_tag"`
-	TriggerEvent  string `db:"trigger_event"`
-	TransactionId string `db:"transaction_id"`
-	BatchId       string `db:"batch_id"`
-	Data          string `db:"data"`
+	Id            *string `db:"id"`
+	Kind          *string `db:"kind"`
+	Status        *string `db:"status"`
+	TriggerTag    *string `db:"trigger_tag"`
+	TriggerEvent  *string `db:"trigger_event"`
+	TransactionId *string `db:"transaction_id"`
+	BatchId       *string `db:"batch_id"`
+	Data          *string `db:"data"`
 }
 
 func (db *Database) WatchEvents(seconds time.Duration) {

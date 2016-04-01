@@ -2,15 +2,12 @@ package database
 
 import (
 	"encoding/json"
-	"log"
-	"strings"
 )
 
 // Define a database schema
 type Schema struct {
 	Name        string
 	Tables      map[string]*Table
-	HasTriggers bool
 	Database    *Database
 }
 
@@ -31,38 +28,8 @@ func NewSchema(name string, db *Database) *Schema {
 	return &Schema{
 		Name:        name,
 		Tables:      make(map[string]*Table),
-		HasTriggers: false,
 		Database:    db,
 	}
-}
-
-// Parses a string in the form "schemaname.table*" and returns all
-// the tables under this schema
-func (db *Database) tablesForSourceTables(sourceTables string) ([]*Table, error) {
-	separator := strings.Split(sourceTables, ".")
-	schemaName := separator[0]
-
-	// Fetch schema from database if it's not already loaded
-	if db.Schemas[schemaName] == nil {
-		if err := db.fetchSchema(schemaName); err != nil {
-			return nil, err
-		}
-	}
-
-	schema := db.Schemas[schemaName]
-
-	prefix := strings.Split(separator[1], "*")[0]
-
-	var tables []*Table
-
-	// Fetch tables with prefix before *
-	for _, table := range schema.Tables {
-		if strings.HasPrefix(table.Name, prefix) {
-			tables = append(tables, table)
-		}
-	}
-
-	return tables, nil
 }
 
 // Fetches the schema from the database and update Schema
@@ -120,18 +87,4 @@ func (db *Database) fetchSchema(schema string) error {
 	}
 
 	return nil
-}
-
-// Install triggers in schema
-func (s *Schema) InstallTriggers() error {
-	_, err := s.Database.runQueryFromFile("database/sql/source_trigger.sql")
-
-	if err == nil {
-		log.Printf("Installed triggers on schema '%s'", s.Name)
-		s.HasTriggers = true
-	} else {
-		log.Printf("Failed to install triggers on schema '%s': %v", s.Name, err)
-	}
-
-	return err
 }

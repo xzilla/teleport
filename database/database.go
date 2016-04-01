@@ -7,6 +7,7 @@ import (
 	_ "github.com/lib/pq"
 	"io/ioutil"
 	"os"
+	"log"
 )
 
 // Database definition
@@ -45,6 +46,12 @@ func (db *Database) Start() error {
 
 // Install triggers on a source table
 func (db *Database) InstallTriggers(sourceTables string) error {
+	err := db.installDDLTriggers()
+
+	if err != nil {
+		return err
+	}
+
 	// Get tables for sourceTables string
 	tables, err := db.tablesForSourceTables(sourceTables)
 
@@ -54,16 +61,24 @@ func (db *Database) InstallTriggers(sourceTables string) error {
 
 	// Install triggers for each table/schema
 	for _, table := range tables {
-		if !table.Schema.HasTriggers {
-			table.Schema.InstallTriggers()
-		}
-
 		table.InstallTriggers()
-
 		fmt.Printf("Tables! %v\n", table.Name)
 	}
 
 	return nil
+}
+
+// Install triggers in schema
+func (db *Database) installDDLTriggers() error {
+	_, err := db.runQueryFromFile("database/sql/source_trigger.sql")
+
+	if err == nil {
+		log.Printf("Installed triggers on database")
+	} else {
+		log.Printf("Failed to install triggers on database: %v", err)
+	}
+
+	return err
 }
 
 // Setup internal tables using setup script
