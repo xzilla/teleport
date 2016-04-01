@@ -3,6 +3,7 @@ package database
 import (
 	"database/sql"
 	"fmt"
+	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq"
 	"io/ioutil"
 	"os"
@@ -16,14 +17,14 @@ type Database struct {
 	Password string
 	Port     int
 	Schemas  map[string]*Schema
-	db       *sql.DB
+	db       *sqlx.DB
 }
 
 // Open connection with database and setup internal tables
 func (db *Database) Start() error {
 	var err error
 
-	db.db, err = sql.Open("postgres", fmt.Sprintf(
+	db.db, err = sqlx.Connect("postgres", fmt.Sprintf(
 		"host=%s user=%s password=%s dbname=%s port=%d sslmode=disable",
 		db.Hostname,
 		db.Username,
@@ -36,12 +37,7 @@ func (db *Database) Start() error {
 		return err
 	}
 
-	// Ping database to check for connetivity
-	err = db.db.Ping()
-	if err != nil {
-		return err
-	}
-
+	// Initialize schema map
 	db.Schemas = make(map[string]*Schema)
 
 	return db.setupTables()
@@ -62,7 +58,7 @@ func (db *Database) InstallTriggers(sourceTables string) error {
 			table.Schema.InstallTriggers()
 		}
 
-		table.InstallTriggers();
+		table.InstallTriggers()
 
 		fmt.Printf("Tables! %v\n", table.Name)
 	}
@@ -79,6 +75,10 @@ func (db *Database) setupTables() error {
 // Run query on database
 func (db *Database) runQuery(query string, args ...interface{}) (*sql.Rows, error) {
 	return db.db.Query(query, args...)
+}
+
+func (db *Database) selectObjs(v interface{}, query string, args ...interface{}) error {
+	return db.db.Select(v, query, args...)
 }
 
 // Open file and run query

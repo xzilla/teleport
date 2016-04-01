@@ -19,4 +19,6 @@ func main() {
 	for _, target := range config.Targets {
 		config.Database.InstallTriggers(target.SourceTables)
 	}
+
+	config.Database.WatchEvents(5)
 }

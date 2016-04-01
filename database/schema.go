@@ -2,16 +2,16 @@ package database
 
 import (
 	"encoding/json"
-	"strings"
 	"log"
+	"strings"
 )
 
 // Define a database schema
 type Schema struct {
-	Name   string
-	Tables map[string]*Table
+	Name        string
+	Tables      map[string]*Table
 	HasTriggers bool
-	Database *Database
+	Database    *Database
 }
 
 // Define the sqlColumn returned inside get_current_schema() query
@@ -29,10 +29,10 @@ type sqlColumn struct {
 // Initializes new schema
 func NewSchema(name string, db *Database) *Schema {
 	return &Schema{
-		Name: name,
-		Tables: make(map[string]*Table),
+		Name:        name,
+		Tables:      make(map[string]*Table),
 		HasTriggers: false,
-		Database: db,
+		Database:    db,
 	}
 }
 

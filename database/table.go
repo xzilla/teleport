@@ -9,9 +9,9 @@ type Table struct {
 
 func NewTable(name string, schema *Schema) *Table {
 	return &Table{
-		Name: name,
+		Name:    name,
 		Columns: make([]*Column, 0),
-		Schema: schema,
+		Schema:  schema,
 	}
 }
 
