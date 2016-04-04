@@ -52,7 +52,7 @@ func (db *Database) CreateBatchesFromEvents() error {
 	}
 
 	// Stop if there are no events
-	if len(*events) == 0 {
+	if len(events) == 0 {
 		return nil
 	}
 
@@ -62,7 +62,7 @@ func (db *Database) CreateBatchesFromEvents() error {
 	// Store batch data
 	var batchBuffer bytes.Buffer
 
-	for _, event := range *events {
+	for _, event := range events {
 		// Write event data to batch data
 		batchBuffer.WriteString(event.String())
 		batchBuffer.WriteString("\n")
