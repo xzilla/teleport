@@ -9,6 +9,8 @@ import (
 type Batch struct {
 	Id     string  `db:"id" json:"id"`
 	Status string  `db:"status" json:"status"`
+	Source string  `db:"source" json:"source"`
+	Target string  `db:"target" json:"target"`
 	Data   *string `db:"data" json:"data"`
 }
 
