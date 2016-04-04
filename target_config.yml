@@ -1,0 +1,10 @@
+database:
+  database: "postgres2"
+  hostname: "postgres"
+  username: "postgres"
+  password: "root"
+  port: 5432
+server:
+  hostname: "0.0.0.0"
+  port: 3001
+  # auth: asd

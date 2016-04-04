@@ -1,8 +1,9 @@
 package database
 
 import (
-	"bytes"
 	"github.com/jmoiron/sqlx"
+	"time"
+	"log"
 )
 
 type Batch struct {
@@ -20,10 +21,27 @@ func NewBatch(data []byte) *Batch {
 	}
 }
 
-func (db *Database) GetBatches(status string) (*[]Batch, error) {
+// Transmit batches
+func (db *Database) TransmitBatches(sleepTime time.Duration) {
+	for {
+		_, err := db.GetBatches("waiting_transmission")
+
+		if err != nil {
+			log.Printf("Error fetching batches for transmission! %v\n", err)
+		} else {
+			// for _, batch := range batches {
+			// 	// batch.Transmit()
+			// }
+		}
+
+		time.Sleep(sleepTime)
+	}
+}
+
+func (db *Database) GetBatches(status string) ([]Batch, error) {
 	var batches []Batch
 	err := db.selectObjs(&batches, "SELECT * FROM teleport.batch WHERE status = $1 ORDER BY id ASC;", status)
-	return &batches, err
+	return batches, err
 }
 
 func (b *Batch) InsertQuery(tx *sqlx.Tx) {
@@ -40,44 +58,4 @@ func (b *Batch) UpdateQuery(tx *sqlx.Tx) {
 		b.Status,
 		b.Id,
 	)
-}
-
-// Group all events 'waiting_batch' and create a batch with them.
-func (db *Database) CreateBatchesFromEvents() error {
-	// Get events waiting replication
-	events, err := db.GetEvents("waiting_batch")
-
-	if err != nil {
-		return err
-	}
-
-	// Stop if there are no events
-	if len(events) == 0 {
-		return nil
-	}
-
-	// Start a transaction
-	tx := db.NewTransaction()
-
-	// Store batch data
-	var batchBuffer bytes.Buffer
-
-	for _, event := range events {
-		// Write event data to batch data
-		batchBuffer.WriteString(event.String())
-		batchBuffer.WriteString("\n")
-
-		// Update event status to batched
-		event.Status = "batched"
-		event.UpdateQuery(tx)
-	}
-
-	// Allocate a new batch
-	batch := NewBatch(batchBuffer.Bytes())
-
-	// Insert batch
-	batch.InsertQuery(tx)
-
-	// Commit to database, returning errors
-	return tx.Commit()
 }

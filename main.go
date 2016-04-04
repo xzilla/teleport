@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"github.com/pagarme/teleport/config"
+	"github.com/pagarme/teleport/client"
 	"github.com/pagarme/teleport/server"
 	"time"
 	"flag"
@@ -29,20 +30,25 @@ func main() {
 		os.Exit(1)
 	}
 
+	targets := make(map[string]*client.Client)
+
+	// Create a new client for each target
 	// Install triggers for each target
-	for _, target := range config.Targets {
-		config.Database.InstallTriggers(target.SourceTables)
+	for key, target := range config.Targets {
+		targets[key] = client.New(target)
+		config.Database.InstallTriggers(targets[key].SourceTables)
 	}
 
-	// Watch events
+	// Batch events and transmit batches on separate goroutines
 	go config.Database.BatchEvents(5 * time.Second)
+	go config.Database.TransmitBatches(5 * time.Second)
 
-	// go config.Database.Re(5 * time.Second)
-
+	// Start HTTP server for receiving incoming requests
 	server := server.New(&config.Database, config.ServerHTTP)
 
 	// Start HTTP server
 	if err = server.Start(); err != nil {
-		fmt.Printf("ERROR STARTING SERVER: %v\n", err)
+		fmt.Printf("Error starting HTTP server: %v\n", err)
+		os.Exit(1)
 	}
 }

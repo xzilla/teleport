@@ -71,3 +71,8 @@ BEGIN
 	);
 END;
 $$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION get_cuid() RETURNS text AS $$
+BEGIN
+END;
+$$ LANGUAGE plpgsql;

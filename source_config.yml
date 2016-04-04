@@ -9,8 +9,9 @@ server:
   port: 3000
   # auth: asd
 targets:
-  - source_tables: "public.*"
+  tar:
+    source_tables: "public.*"
     endpoint:
-      hostname: "localhost"
+      hostname: "target"
       port: 3001
     apply_schema: "live"
