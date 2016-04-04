@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/pagarme/teleport/config"
 	"github.com/pagarme/teleport/server"
+	"time"
 )
 
 func main() {
@@ -29,5 +30,5 @@ func main() {
 		fmt.Printf("ERROR STARTING SERVER: %v\n", err)
 	}
 
-	config.Database.WatchEvents(5)
+	config.Database.WatchEvents(5 * time.Second)
 }
