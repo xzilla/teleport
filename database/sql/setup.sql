@@ -21,7 +21,7 @@ $$;
 DO $$
 BEGIN
 	IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'event_status') THEN
-		CREATE TYPE teleport.event_status AS ENUM ('building', 'waiting_replication', 'replicated', 'waiting_apply', 'applied');
+		CREATE TYPE teleport.event_status AS ENUM ('building', 'waiting_replication', 'replicated', 'waiting_apply', 'applied', 'ignored');
 	END IF;
 END
 $$;

@@ -6,9 +6,9 @@ import (
 
 // Define a database schema
 type Schema struct {
-	Name        string
-	Tables      map[string]*Table
-	Database    *Database
+	Name     string
+	Tables   map[string]*Table
+	Database *Database
 }
 
 // Define the sqlColumn returned inside get_current_schema() query
@@ -26,9 +26,9 @@ type sqlColumn struct {
 // Initializes new schema
 func NewSchema(name string, db *Database) *Schema {
 	return &Schema{
-		Name:        name,
-		Tables:      make(map[string]*Table),
-		Database:    db,
+		Name:     name,
+		Tables:   make(map[string]*Table),
+		Database: db,
 	}
 }
 

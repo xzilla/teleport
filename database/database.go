@@ -6,8 +6,8 @@ import (
 	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq"
 	"io/ioutil"
-	"os"
 	"log"
+	"os"
 )
 
 // Database definition
