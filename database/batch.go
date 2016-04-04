@@ -1,8 +1,8 @@
 package database
 
 import (
-	"fmt"
 	"bytes"
+	"github.com/jmoiron/sqlx"
 )
 
 type Batch struct {
@@ -20,17 +20,17 @@ func NewBatch(data []byte) *Batch {
 	}
 }
 
-func (b *Batch) GetInsertQuery() string {
-	return fmt.Sprintf(
-		"INSERT INTO teleport.batch (status, data) VALUES ('%s', '%s')",
+func (b *Batch) InsertQuery(tx *sqlx.Tx) {
+	tx.MustExec(
+		"INSERT INTO teleport.batch (status, data) VALUES ($1, $2)",
 		b.Status,
-		*b.Data,
+		b.Data,
 	)
 }
 
-func (b *Batch) GetUpdateQuery() string {
-	return fmt.Sprintf(
-		"UPDAET teleport.batch SET status = '%s' WHERE id = '%s'",
+func (b *Batch) UpdateQuery(tx *sqlx.Tx) {
+	tx.MustExec(
+		"UPDATE teleport.batch SET status = $1 WHERE id = $2",
 		b.Status,
 		b.Id,
 	)
@@ -63,14 +63,14 @@ func (db *Database) CreateBatchesFromEvents() error {
 
 		// Update event status to batched
 		event.Status = "batched"
-		tx.MustExec(event.GetUpdateQuery())
+		event.UpdateQuery(tx)
 	}
 
 	// Allocate a new batch
 	batch := NewBatch(batchBuffer.Bytes())
 
 	// Insert batch
-	tx.MustExec(batch.GetInsertQuery())
+	batch.InsertQuery(tx)
 
 	// Commit to database, returning errors
 	return tx.Commit()

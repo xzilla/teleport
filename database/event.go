@@ -4,6 +4,7 @@ import (
 	"log"
 	"time"
 	"fmt"
+	"github.com/jmoiron/sqlx"
 )
 
 type Event struct {
@@ -35,11 +36,11 @@ func (db *Database) GetEvents(status string) (*[]Event, error) {
 	return &events, err
 }
 
-func (e *Event) GetUpdateQuery() string {
-	return fmt.Sprintf(
-		"UPDATE teleport.event SET status = '%s', data = '%s' WHERE id = %s;",
+func (e *Event) UpdateQuery(tx *sqlx.Tx) {
+	tx.MustExec(
+		"UPDATE teleport.event SET status = $1, data = $2 WHERE id = $3;",
 		e.Status,
-		*e.Data,
+		e.Data,
 		e.Id,
 	)
 }
