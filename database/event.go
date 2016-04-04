@@ -18,7 +18,7 @@ type Event struct {
 	Data          *string `db:"data"`
 }
 
-func (db *Database) WatchEvents(seconds time.Duration) {
+func (db *Database) WatchEvents(sleepTime time.Duration) {
 	for {
 		err := db.CreateBatchesFromEvents()
 
@@ -26,7 +26,7 @@ func (db *Database) WatchEvents(seconds time.Duration) {
 			log.Printf("Error creating batch! %v\n", err)
 		}
 
-		time.Sleep(seconds * time.Second)
+		time.Sleep(sleepTime)
 	}
 }
 
