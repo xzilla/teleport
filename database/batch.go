@@ -20,6 +20,12 @@ func NewBatch(data []byte) *Batch {
 	}
 }
 
+func (db *Database) GetBatches(status string) (*[]Batch, error) {
+	var batches []Batch
+	err := db.selectObjs(&batches, "SELECT * FROM teleport.batch WHERE status = $1 ORDER BY id ASC;", status)
+	return &batches, err
+}
+
 func (b *Batch) InsertQuery(tx *sqlx.Tx) {
 	tx.MustExec(
 		"INSERT INTO teleport.batch (status, data) VALUES ($1, $2)",

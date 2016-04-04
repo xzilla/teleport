@@ -21,7 +21,7 @@ type Target struct {
 
 type Config struct {
 	Database database.Database `yaml:"database"`
-	HTTP     HTTP              `yaml:"http"`
+	ServerHTTP   HTTP     `yaml:"server"`
 	Targets  []Target          `yaml:"targets"`
 }
 

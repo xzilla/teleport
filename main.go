@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"github.com/pagarme/teleport/config"
+	"github.com/pagarme/teleport/server"
 )
 
 func main() {
@@ -16,8 +17,16 @@ func main() {
 		fmt.Printf("ERROR STARTING DATABASE: %v\n", err)
 	}
 
+	// Install triggers for each target
 	for _, target := range config.Targets {
 		config.Database.InstallTriggers(target.SourceTables)
+	}
+
+	server := server.New(config.ServerHTTP)
+
+	// Start HTTP server
+	if err = server.Start(); err != nil {
+		fmt.Printf("ERROR STARTING SERVER: %v\n", err)
 	}
 
 	config.Database.WatchEvents(5)
