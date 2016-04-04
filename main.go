@@ -5,6 +5,7 @@ import (
 	"github.com/pagarme/teleport/config"
 	"github.com/pagarme/teleport/client"
 	"github.com/pagarme/teleport/server"
+	"github.com/pagarme/teleport/batcher"
 	"time"
 	"flag"
 	"os"
@@ -39,8 +40,12 @@ func main() {
 		config.Database.InstallTriggers(targets[key].SourceTables)
 	}
 
+	// Start batcher on a separate goroutine
+	batcher := batcher.New(&config.Database, targets)
+	go batcher.Watch(5 * time.Second)
+
 	// Batch events and transmit batches on separate goroutines
-	go config.Database.BatchEvents(5 * time.Second)
+	// go config.Database.BatchEvents(5 * time.Second)
 	go config.Database.TransmitBatches(5 * time.Second)
 
 	// Start HTTP server for receiving incoming requests
