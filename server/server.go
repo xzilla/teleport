@@ -1,25 +1,25 @@
 package server
 
 import (
+	"fmt"
 	"github.com/gorilla/mux"
-	"log"
-	"net/http"
 	"github.com/pagarme/teleport/config"
+	"github.com/pagarme/teleport/server/httputils"
 	"github.com/pagarme/teleport/server/router"
 	batchrouter "github.com/pagarme/teleport/server/router/batch"
-	"github.com/pagarme/teleport/server/httputils"
-	"fmt"
+	"log"
+	"net/http"
 	"time"
 )
 
 type Server struct {
-	HTTP config.HTTP
+	HTTP           config.HTTP
 	internalRouter *mux.Router
 }
 
 func New(config config.HTTP) *Server {
 	server := &Server{
-		HTTP: config,
+		HTTP:           config,
 		internalRouter: mux.NewRouter().StrictSlash(true),
 	}
 

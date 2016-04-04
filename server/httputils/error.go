@@ -50,4 +50,3 @@ func WriteError(w http.ResponseWriter, err error) {
 	w.WriteHeader(statusCode)
 	json.NewEncoder(w).Encode(errorResponse{errMsg})
 }
-

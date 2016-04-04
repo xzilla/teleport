@@ -1,19 +1,19 @@
 package database
 
 import (
-	"log"
-	"time"
 	"fmt"
 	"github.com/jmoiron/sqlx"
+	"log"
+	"time"
 )
 
 type Event struct {
-	Id            string `db:"id"`
-	Kind          string `db:"kind"`
-	Status        string `db:"status"`
-	TriggerTag    string `db:"trigger_tag"`
-	TriggerEvent  string `db:"trigger_event"`
-	TransactionId string `db:"transaction_id"`
+	Id            string  `db:"id"`
+	Kind          string  `db:"kind"`
+	Status        string  `db:"status"`
+	TriggerTag    string  `db:"trigger_tag"`
+	TriggerEvent  string  `db:"trigger_event"`
+	TransactionId string  `db:"transaction_id"`
 	BatchId       *string `db:"batch_id,omitempty"`
 	Data          *string `db:"data"`
 }
@@ -45,7 +45,7 @@ func (e *Event) UpdateQuery(tx *sqlx.Tx) {
 	)
 }
 
-// Implement Stringer 
+// Implement Stringer
 func (e *Event) String() string {
 	return fmt.Sprintf(
 		"%s,%s,%s,%s,%s,%s",

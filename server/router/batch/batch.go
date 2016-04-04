@@ -30,4 +30,3 @@ func (b *batchRouter) initRoutes() {
 		router.NewPostRoute("/batches", b.create),
 	}
 }
-

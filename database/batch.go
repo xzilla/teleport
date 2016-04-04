@@ -6,8 +6,8 @@ import (
 )
 
 type Batch struct {
-	Id     string `db:"id"`
-	Status string `db:"status"`
+	Id     string  `db:"id"`
+	Status string  `db:"status"`
 	Data   *string `db:"data"`
 }
 
@@ -15,7 +15,7 @@ func NewBatch(data []byte) *Batch {
 	dataStr := string(data)
 
 	return &Batch{
-		Data: &dataStr,
+		Data:   &dataStr,
 		Status: "waiting_transmission",
 	}
 }

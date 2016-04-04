@@ -20,9 +20,9 @@ type Target struct {
 }
 
 type Config struct {
-	Database database.Database `yaml:"database"`
-	ServerHTTP   HTTP     `yaml:"server"`
-	Targets  []Target          `yaml:"targets"`
+	Database   database.Database `yaml:"database"`
+	ServerHTTP HTTP              `yaml:"server"`
+	Targets    []Target          `yaml:"targets"`
 }
 
 func New() *Config {
