@@ -14,7 +14,6 @@ type Event struct {
 	TriggerTag    string  `db:"trigger_tag"`
 	TriggerEvent  string  `db:"trigger_event"`
 	TransactionId string  `db:"transaction_id"`
-	BatchId       *string `db:"batch_id,omitempty"`
 	Data          *string `db:"data"`
 }
 

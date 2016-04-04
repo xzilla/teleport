@@ -43,7 +43,6 @@ CREATE TABLE IF NOT EXISTS teleport.event (
 	trigger_tag text,
 	trigger_event text,
 	transaction_id int,
-	batch_id int,
 	data text
 );
 
