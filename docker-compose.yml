@@ -10,6 +10,8 @@ services:
     volumes:
       - goroot:/go
       - .:/go/src/github.com/pagarme/teleport/
+    ports:
+      - 3000:3000
 
   # Databases
   postgres:
