@@ -6,10 +6,9 @@ import (
 )
 
 type Batch struct {
-	Id     *string `db:"id"`
+	Id     string `db:"id"`
+	Status string `db:"status"`
 	Data   *string `db:"data"`
-	// Source *string `db:"source"`
-	// Target *string `db:"target"`
 }
 
 func NewBatch(data []byte) *Batch {
@@ -17,20 +16,30 @@ func NewBatch(data []byte) *Batch {
 
 	return &Batch{
 		Data: &dataStr,
+		Status: "waiting_transmission",
 	}
 }
 
 func (b *Batch) GetInsertQuery() string {
 	return fmt.Sprintf(
-		"INSERT INTO teleport.batch (data) VALUES ('%s')",
+		"INSERT INTO teleport.batch (status, data) VALUES ('%s', '%s')",
+		b.Status,
 		*b.Data,
 	)
 }
 
-// Group all events 'waiting_replication' and create a batch with them.
+func (b *Batch) GetUpdateQuery() string {
+	return fmt.Sprintf(
+		"UPDAET teleport.batch SET status = '%s' WHERE id = '%s'",
+		b.Status,
+		b.Id,
+	)
+}
+
+// Group all events 'waiting_batch' and create a batch with them.
 func (db *Database) CreateBatchesFromEvents() error {
 	// Get events waiting replication
-	events, err := db.GetEvents("waiting_replication")
+	events, err := db.GetEvents("waiting_batch")
 
 	if err != nil {
 		return err
@@ -52,8 +61,8 @@ func (db *Database) CreateBatchesFromEvents() error {
 		batchBuffer.WriteString(event.String())
 		batchBuffer.WriteString("\n")
 
-		// Update event status to replicated
-		event.Status = "replicated"
+		// Update event status to batched
+		event.Status = "batched"
 		tx.MustExec(event.GetUpdateQuery())
 	}
 

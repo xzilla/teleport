@@ -21,7 +21,16 @@ $$;
 DO $$
 BEGIN
 	IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'event_status') THEN
-		CREATE TYPE teleport.event_status AS ENUM ('building', 'waiting_replication', 'replicated', 'waiting_apply', 'applied', 'ignored');
+		CREATE TYPE teleport.event_status AS ENUM ('building', 'waiting_batch', 'batched');
+	END IF;
+END
+$$;
+
+-- Define batch_status type.
+DO $$
+BEGIN
+	IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'batch_status') THEN
+		CREATE TYPE teleport.batch_status AS ENUM ('waiting_transmission', 'transmitted', 'waiting_apply', 'applied');
 	END IF;
 END
 $$;
@@ -41,6 +50,7 @@ CREATE TABLE IF NOT EXISTS teleport.event (
 -- Create table to store batches of data
 CREATE TABLE IF NOT EXISTS teleport.batch (
 	id serial primary key,
+	status teleport.batch_status,
 	data text,
 	source text,
 	target text

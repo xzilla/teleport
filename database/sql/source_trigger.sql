@@ -16,7 +16,7 @@ $$
 LANGUAGE plpgsql;
 
 -- Updates a batch and event with the schema after the DDL execution
--- and update event's status to waiting_replication
+-- and update event's status to waiting_batch
 CREATE OR REPLACE FUNCTION ddl_event_end() RETURNS event_trigger AS $$
 DECLARE
 	event_row teleport.event%ROWTYPE;
@@ -29,7 +29,7 @@ BEGIN
 		SELECT 'post' AS key, get_current_schema()::text AS value
 	)
 	UPDATE teleport.event
-		SET status = 'waiting_replication',
+		SET status = 'waiting_batch',
 			data = (SELECT json_object_agg(s.key, s.value)
 				FROM all_json_key_value s
 			)
