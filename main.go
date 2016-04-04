@@ -5,17 +5,28 @@ import (
 	"github.com/pagarme/teleport/config"
 	"github.com/pagarme/teleport/server"
 	"time"
+	"flag"
+	"os"
 )
 
 func main() {
-	config := config.New()
+	// Parse config
+	configPath := flag.String("config", "config.yml", "config file path")
+	flag.Parse()
 
 	// Load config file
-	err := config.ReadFromFile("source_config.yml")
+	config := config.New()
+	err := config.ReadFromFile(*configPath)
+
+	if err != nil {
+		fmt.Printf("Error opening config file '%s': %v\n", *configPath, err)
+		os.Exit(1)
+	}
 
 	// Start db
 	if err = config.Database.Start(); err != nil {
-		fmt.Printf("ERROR STARTING DATABASE: %v\n", err)
+		fmt.Printf("Erro starting database: ", err)
+		os.Exit(1)
 	}
 
 	// Install triggers for each target
@@ -23,7 +34,10 @@ func main() {
 		config.Database.InstallTriggers(target.SourceTables)
 	}
 
-	go config.Database.WatchEvents(5 * time.Second)
+	// Watch events
+	go config.Database.BatchEvents(5 * time.Second)
+
+	// go config.Database.Re(5 * time.Second)
 
 	server := server.New(&config.Database, config.ServerHTTP)
 

@@ -18,7 +18,8 @@ type Event struct {
 	Data          *string `db:"data"`
 }
 
-func (db *Database) WatchEvents(sleepTime time.Duration) {
+// Every sleepTime interval, create a batch with unbatched events
+func (db *Database) BatchEvents(sleepTime time.Duration) {
 	for {
 		err := db.CreateBatchesFromEvents()
 

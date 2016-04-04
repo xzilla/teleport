@@ -4,14 +4,23 @@ volumes:
   goroot: {}
 
 services:
-  common:
+  source:
     build: .
-    command: go run main.go
+    command: go run main.go -config source_config.yml
     volumes:
       - goroot:/go
       - .:/go/src/github.com/pagarme/teleport/
     ports:
       - 3000:3000
+
+  target:
+    build: .
+    command: go run main.go -config target_config.yml
+    volumes:
+      - goroot:/go
+      - .:/go/src/github.com/pagarme/teleport/
+    ports:
+      - 3001:3001
 
   # Databases
   postgres:
