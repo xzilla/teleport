@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/gorilla/mux"
 	"github.com/pagarme/teleport/config"
+	"github.com/pagarme/teleport/database"
 	"github.com/pagarme/teleport/server/httputils"
 	"github.com/pagarme/teleport/server/router"
 	batchrouter "github.com/pagarme/teleport/server/router/batch"
@@ -17,13 +18,13 @@ type Server struct {
 	internalRouter *mux.Router
 }
 
-func New(config config.HTTP) *Server {
+func New(db *database.Database, config config.HTTP) *Server {
 	server := &Server{
 		HTTP:           config,
 		internalRouter: mux.NewRouter().StrictSlash(true),
 	}
 
-	server.AddRouter(batchrouter.New())
+	server.AddRouter(batchrouter.New(db))
 
 	return server
 }

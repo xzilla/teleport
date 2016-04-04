@@ -1,24 +1,48 @@
 package batch
 
 import (
+	"encoding/json"
+	"github.com/pagarme/teleport/database"
 	"github.com/pagarme/teleport/server/httputils"
-	// "github.com/pagarme/teleport/database"
 	"github.com/pagarme/teleport/server/router"
 	"net/http"
 )
 
 type batchRouter struct {
 	routes []router.Route
+	db     *database.Database
 }
 
-func New() *batchRouter {
+func New(db *database.Database) *batchRouter {
 	b := &batchRouter{}
+	b.db = db
 	b.initRoutes()
 	return b
 }
 
 func (b *batchRouter) create(w http.ResponseWriter, r *http.Request) error {
-	return httputils.WriteJSON(w, http.StatusOK, "Creating new batch.")
+	// Parse batch data from request
+	var newBatch database.Batch
+	json.NewDecoder(r.Body).Decode(&newBatch)
+
+	// Start transaction
+	tx := b.db.NewTransaction()
+
+	// New batches are waiting_apply always
+	newBatch.Status = "waiting_apply"
+
+	// Insert
+	newBatch.InsertQuery(tx)
+
+	// Commit transaction
+	err := tx.Commit()
+
+	if err != nil {
+		return err
+	}
+
+	// Respond HTTP OK
+	return httputils.WriteJSON(w, http.StatusOK, nil)
 }
 
 func (b *batchRouter) Routes() []router.Route {

@@ -44,6 +44,10 @@ func (db *Database) Start() error {
 	return db.setupTables()
 }
 
+func (db *Database) NewTransaction() *sqlx.Tx {
+	return db.db.MustBegin()
+}
+
 // Install triggers on a source table
 func (db *Database) InstallTriggers(sourceTables string) error {
 	err := db.installDDLTriggers()

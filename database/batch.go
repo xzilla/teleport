@@ -6,9 +6,9 @@ import (
 )
 
 type Batch struct {
-	Id     string  `db:"id"`
-	Status string  `db:"status"`
-	Data   *string `db:"data"`
+	Id     string  `db:"id" json:"id"`
+	Status string  `db:"status" json:"status"`
+	Data   *string `db:"data" json:"data"`
 }
 
 func NewBatch(data []byte) *Batch {
@@ -57,7 +57,7 @@ func (db *Database) CreateBatchesFromEvents() error {
 	}
 
 	// Start a transaction
-	tx := db.db.MustBegin()
+	tx := db.NewTransaction()
 
 	// Store batch data
 	var batchBuffer bytes.Buffer

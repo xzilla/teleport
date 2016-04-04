@@ -22,7 +22,7 @@ func main() {
 		config.Database.InstallTriggers(target.SourceTables)
 	}
 
-	server := server.New(config.ServerHTTP)
+	server := server.New(&config.Database, config.ServerHTTP)
 
 	// Start HTTP server
 	if err = server.Start(); err != nil {
