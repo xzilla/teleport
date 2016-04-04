@@ -31,7 +31,7 @@ func (db *Database) WatchEvents(seconds time.Duration) {
 
 func (db *Database) GetEvents(status string) (*[]Event, error) {
 	var events []Event
-	err := db.selectObjs(&events, "SELECT * FROM teleport.event WHERE status = $1;", status)
+	err := db.selectObjs(&events, "SELECT * FROM teleport.event WHERE status = $1 ORDER BY id ASC;", status)
 	return &events, err
 }
 
