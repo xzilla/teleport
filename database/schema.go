@@ -8,7 +8,6 @@ import (
 type Schema struct {
 	Name     string
 	Tables   map[string]*Table
-	Database *Database
 }
 
 // Define the sqlColumn returned inside get_current_schema() query
@@ -24,7 +23,7 @@ type sqlColumn struct {
 }
 
 // Initializes new schema
-func NewSchema(db *Database, schemaData string) *Schema {
+func NewSchema(schemaData string) *Schema {
 	// Parse JSON array of rows into sqlColumns
 	parsedColumns := make([]sqlColumn, 0)
 	err := json.Unmarshal([]byte(schemaData), &parsedColumns)
@@ -40,7 +39,6 @@ func NewSchema(db *Database, schemaData string) *Schema {
 	schema := &Schema{
 		Name: parsedColumns[0].TableSchema,
 		Tables:   make(map[string]*Table),
-		Database: db,
 	}
 
 	// Populate db's schema
@@ -85,7 +83,7 @@ func (db *Database) fetchSchema(schema string) error {
 		return err
 	}
 
-	db.Schemas[schema] = NewSchema(db, string(schemaContent))
+	db.Schemas[schema] = NewSchema(string(schemaContent))
 
 	return nil
 }
