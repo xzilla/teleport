@@ -2,8 +2,6 @@ package database
 
 import (
 	"github.com/jmoiron/sqlx"
-	"time"
-	"log"
 )
 
 type Batch struct {
@@ -23,23 +21,6 @@ func NewBatch(data []byte) *Batch {
 	}
 }
 
-// Transmit batches
-func (db *Database) TransmitBatches(sleepTime time.Duration) {
-	for {
-		_, err := db.GetBatches("waiting_transmission")
-
-		if err != nil {
-			log.Printf("Error fetching batches for transmission! %v\n", err)
-		} else {
-			// for _, batch := range batches {
-			// 	// batch.Transmit()
-			// }
-		}
-
-		time.Sleep(sleepTime)
-	}
-}
-
 func (db *Database) GetBatches(status string) ([]Batch, error) {
 	var batches []Batch
 	err := db.selectObjs(&batches, "SELECT * FROM teleport.batch WHERE status = $1 ORDER BY id ASC;", status)
@@ -48,9 +29,12 @@ func (db *Database) GetBatches(status string) ([]Batch, error) {
 
 func (b *Batch) InsertQuery(tx *sqlx.Tx) {
 	tx.MustExec(
-		"INSERT INTO teleport.batch (status, data) VALUES ($1, $2)",
+		"INSERT INTO teleport.batch (id, status, data, source, target) VALUES ($1, $2, $3, $4, $5)",
+		b.Id,
 		b.Status,
 		b.Data,
+		b.Source,
+		b.Target,
 	)
 }
 

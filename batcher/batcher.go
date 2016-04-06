@@ -67,7 +67,8 @@ func (b *Batcher) createBatches() error {
 		// Allocate a new batch
 		batch := database.NewBatch(batchBuffer.Bytes())
 
-		// Set target
+		// Set source and target
+		batch.Source = b.db.Name
 		batch.Target = targetName
 
 		// Insert batch

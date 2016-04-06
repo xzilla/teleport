@@ -6,6 +6,7 @@ import (
 	"github.com/pagarme/teleport/client"
 	"github.com/pagarme/teleport/server"
 	"github.com/pagarme/teleport/batcher"
+	"github.com/pagarme/teleport/transmitter"
 	"time"
 	"flag"
 	"os"
@@ -44,9 +45,9 @@ func main() {
 	batcher := batcher.New(&config.Database, targets)
 	go batcher.Watch(5 * time.Second)
 
-	// Batch events and transmit batches on separate goroutines
-	// go config.Database.BatchEvents(5 * time.Second)
-	go config.Database.TransmitBatches(5 * time.Second)
+	// Start transmitter on a separate goroutine
+	transmitter := transmitter.New(&config.Database, targets)
+	go transmitter.Watch(5 * time.Second)
 
 	// Start HTTP server for receiving incoming requests
 	server := server.New(&config.Database, config.ServerHTTP)

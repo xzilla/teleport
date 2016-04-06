@@ -6,6 +6,7 @@ import (
 	"github.com/pagarme/teleport/server/httputils"
 	"github.com/pagarme/teleport/server/router"
 	"net/http"
+	"log"
 )
 
 type batchRouter struct {
@@ -33,6 +34,8 @@ func (b *batchRouter) create(w http.ResponseWriter, r *http.Request) error {
 
 	// Insert
 	newBatch.InsertQuery(tx)
+
+	log.Printf("Received batch: %v\n", newBatch)
 
 	// Commit transaction
 	err := tx.Commit()

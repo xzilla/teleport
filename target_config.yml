@@ -1,4 +1,5 @@
 database:
+  name: "tar"
   database: "postgres2"
   hostname: "postgres"
   username: "postgres"

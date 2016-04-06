@@ -12,6 +12,7 @@ import (
 
 // Database definition
 type Database struct {
+	Name     string
 	Database string
 	Hostname string
 	Username string
