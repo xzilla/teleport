@@ -9,7 +9,7 @@ CREATE SCHEMA IF NOT EXISTS teleport;
 DO $$
 BEGIN
 	IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'event_kind') THEN
-		CREATE TYPE teleport.event_kind AS ENUM ('outgoing_ddl', 'outgoing_dml', 'incoming_ddl', 'incoming_dml');
+		CREATE TYPE teleport.event_kind AS ENUM ('ddl', 'dml');
 	END IF;
 END
 $$;

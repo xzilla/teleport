@@ -5,7 +5,7 @@ BEGIN
 	INSERT INTO teleport.event (data, kind, trigger_tag, trigger_event, transaction_id, status) VALUES
 	(
 		get_current_schema()::text,
-		'outgoing_ddl',
+		'ddl',
 		tg_tag,
 		tg_event,
 		txid_current(),
