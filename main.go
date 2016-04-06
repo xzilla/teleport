@@ -7,6 +7,7 @@ import (
 	"github.com/pagarme/teleport/server"
 	"github.com/pagarme/teleport/batcher"
 	"github.com/pagarme/teleport/transmitter"
+	"github.com/pagarme/teleport/applier"
 	"time"
 	"flag"
 	"os"
@@ -48,6 +49,10 @@ func main() {
 	// Start transmitter on a separate goroutine
 	transmitter := transmitter.New(&config.Database, targets)
 	go transmitter.Watch(5 * time.Second)
+
+	// Start applier on a separate goroutine
+	applier := applier.New(&config.Database)
+	go applier.Watch(5 * time.Second)
 
 	// Start HTTP server for receiving incoming requests
 	server := server.New(&config.Database, config.ServerHTTP)
