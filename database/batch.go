@@ -28,14 +28,25 @@ func (db *Database) GetBatches(status string) ([]Batch, error) {
 }
 
 func (b *Batch) InsertQuery(tx *sqlx.Tx) {
-	tx.MustExec(
-		"INSERT INTO teleport.batch (id, status, data, source, target) VALUES ($1, $2, $3, $4, $5)",
-		b.Id,
+	args := make([]interface{}, 0)
+	var query string
+
+	// If there's no id, insert without id
+	if b.Id == "" {
+		query = "INSERT INTO teleport.batch (status, data, source, target) VALUES ($1, $2, $3, $4)"
+	} else {
+		query = "INSERT INTO teleport.batch (id, status, data, source, target) VALUES ($1, $2, $3, $4, $5)"
+		args = append(args, b.Id)
+	}
+
+	args = append(args,
 		b.Status,
 		b.Data,
 		b.Source,
 		b.Target,
 	)
+
+	tx.MustExec(query, args...)
 }
 
 func (b *Batch) UpdateQuery(tx *sqlx.Tx) {

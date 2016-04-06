@@ -80,6 +80,8 @@ func (b *Batcher) createBatches() error {
 		if err != nil {
 			return err
 		}
+
+		log.Printf("Generated new batch: %v\n", batch)
 	}
 
 	return nil
