@@ -15,6 +15,20 @@ type Event struct {
 	Data          *string `db:"data"`
 }
 
+func NewEvent(eventData string, status string) *Event {
+	separator := strings.Split(eventData, ',')
+
+	return &Event{
+		Id: separator[0],
+		Kind: separator[1],
+		Status: status,
+		TriggerTag: separator[2],
+		TriggerEvent: separator[3],
+		TransactionId: separator[4],
+		Data: separator[5],
+	}
+}
+
 func (db *Database) GetEvents(status string) ([]Event, error) {
 	var events []Event
 	err := db.selectObjs(&events, "SELECT * FROM teleport.event WHERE status = $1 ORDER BY id ASC;", status)

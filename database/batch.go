@@ -71,5 +71,16 @@ func (b *Batch) SetEvents(events []Event) {
 	b.Data = &dataStr
 }
 
-func (b *Batch) GetEvents() {
+func (b *Batch) GetEvents ([]Event) {
+	// Split events data per line
+	eventsData := strings.Split(events.Data, '\n')
+
+	events := make([]*Event)
+
+	// Initialize new event
+	for _, eventData := range eventsData {
+		events = append(events, *NewEvent(eventData))
+	}
+
+	return events
 }
