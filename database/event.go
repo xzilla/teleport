@@ -3,6 +3,7 @@ package database
 import (
 	"fmt"
 	"github.com/jmoiron/sqlx"
+	"strings"
 )
 
 type Event struct {
@@ -15,17 +16,17 @@ type Event struct {
 	Data          *string `db:"data"`
 }
 
-func NewEvent(eventData string, status string) *Event {
-	separator := strings.Split(eventData, ',')
+func NewEvent(eventData string) *Event {
+	separator := strings.Split(eventData, ",")
 
 	return &Event{
 		Id: separator[0],
 		Kind: separator[1],
-		Status: status,
+		Status: "",
 		TriggerTag: separator[2],
 		TriggerEvent: separator[3],
 		TransactionId: separator[4],
-		Data: separator[5],
+		Data: &separator[5],
 	}
 }
 

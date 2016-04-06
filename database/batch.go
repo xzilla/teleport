@@ -3,6 +3,7 @@ package database
 import (
 	"github.com/jmoiron/sqlx"
 	"bytes"
+	"strings"
 )
 
 type Batch struct {
@@ -71,11 +72,11 @@ func (b *Batch) SetEvents(events []Event) {
 	b.Data = &dataStr
 }
 
-func (b *Batch) GetEvents ([]Event) {
+func (b *Batch) GetEvents() []Event {
 	// Split events data per line
-	eventsData := strings.Split(events.Data, '\n')
+	eventsData := strings.Split(*b.Data, "\n")
 
-	events := make([]*Event)
+	events := make([]Event, 0)
 
 	// Initialize new event
 	for _, eventData := range eventsData {
