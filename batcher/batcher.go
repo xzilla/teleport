@@ -3,7 +3,6 @@ package batcher
 import (
 	"github.com/pagarme/teleport/database"
 	"github.com/pagarme/teleport/client"
-	"bytes"
 	"log"
 	"time"
 )
@@ -51,21 +50,17 @@ func (b *Batcher) createBatches() error {
 		// Start a transaction
 		tx := b.db.NewTransaction()
 
-		// Store batch data
-		var batchBuffer bytes.Buffer
+		// Allocate a new batch
+		batch := database.NewBatch()
 
+		// Set events
+		batch.SetEvents(events)
+
+		// Mark events as batched
 		for _, event := range events {
-			// Write event data to batch data
-			batchBuffer.WriteString(event.String())
-			batchBuffer.WriteString("\n")
-
-			// Update event status to batched
 			event.Status = "batched"
 			event.UpdateQuery(tx)
 		}
-
-		// Allocate a new batch
-		batch := database.NewBatch(batchBuffer.Bytes())
 
 		// Set source and target
 		batch.Source = b.db.Name

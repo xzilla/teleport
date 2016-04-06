@@ -2,6 +2,7 @@ package database
 
 import (
 	"github.com/jmoiron/sqlx"
+	"bytes"
 )
 
 type Batch struct {
@@ -12,11 +13,8 @@ type Batch struct {
 	Data   *string `db:"data" json:"data"`
 }
 
-func NewBatch(data []byte) *Batch {
-	dataStr := string(data)
-
+func NewBatch() *Batch {
 	return &Batch{
-		Data:   &dataStr,
 		Status: "waiting_transmission",
 	}
 }
@@ -55,4 +53,23 @@ func (b *Batch) UpdateQuery(tx *sqlx.Tx) {
 		b.Status,
 		b.Id,
 	)
+}
+
+func (b *Batch) SetEvents(events []Event) {
+	// Store batch data
+	var batchBuffer bytes.Buffer
+
+	// Encode each event into buffer
+	for _, event := range events {
+		// Write event data to batch data
+		batchBuffer.WriteString(event.String())
+		batchBuffer.WriteString("\n")
+	}
+
+	// Set batch data
+	dataStr := string(batchBuffer.Bytes())
+	b.Data = &dataStr
+}
+
+func (b *Batch) GetEvents() {
 }

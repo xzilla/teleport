@@ -42,4 +42,3 @@ func (e *Event) String() string {
 		*e.Data,
 	)
 }
-
