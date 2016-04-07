@@ -2,7 +2,7 @@ package database
 
 import (
 	"encoding/json"
-	"fmt"
+	"github.com/pagarme/teleport/batcher/ddldiff"
 )
 
 // Define a database schema
@@ -60,4 +60,46 @@ func (db *Database) fetchSchema() error {
 	}
 
 	return nil
+}
+
+// Implements Diffable
+func (post *Schema) Diff(other ddldiff.Diffable) []ddldiff.Action {
+	actions := make([]ddldiff.Action, 0)
+	pre := other.(*Schema)
+
+	if pre == nil {
+		actions = append(actions, ddldiff.Action{
+			"CREATE",
+			"SCHEMA",
+			*post,
+		})
+	} else if pre.Name == post.Name {
+		actions = append(actions, ddldiff.Action{
+			"RENAME",
+			"SCHEMA",
+			*post,
+		})
+	}
+
+	return actions
+}
+
+func (s *Schema) Children() []ddldiff.Diffable {
+	children := make([]ddldiff.Diffable, len(s.Classes))
+
+	for _, child := range children {
+		children = append(children, child.(ddldiff.Diffable))
+	}
+
+	return children
+}
+
+func (s *Schema) Drop() []ddldiff.Action {
+	return []ddldiff.Action{
+		ddldiff.Action{
+			"DROP",
+			"SCHEMA",
+			s,
+		},
+	}
 }

@@ -2,7 +2,6 @@ package batcher
 
 import (
 	"github.com/pagarme/teleport/client"
-	"github.com/pagarme/teleport/batcher/ddldiff"
 	"github.com/pagarme/teleport/database"
 	"log"
 	"time"
@@ -90,9 +89,11 @@ func (b *Batcher) createBatches() error {
 func (b *Batcher) processEvent(event database.Event) {
 	if event.Kind == "ddl" {
 		log.Printf("processing ddl change! %v\n", event.Id)
-		diff := ddldiff.New(event)
-		log.Printf("diff.PreSchemas: %v\n", diff.PreSchemas)
-		log.Printf("diff.PostSchemas: %v\n", diff.PostSchemas)
+		// diff := database.NewDdl([]byte(event.Data))
+		// log.Printf("diff.PreSchemas: %v\n", diff.PreSchemas)
+		// log.Printf("diff.PostSchemas: %v\n", diff.PostSchemas)
+		// actions := diff.Diff()
+		// log.Printf("actions: %v\n", actions)
 	} else if event.Kind == "dml" {
 		// Implement DML processor
 	}
