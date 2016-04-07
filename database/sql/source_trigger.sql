@@ -24,9 +24,9 @@ BEGIN
 	SELECT * INTO event_row FROM teleport.event WHERE status = 'building' AND transaction_id = txid_current();
 
 	WITH all_json_key_value AS (
-		SELECT 'pre' AS key, data::text AS value FROM teleport.event WHERE id = event_row.id
-		UNION
-		SELECT 'post' AS key, get_schema()::text AS value
+		SELECT 'pre' AS key, data::json AS value FROM teleport.event WHERE id = event_row.id
+		UNION ALL
+		SELECT 'post' AS key, get_schema()::json AS value
 	)
 	UPDATE teleport.event
 		SET status = 'waiting_batch',
