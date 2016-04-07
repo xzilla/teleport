@@ -60,14 +60,67 @@ CREATE TABLE IF NOT EXISTS teleport.batch (
 CREATE OR REPLACE FUNCTION get_current_schema() RETURNS text AS $$
 BEGIN
 	RETURN (
-		SELECT json_agg(row_to_json(schema))
-			FROM (SELECT c.table_schema, c.table_name, c.column_name, c.data_type, c.udt_schema, c.udt_name, c.character_maximum_length, tc.constraint_type
-				FROM INFORMATION_SCHEMA.COLUMNS c
-				LEFT JOIN INFORMATION_SCHEMA.TABLE_CONSTRAINTS tc
-				ON c.table_schema = tc.constraint_schema AND c.table_name = tc.table_name
-			) AS schema
-		-- Ignore postgres' and teleport internal schemas
-		WHERE table_schema NOT IN ('pg_catalog', 'information_schema', 'teleport')
+		SELECT json_agg(row_to_json(data)) FROM (
+			-- The catalog pg_namespace stores namespaces. A namespace is the structure
+			-- underlying SQL schemas: each namespace can have a separate collection of
+			-- relations, types, etc. without name conflicts.
+			SELECT
+				oid AS oid,
+				nspname AS schema_name,
+				nspowner AS owner_id,
+				(
+					-- The catalog pg_class catalogs tables and most everything else that has columns
+					-- or is otherwise similar to a table. This includes indexes (but see also
+					-- pg_index), sequences, views, composite types, and some kinds of special
+					-- relation; see relkind. Below, when we mean all of these kinds of objects we
+					-- speak of "relations". Not all columns are meaningful for all relation types.
+					SELECT array_to_json(array_agg(row_to_json(class)))
+					FROM (
+						SELECT
+							oid AS oid,
+							relnamespace AS namespace_oid,
+							relkind AS relation_kind,
+							relname AS relation_name,
+							(
+								-- The catalog pg_class catalogs tables and most everything else that has columns
+								-- or is otherwise similar to a table. This includes indexes (but see also
+								-- pg_index), sequences, views, composite types, and some kinds of special
+								-- relation; see relkind. Below, when we mean all of these kinds of objects we
+								-- speak of "relations". Not all columns are meaningful for all relation types.
+								SELECT array_to_json(array_agg(row_to_json(attr)))
+								FROM (
+									SELECT
+										a.attrelid AS class_oid,
+										a.attname AS attr_name,
+										a.attnum AS attr_num,
+										t.typname AS type_name,
+										t.oid AS type_oid
+									FROM pg_attribute a
+									INNER JOIN pg_type t
+										ON a.atttypid = t.oid
+								) attr
+								WHERE
+									attr.class_oid = class.oid AND
+									-- Ordinary columns are numbered from 1 up.
+									-- System columns have negative numbers.
+									attr.attr_num > 0
+							) AS attributes
+						FROM pg_class class
+						-- r = ordinary table,
+						-- i = index,
+						-- S = sequence,
+						-- v = view,
+						-- c = composite type,
+						-- s = special,
+						-- t = TOAST table
+						WHERE class.relkind IN ('r', 'i')
+					) class
+					WHERE class.namespace_oid = namespace.oid
+				) AS classes
+			FROM pg_namespace namespace
+			WHERE
+				namespace.nspname NOT IN ('pg_catalog', 'information_schema', 'pg_toast')
+		) data
 	);
 END;
 $$ LANGUAGE plpgsql;
