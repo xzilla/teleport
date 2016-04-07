@@ -1,20 +1,20 @@
 package batcher
 
 import (
-	"github.com/pagarme/teleport/database"
 	"github.com/pagarme/teleport/client"
+	"github.com/pagarme/teleport/database"
 	"log"
 	"time"
 )
 
 type Batcher struct {
-	db *database.Database
+	db      *database.Database
 	targets map[string]*client.Client
 }
 
 func New(db *database.Database, targets map[string]*client.Client) *Batcher {
 	return &Batcher{
-		db: db,
+		db:      db,
 		targets: targets,
 	}
 }
@@ -46,38 +46,49 @@ func (b *Batcher) createBatches() error {
 		return nil
 	}
 
-	for targetName, _ := range b.targets {
-		// Start a transaction
-		tx := b.db.NewTransaction()
-
-		// Allocate a new batch
-		batch := database.NewBatch()
-
-		// Set events
-		batch.SetEvents(events)
-
-		// Mark events as batched
-		for _, event := range events {
-			event.Status = "batched"
-			event.UpdateQuery(tx)
-		}
-
-		// Set source and target
-		batch.Source = b.db.Name
-		batch.Target = targetName
-
-		// Insert batch
-		batch.InsertQuery(tx)
-
-		// Commit to database, returning errors
-		err := tx.Commit()
-
-		if err != nil {
-			return err
-		}
-
-		log.Printf("Generated new batch: %v\n", batch)
+	for _, event := range events {
+		b.processEvent(event)
 	}
 
+	// for targetName, _ := range b.targets {
+	// 	// Start a transaction
+	// 	tx := b.db.NewTransaction()
+	//
+	// 	// Allocate a new batch
+	// 	batch := database.NewBatch()
+	//
+	// 	// Set events
+	// 	batch.SetEvents(events)
+	//
+	// 	// Mark events as batched
+	// 	for _, event := range events {
+	// 		event.Status = "batched"
+	// 		event.UpdateQuery(tx)
+	// 	}
+	//
+	// 	// Set source and target
+	// 	batch.Source = b.db.Name
+	// 	batch.Target = targetName
+	//
+	// 	// Insert batch
+	// 	batch.InsertQuery(tx)
+	//
+	// 	// Commit to database, returning errors
+	// 	err := tx.Commit()
+	//
+	// 	if err != nil {
+	// 		return err
+	// 	}
+	//
+	// 	log.Printf("Generated new batch: %v\n", batch)
+	// }
+
 	return nil
+}
+
+func (b *Batcher) processEvent(event database.Event) {
+	if event.Kind == "ddl" {
+	} else if event.Kind == "dml" {
+		// Implement DML processor
+	}
 }

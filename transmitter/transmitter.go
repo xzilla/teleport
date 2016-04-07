@@ -1,20 +1,20 @@
 package transmitter
 
 import (
-	"github.com/pagarme/teleport/database"
 	"github.com/pagarme/teleport/client"
+	"github.com/pagarme/teleport/database"
 	"log"
 	"time"
 )
 
 type Transmitter struct {
-	db *database.Database
+	db      *database.Database
 	clients map[string]*client.Client
 }
 
 func New(db *database.Database, clients map[string]*client.Client) *Transmitter {
 	return &Transmitter{
-		db: db,
+		db:      db,
 		clients: clients,
 	}
 }

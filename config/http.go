@@ -5,4 +5,3 @@ type HTTP struct {
 	Hostname string `yaml:"hostname"`
 	Port     int    `yaml:"port"`
 }
-

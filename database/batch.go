@@ -1,8 +1,8 @@
 package database
 
 import (
-	"github.com/jmoiron/sqlx"
 	"bytes"
+	"github.com/jmoiron/sqlx"
 	"strings"
 )
 

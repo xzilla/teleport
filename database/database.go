@@ -18,7 +18,7 @@ type Database struct {
 	Username string
 	Password string
 	Port     int
-	Schemas  map[string]*Schema
+	Schemas  map[string]Schema
 	db       *sqlx.DB
 }
 
@@ -39,10 +39,19 @@ func (db *Database) Start() error {
 		return err
 	}
 
-	// Initialize schema map
-	db.Schemas = make(map[string]*Schema)
+	err = db.setupTables()
 
-	return db.setupTables()
+	if err != nil {
+		return err
+	}
+
+	err = db.fetchSchema()
+
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (db *Database) NewTransaction() *sqlx.Tx {
@@ -57,18 +66,18 @@ func (db *Database) InstallTriggers(sourceTables string) error {
 		return err
 	}
 
-	// Get tables for sourceTables string
-	tables, err := db.tablesForSourceTables(sourceTables)
+	// // Get tables for sourceTables string
+	// tables, err := db.tablesForSourceTables(sourceTables)
 
-	if err != nil {
-		return err
-	}
+	// if err != nil {
+	// 	return err
+	// }
 
-	// Install triggers for each table/schema
-	for _, table := range tables {
-		table.InstallTriggers()
-		fmt.Printf("Tables! %v\n", table.Name)
-	}
+	// // Install triggers for each table/schema
+	// for _, table := range tables {
+	// 	table.InstallTriggers()
+	// 	fmt.Printf("Tables! %v\n", table.Name)
+	// }
 
 	return nil
 }

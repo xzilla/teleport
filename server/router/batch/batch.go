@@ -5,8 +5,8 @@ import (
 	"github.com/pagarme/teleport/database"
 	"github.com/pagarme/teleport/server/httputils"
 	"github.com/pagarme/teleport/server/router"
-	"net/http"
 	"log"
+	"net/http"
 )
 
 type batchRouter struct {

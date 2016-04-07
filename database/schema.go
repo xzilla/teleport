@@ -2,72 +2,32 @@ package database
 
 import (
 	"encoding/json"
+	"fmt"
 )
 
 // Define a database schema
 type Schema struct {
-	Name     string
-	Tables   map[string]*Table
+	Oid     string  `json:"oid"`
+	Name    string  `json:"schema_name"`
+	Classes []Class `json:"classes"`
 }
 
-// Define the sqlColumn returned inside get_current_schema() query
-type sqlColumn struct {
-	TableSchema            string `json:"table_schema"`
-	TableName              string `json:"table_name"`
-	ColumnName             string `json:"column_name"`
-	DataType               string `json:"data_type"`
-	UdtSchema              string `json:"udt_schema"`
-	UdtName                string `json:"udt_name"`
-	CharacterMaximumLength int    `json:"character_maximum_length"`
-	ContraintType          string `json:"constraint_type"`
-}
+func ParseSchema(schemaContent string) ([]Schema, error) {
+	schemas := make([]Schema, 0)
 
-// Initializes new schema
-func NewSchema(schemaData string) *Schema {
-	// Parse JSON array of rows into sqlColumns
-	parsedColumns := make([]sqlColumn, 0)
-	err := json.Unmarshal([]byte(schemaData), &parsedColumns)
+	err := json.Unmarshal([]byte(schemaContent), &schemas)
 
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
 
-	if len(parsedColumns) == 0 {
-		return nil
-	}
-
-	schema := &Schema{
-		Name: parsedColumns[0].TableSchema,
-		Tables:   make(map[string]*Table),
-	}
-
-	// Populate db's schema
-	for _, sqlCol := range parsedColumns {
-		// Create table if not exists
-		if _, ok := schema.Tables[sqlCol.TableName]; !ok {
-			schema.Tables[sqlCol.TableName] = NewTable(sqlCol.TableName, schema)
-		}
-
-		table := schema.Tables[sqlCol.TableName]
-
-		// Add column
-		table.Columns = append(table.Columns, NewColumn(
-			sqlCol.ColumnName,
-			sqlCol.UdtSchema,
-			sqlCol.UdtName,
-			sqlCol.CharacterMaximumLength,
-			sqlCol.ContraintType,
-			table,
-		))
-	}
-
-	return schema
+	return schemas, err
 }
 
 // Fetches the schema from the database and update Schema
-func (db *Database) fetchSchema(schema string) error {
+func (db *Database) fetchSchema() error {
 	// Get schema from query
-	rows, err := db.runQuery("SELECT get_current_schema();")
+	rows, err := db.runQuery("SELECT get_schema();")
 	defer rows.Close()
 
 	if err != nil {
@@ -83,7 +43,21 @@ func (db *Database) fetchSchema(schema string) error {
 		return err
 	}
 
-	db.Schemas[schema] = NewSchema(string(schemaContent))
+	// Parse schema
+	var schemas []Schema
+	schemas, err = ParseSchema(string(schemaContent))
+
+	if err != nil {
+		return err
+	}
+
+	// Populate db.Schemas
+	db.Schemas = make(map[string]Schema)
+
+	for _, schema := range schemas {
+		db.Schemas[schema.Name] = schema
+		fmt.Printf("schema: %s / val: %v\n", schema.Name, db.Schemas[schema.Name])
+	}
 
 	return nil
 }

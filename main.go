@@ -1,16 +1,16 @@
 package main
 
 import (
-	"fmt"
-	"github.com/pagarme/teleport/config"
-	"github.com/pagarme/teleport/client"
-	"github.com/pagarme/teleport/server"
-	"github.com/pagarme/teleport/batcher"
-	"github.com/pagarme/teleport/transmitter"
-	"github.com/pagarme/teleport/applier"
-	"time"
 	"flag"
+	"fmt"
+	"github.com/pagarme/teleport/applier"
+	"github.com/pagarme/teleport/batcher"
+	"github.com/pagarme/teleport/client"
+	"github.com/pagarme/teleport/config"
+	"github.com/pagarme/teleport/server"
+	"github.com/pagarme/teleport/transmitter"
 	"os"
+	"time"
 )
 
 func main() {

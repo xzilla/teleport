@@ -4,7 +4,7 @@ CREATE OR REPLACE FUNCTION ddl_event_start() RETURNS event_trigger AS $$
 BEGIN
 	INSERT INTO teleport.event (data, kind, trigger_tag, trigger_event, transaction_id, status) VALUES
 	(
-		get_current_schema()::text,
+		get_schema()::text,
 		'ddl',
 		tg_tag,
 		tg_event,
@@ -26,7 +26,7 @@ BEGIN
 	WITH all_json_key_value AS (
 		SELECT 'pre' AS key, data::text AS value FROM teleport.event WHERE id = event_row.id
 		UNION
-		SELECT 'post' AS key, get_current_schema()::text AS value
+		SELECT 'post' AS key, get_schema()::text AS value
 	)
 	UPDATE teleport.event
 		SET status = 'waiting_batch',

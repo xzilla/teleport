@@ -1,11 +1,11 @@
 package client
 
 import (
-	"github.com/pagarme/teleport/config"
-	"net/http"
+	"bytes"
 	"encoding/json"
 	"fmt"
-	"bytes"
+	"github.com/pagarme/teleport/config"
+	"net/http"
 )
 
 type Client struct {
@@ -27,7 +27,7 @@ func (c *Client) urlForRequest(path string) string {
 	)
 }
 
-func (c *Client) SendRequest(path string, obj interface{}) (* http.Response, error) {
+func (c *Client) SendRequest(path string, obj interface{}) (*http.Response, error) {
 	data := new(bytes.Buffer)
 	json.NewEncoder(data).Encode(obj)
 

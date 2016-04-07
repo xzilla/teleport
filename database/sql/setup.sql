@@ -57,7 +57,7 @@ CREATE TABLE IF NOT EXISTS teleport.batch (
 
 -- Returns current schema of all tables in all schemas as a JSON
 -- JSON array containing each column's definition.
-CREATE OR REPLACE FUNCTION get_current_schema() RETURNS text AS $$
+CREATE OR REPLACE FUNCTION get_schema() RETURNS text AS $$
 BEGIN
 	RETURN (
 		SELECT json_agg(row_to_json(data)) FROM (
@@ -82,11 +82,10 @@ BEGIN
 							relkind AS relation_kind,
 							relname AS relation_name,
 							(
-								-- The catalog pg_class catalogs tables and most everything else that has columns
-								-- or is otherwise similar to a table. This includes indexes (but see also
-								-- pg_index), sequences, views, composite types, and some kinds of special
-								-- relation; see relkind. Below, when we mean all of these kinds of objects we
-								-- speak of "relations". Not all columns are meaningful for all relation types.
+								-- The catalog pg_attribute stores information about table columns. There will be
+								-- exactly one pg_attribute row for every column in every table in the database.
+								-- (There will also be attribute entries for indexes, and indeed all objects that
+								-- have pg_class entries.)
 								SELECT array_to_json(array_agg(row_to_json(attr)))
 								FROM (
 									SELECT
@@ -119,7 +118,7 @@ BEGIN
 				) AS classes
 			FROM pg_namespace namespace
 			WHERE
-				namespace.nspname NOT IN ('pg_catalog', 'information_schema', 'pg_toast')
+				namespace.nspname NOT IN ('pg_catalog', 'information_schema', 'pg_toast', 'teleport')
 		) data
 	);
 END;

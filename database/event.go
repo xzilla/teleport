@@ -20,13 +20,13 @@ func NewEvent(eventData string) *Event {
 	separator := strings.Split(eventData, ",")
 
 	return &Event{
-		Id: separator[0],
-		Kind: separator[1],
-		Status: "",
-		TriggerTag: separator[2],
-		TriggerEvent: separator[3],
+		Id:            separator[0],
+		Kind:          separator[1],
+		Status:        "",
+		TriggerTag:    separator[2],
+		TriggerEvent:  separator[3],
 		TransactionId: separator[4],
-		Data: &separator[5],
+		Data:          &separator[5],
 	}
 }
 
