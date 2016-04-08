@@ -7,4 +7,6 @@ type Diffable interface {
 	Children() []Diffable
 	// Return actions to drop the current diffable
 	Drop() []Action
+	// Compare current Diffable with other
+	IsEqual(other Diffable) bool
 }

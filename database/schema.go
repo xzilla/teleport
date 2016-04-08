@@ -65,30 +65,33 @@ func (db *Database) fetchSchema() error {
 // Implements Diffable
 func (post *Schema) Diff(other ddldiff.Diffable) []ddldiff.Action {
 	actions := make([]ddldiff.Action, 0)
-	pre := other.(*Schema)
 
-	if pre == nil {
+	if other == nil {
 		actions = append(actions, ddldiff.Action{
 			"CREATE",
 			"SCHEMA",
 			*post,
 		})
-	} else if pre.Name == post.Name {
-		actions = append(actions, ddldiff.Action{
-			"RENAME",
-			"SCHEMA",
-			*post,
-		})
+	} else {
+		pre := other.(*Schema)
+
+		if pre.Name != post.Name {
+			actions = append(actions, ddldiff.Action{
+				"RENAME",
+				"SCHEMA",
+				*post,
+			})
+		}
 	}
 
 	return actions
 }
 
 func (s *Schema) Children() []ddldiff.Diffable {
-	children := make([]ddldiff.Diffable, len(s.Classes))
+	children := make([]ddldiff.Diffable, 0)
 
-	for _, child := range children {
-		children = append(children, child.(ddldiff.Diffable))
+	for i, _ := range s.Classes {
+		children = append(children, &s.Classes[i])
 	}
 
 	return children
@@ -99,7 +102,16 @@ func (s *Schema) Drop() []ddldiff.Action {
 		ddldiff.Action{
 			"DROP",
 			"SCHEMA",
-			s,
+			*s,
 		},
 	}
+}
+
+func (s *Schema) IsEqual(other ddldiff.Diffable) bool {
+	if other == nil {
+		return false
+	}
+
+	otherSchema := other.(*Schema)
+	return (s.Oid == otherSchema.Oid)
 }

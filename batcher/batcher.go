@@ -89,11 +89,12 @@ func (b *Batcher) createBatches() error {
 func (b *Batcher) processEvent(event database.Event) {
 	if event.Kind == "ddl" {
 		log.Printf("processing ddl change! %v\n", event.Id)
-		// diff := database.NewDdl([]byte(event.Data))
-		// log.Printf("diff.PreSchemas: %v\n", diff.PreSchemas)
-		// log.Printf("diff.PostSchemas: %v\n", diff.PostSchemas)
+		ddl := database.NewDdl([]byte(*event.Data))
+		// log.Printf("ddl.PreSchemas: %v\n", ddl.PreSchemas[2])
+		// log.Printf("ddl.PostSchemas: %v\n", ddl.PostSchemas[2])
+		actions := ddl.Diff()
 		// actions := diff.Diff()
-		// log.Printf("actions: %v\n", actions)
+		log.Printf("actions: %v\n", actions)
 	} else if event.Kind == "dml" {
 		// Implement DML processor
 	}
