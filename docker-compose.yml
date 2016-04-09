@@ -4,6 +4,13 @@ volumes:
   goroot: {}
 
 services:
+  test:
+    build: .
+    command: go test -cover ./...
+    volumes:
+      - goroot:/go
+      - .:/go/src/github.com/pagarme/teleport/
+
   source:
     build: .
     command: go run main.go -config source_config.yml
