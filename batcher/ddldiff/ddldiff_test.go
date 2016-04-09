@@ -233,23 +233,31 @@ func TestDiffRenameRecursively(t *testing.T) {
 	}
 
 	post := []Diffable{
-		Diffable(NewFoo("test", 1, []*Bar{NewBar("sub test edited", 1)})),
+		Diffable(NewFoo("test edited", 1, []*Bar{NewBar("sub test edited", 1)})),
 	}
 
 	actions := Diff(pre, post)
 
-	if len(actions) != 1 {
-		t.Errorf("len actions => %d, want %d", len(actions), 1)
+	if len(actions) != 2 {
+		t.Errorf("len actions => %d, want %d", len(actions), 2)
 	}
 
 	if actions[0].Kind != "RENAME" {
 		t.Errorf("action kind => %s, want %s", actions[0].Kind, "RENAME")
 	}
 
+	if actions[1].Kind != "RENAME" {
+		t.Errorf("action kind => %s, want %s", actions[1].Kind, "RENAME")
+	}
+
 	foo := post[0].(*Foo)
 
-	if actions[0].Object != foo.Bars[0] {
-		t.Errorf("action object => %v, want %v", actions[0].Object, foo.Bars[0])
+	if actions[0].Object != post[0] {
+		t.Errorf("action object => %v, want %v", actions[0].Object, post[0])
+	}
+
+	if actions[1].Object != foo.Bars[0] {
+		t.Errorf("action object => %v, want %v", actions[1].Object, foo.Bars[0])
 	}
 }
 
