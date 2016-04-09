@@ -8,7 +8,7 @@ import (
 type Foo struct {
 	Name string
 	Id int
-	Bars []Bar
+	Bars []*Bar
 }
 
 type Bar struct {
@@ -16,7 +16,7 @@ type Bar struct {
 	Id int
 }
 
-func NewFoo(name string, id int, bars []Bar) *Foo {
+func NewFoo(name string, id int, bars []*Bar) *Foo {
 	return &Foo{name, id, bars}
 }
 
@@ -80,7 +80,7 @@ func (f *Foo) Children() []Diffable {
 	children := make([]Diffable, 0)
 
 	for i, _ := range f.Bars {
-		children = append(children, &f.Bars[i])
+		children = append(children, f.Bars[i])
 	}
 
 	return children
@@ -133,7 +133,7 @@ func TestDiffCreate(t *testing.T) {
 	pre := []Diffable{}
 
 	post := []Diffable{
-		Diffable(NewFoo("test", 1, []Bar{})),
+		Diffable(NewFoo("test", 1, []*Bar{})),
 	}
 
 	actions := Diff(pre, post)
@@ -154,11 +154,11 @@ func TestDiffCreate(t *testing.T) {
 // Test a diff that should rename something
 func TestDiffRename(t *testing.T) {
 	pre := []Diffable{
-		Diffable(NewFoo("test", 1, []Bar{})),
+		Diffable(NewFoo("test", 1, []*Bar{})),
 	}
 
 	post := []Diffable{
-		Diffable(NewFoo("testing this", 1, []Bar{})),
+		Diffable(NewFoo("testing this", 1, []*Bar{})),
 	}
 
 	actions := Diff(pre, post)
@@ -179,7 +179,7 @@ func TestDiffRename(t *testing.T) {
 // Test a diff that should drop something
 func TestDiffDrop(t *testing.T) {
 	pre := []Diffable{
-		Diffable(NewFoo("test", 1, []Bar{})),
+		Diffable(NewFoo("test", 1, []*Bar{})),
 	}
 
 	post := []Diffable{}
@@ -202,11 +202,11 @@ func TestDiffDrop(t *testing.T) {
 // Test a diff that should create something recursively
 func TestDiffCreateRecursively(t *testing.T) {
 	pre := []Diffable{
-		Diffable(NewFoo("test", 1, []Bar{})),
+		Diffable(NewFoo("test", 1, []*Bar{})),
 	}
 
 	post := []Diffable{
-		Diffable(NewFoo("test", 1, []Bar{*NewBar("sub test", 1)})),
+		Diffable(NewFoo("test", 1, []*Bar{NewBar("sub test", 1)})),
 	}
 
 	actions := Diff(pre, post)
@@ -220,6 +220,60 @@ func TestDiffCreateRecursively(t *testing.T) {
 	}
 
 	foo := post[0].(*Foo)
+
+	if actions[0].Object != foo.Bars[0] {
+		t.Errorf("action object => %v, want %v", actions[0].Object, foo.Bars[0])
+	}
+}
+
+// Test a diff that should rename something recursively
+func TestDiffRenameRecursively(t *testing.T) {
+	pre := []Diffable{
+		Diffable(NewFoo("test", 1, []*Bar{NewBar("sub test", 1)})),
+	}
+
+	post := []Diffable{
+		Diffable(NewFoo("test", 1, []*Bar{NewBar("sub test edited", 1)})),
+	}
+
+	actions := Diff(pre, post)
+
+	if len(actions) != 1 {
+		t.Errorf("len actions => %d, want %d", len(actions), 1)
+	}
+
+	if actions[0].Kind != "RENAME" {
+		t.Errorf("action kind => %s, want %s", actions[0].Kind, "RENAME")
+	}
+
+	foo := post[0].(*Foo)
+
+	if actions[0].Object != foo.Bars[0] {
+		t.Errorf("action object => %v, want %v", actions[0].Object, foo.Bars[0])
+	}
+}
+
+// Test a diff that should drop something recursively
+func TestDiffDropRecursively(t *testing.T) {
+	pre := []Diffable{
+		Diffable(NewFoo("test", 1, []*Bar{NewBar("sub test", 1)})),
+	}
+
+	post := []Diffable{
+		Diffable(NewFoo("test", 1, []*Bar{})),
+	}
+
+	actions := Diff(pre, post)
+
+	if len(actions) != 1 {
+		t.Errorf("len actions => %d, want %d", len(actions), 1)
+	}
+
+	if actions[0].Kind != "DROP" {
+		t.Errorf("action kind => %s, want %s", actions[0].Kind, "DROP")
+	}
+
+	foo := pre[0].(*Foo)
 
 	if actions[0].Object != foo.Bars[0] {
 		t.Errorf("action object => %v, want %v", actions[0].Object, foo.Bars[0])
