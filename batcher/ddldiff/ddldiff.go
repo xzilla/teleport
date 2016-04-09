@@ -1,8 +1,10 @@
 package ddldiff
 
+// Diff two arrays of Diffables
 func Diff(preObjs []Diffable, postObjs []Diffable) []Action {
 	actions := make([]Action, 0)
 
+	// First check for new or updated objects (and their children)
 	for _, post := range postObjs {
 		var preObj Diffable
 
@@ -20,6 +22,8 @@ func Diff(preObjs []Diffable, postObjs []Diffable) []Action {
 		}
 	}
 
+	// Then, check for objects that are not present in post
+	// (and therefore should be dropped)
 	for _, pre := range preObjs {
 		var postObj Diffable
 
