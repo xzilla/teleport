@@ -68,11 +68,6 @@ func (post *Schema) Diff(other ddldiff.Diffable) []ddlaction.Action {
 	actions := make([]ddlaction.Action, 0)
 
 	if other == nil {
-		// actions = append(actions, action.Action{
-		// 	"CREATE",
-		// 	"SCHEMA",
-		// 	*post,
-		// })
 		actions = append(actions, &ddlaction.CreateSchema{
 			post.Name,
 		})
@@ -80,11 +75,10 @@ func (post *Schema) Diff(other ddldiff.Diffable) []ddlaction.Action {
 		pre := other.(*Schema)
 
 		if pre.Name != post.Name {
-			// actions = append(actions, action.Action{
-			// 	"RENAME",
-			// 	"SCHEMA",
-			// 	*post,
-			// })
+			actions = append(actions, &ddlaction.AlterSchema{
+				pre.Name,
+				post.Name,
+			})
 		}
 	}
 
@@ -103,11 +97,9 @@ func (s *Schema) Children() []ddldiff.Diffable {
 
 func (s *Schema) Drop() []ddlaction.Action {
 	return []ddlaction.Action{
-		// ddldiff.Action{
-		// 	"DROP",
-		// 	"SCHEMA",
-		// 	*s,
-		// },
+		&ddlaction.DropSchema{
+			s.Name,
+		},
 	}
 }
 
