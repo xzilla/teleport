@@ -1,8 +1,8 @@
-package ddlaction
+package action
 
 import (
-	"github.com/jmoiron/sqlx"
 	"encoding/gob"
+	"github.com/jmoiron/sqlx"
 )
 
 type AlterSchema struct {
@@ -21,4 +21,8 @@ func (a *AlterSchema) Execute(tx *sqlx.Tx) {
 		a.SourceName,
 		a.TargetName,
 	)
+}
+
+func (a *AlterSchema) Filter(targetExpression string) bool {
+	return IsInTargetExpression(&targetExpression, &a.SourceName, nil)
 }

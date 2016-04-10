@@ -1,21 +1,21 @@
 package ddldiff
 
 import (
-	"testing"
-	"github.com/pagarme/teleport/batcher/ddlaction"
 	"github.com/jmoiron/sqlx"
+	"github.com/pagarme/teleport/batcher/ddlaction"
+	"testing"
 )
 
 // Foo implements Diffable
 type Foo struct {
 	Name string
-	Id int
+	Id   int
 	Bars []*Bar
 }
 
 type Bar struct {
 	Name string
-	Id int
+	Id   int
 }
 
 type FooAction struct {
@@ -212,7 +212,7 @@ func TestDiffCreateRecursively(t *testing.T) {
 	if len(actions) != 1 {
 		t.Errorf("len actions => %d, want %d", len(actions), 1)
 	}
-	
+
 	barAction := actions[0].(*BarAction)
 
 	if barAction.Kind != "CREATE BAR" {

@@ -21,7 +21,7 @@ $$;
 DO $$
 BEGIN
 	IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'event_status') THEN
-		CREATE TYPE teleport.event_status AS ENUM ('building', 'waiting_batch', 'batched');
+		CREATE TYPE teleport.event_status AS ENUM ('building', 'waiting_batch', 'batched', 'ignored');
 	END IF;
 END
 $$;
@@ -54,6 +54,24 @@ CREATE TABLE IF NOT EXISTS teleport.batch (
 	source text,
 	target text
 );
+
+-- Create table to store events of a given batch
+CREATE TABLE IF NOT EXISTS teleport.batch_events (
+	batch_id int,
+	event_id int
+);
+
+-- Avoid duplicates of the same relationship
+DO $$
+BEGIN
+	IF NOT EXISTS (SELECT 1 FROM pg_class WHERE relname = 'unique_batch_event') THEN
+		CREATE UNIQUE INDEX unique_batch_event ON teleport.batch_events (
+			batch_id,
+			event_id
+		);
+	END IF;
+END
+$$;
 
 -- Returns current schema of all tables in all schemas as a JSON
 -- JSON array containing each column's definition.

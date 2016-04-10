@@ -1,8 +1,8 @@
-package ddlaction
+package action
 
 import (
-	"github.com/jmoiron/sqlx"
 	"encoding/gob"
+	"github.com/jmoiron/sqlx"
 )
 
 type CreateSchema struct {
@@ -19,4 +19,8 @@ func (a *CreateSchema) Execute(tx *sqlx.Tx) {
 		"CREATE SCHEMA $1;",
 		a.SchemaName,
 	)
+}
+
+func (a *CreateSchema) Filter(targetExpression string) bool {
+	return IsInTargetExpression(&targetExpression, &a.SchemaName, nil)
 }

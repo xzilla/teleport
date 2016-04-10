@@ -1,8 +1,8 @@
-package ddlaction
+package action
 
 import (
-	"github.com/jmoiron/sqlx"
 	"encoding/gob"
+	"github.com/jmoiron/sqlx"
 )
 
 type DropSchema struct {
@@ -19,4 +19,8 @@ func (a *DropSchema) Execute(tx *sqlx.Tx) {
 		"DROP SCHEMA $1;",
 		a.SchemaName,
 	)
+}
+
+func (a *DropSchema) Filter(targetExpression string) bool {
+	return IsInTargetExpression(&targetExpression, &a.SchemaName, nil)
 }

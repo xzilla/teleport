@@ -1,12 +1,12 @@
 package ddldiff
 
 import (
-	"github.com/pagarme/teleport/batcher/ddlaction"
+	"github.com/pagarme/teleport/action"
 )
 
 // Diff two arrays of Diffables
-func Diff(preObjs []Diffable, postObjs []Diffable) []ddlaction.Action {
-	actions := make([]ddlaction.Action, 0)
+func Diff(preObjs []Diffable, postObjs []Diffable) []action.Action {
+	actions := make([]action.Action, 0)
 
 	// First check for new or updated objects (and their children)
 	for _, post := range postObjs {

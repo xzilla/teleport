@@ -39,7 +39,7 @@ func main() {
 	// Install triggers for each target
 	for key, target := range config.Targets {
 		targets[key] = client.New(target)
-		config.Database.InstallTriggers(targets[key].SourceTables)
+		config.Database.InstallTriggers(targets[key].TargetExpression)
 	}
 
 	// Start batcher on a separate goroutine

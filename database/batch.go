@@ -32,9 +32,9 @@ func (b *Batch) InsertQuery(tx *sqlx.Tx) {
 
 	// If there's no id, insert without id
 	if b.Id == "" {
-		query = "INSERT INTO teleport.batch (status, data, source, target) VALUES ($1, $2, $3, $4)"
+		query = "INSERT INTO teleport.batch (status, data, source, target) VALUES ($1, $2, $3, $4) RETURNING id;"
 	} else {
-		query = "INSERT INTO teleport.batch (id, status, data, source, target) VALUES ($1, $2, $3, $4, $5)"
+		query = "INSERT INTO teleport.batch (id, status, data, source, target) VALUES ($1, $2, $3, $4, $5) RETURNING id;"
 		args = append(args, b.Id)
 	}
 
@@ -45,7 +45,7 @@ func (b *Batch) InsertQuery(tx *sqlx.Tx) {
 		b.Target,
 	)
 
-	tx.MustExec(query, args...)
+	tx.QueryRowx(query, args...).Scan(&b.Id)
 }
 
 func (b *Batch) UpdateQuery(tx *sqlx.Tx) {

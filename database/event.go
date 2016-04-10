@@ -38,9 +38,16 @@ func (db *Database) GetEvents(status string) ([]Event, error) {
 
 func (e *Event) UpdateQuery(tx *sqlx.Tx) {
 	tx.MustExec(
-		"UPDATE teleport.event SET status = $1, data = $2 WHERE id = $3;",
+		"UPDATE teleport.event SET status = $1 WHERE id = $2;",
 		e.Status,
-		e.Data,
+		e.Id,
+	)
+}
+
+func (e *Event) BelongsToBatch(tx *sqlx.Tx, b *Batch) {
+	tx.MustExec(
+		"INSERT INTO teleport.batch_events (batch_id, event_id) VALUES ($1, $2);",
+		b.Id,
 		e.Id,
 	)
 }
