@@ -1,7 +1,7 @@
 package database
 
 import (
-	"github.com/pagarme/teleport/batcher/ddldiff"
+	// "github.com/pagarme/teleport/batcher/ddldiff"
 )
 
 // Define a database table
@@ -46,56 +46,56 @@ func (db *Database) tablesForSourceTables(sourceTables string) ([]*Class, error)
 	// return tables, nil
 }
 
-// Implements Diffable
-func (post *Class) Diff(other ddldiff.Diffable) []ddldiff.Action {
-	actions := make([]ddldiff.Action, 0)
-
-	if other == nil {
-		actions = append(actions, ddldiff.Action{
-			"CREATE",
-			"TABLE",
-			*post,
-		})
-	} else {
-		pre := other.(*Class)
-
-		if pre.RelationName != post.RelationName {
-			actions = append(actions, ddldiff.Action{
-				"RENAME",
-				"TABLE",
-				*post,
-			})
-		}
-	}
-
-	return actions
-}
-
-func (c *Class) Children() []ddldiff.Diffable {
-	children := make([]ddldiff.Diffable, 0)
-
-	// for _, attr := range c.Attributes {
-	// 	children = append(children, attr)
-	// }
-
-	return children
-}
-
-func (c *Class) Drop() []ddldiff.Action {
-	return []ddldiff.Action{
-		ddldiff.Action{
-			"DROP",
-			"TABLE",
-			*c,
-		},
-	}
-}
-
-func (c *Class) IsEqual(other ddldiff.Diffable) bool {
-	if other == nil {
-		return false
-	}
-
-	otherClass := other.(*Class)
-	return (c.Oid == otherClass.Oid)
-}
+// // Implements Diffable
+// func (post *Class) Diff(other ddldiff.Diffable) []ddldiff.Action {
+// 	actions := make([]ddldiff.Action, 0)
+//
+// 	if other == nil {
+// 		actions = append(actions, ddldiff.Action{
+// 			"CREATE",
+// 			"TABLE",
+// 			*post,
+// 		})
+// 	} else {
+// 		pre := other.(*Class)
+//
+// 		if pre.RelationName != post.RelationName {
+// 			actions = append(actions, ddldiff.Action{
+// 				"RENAME",
+// 				"TABLE",
+// 				*post,
+// 			})
+// 		}
+// 	}
+//
+// 	return actions
+// }
+//
+// func (c *Class) Children() []ddldiff.Diffable {
+// 	children := make([]ddldiff.Diffable, 0)
+//
+// 	// for _, attr := range c.Attributes {
+// 	// 	children = append(children, attr)
+// 	// }
+//
+// 	return children
+// }
+//
+// func (c *Class) Drop() []ddldiff.Action {
+// 	return []ddldiff.Action{
+// 		ddldiff.Action{
+// 			"DROP",
+// 			"TABLE",
+// 			*c,
+// 		},
+// 	}
+// }
+//
+// func (c *Class) IsEqual(other ddldiff.Diffable) bool {
+// 	if other == nil {
+// 		return false
+// 	}
+//
+// 	otherClass := other.(*Class)
+// 	return (c.Oid == otherClass.Oid)
+// }

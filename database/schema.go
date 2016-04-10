@@ -3,6 +3,7 @@ package database
 import (
 	"encoding/json"
 	"github.com/pagarme/teleport/batcher/ddldiff"
+	"github.com/pagarme/teleport/batcher/ddlaction"
 )
 
 // Define a database schema
@@ -63,24 +64,27 @@ func (db *Database) fetchSchema() error {
 }
 
 // Implements Diffable
-func (post *Schema) Diff(other ddldiff.Diffable) []ddldiff.Action {
-	actions := make([]ddldiff.Action, 0)
+func (post *Schema) Diff(other ddldiff.Diffable) []ddlaction.Action {
+	actions := make([]ddlaction.Action, 0)
 
 	if other == nil {
-		actions = append(actions, ddldiff.Action{
-			"CREATE",
-			"SCHEMA",
-			*post,
+		// actions = append(actions, action.Action{
+		// 	"CREATE",
+		// 	"SCHEMA",
+		// 	*post,
+		// })
+		actions = append(actions, &ddlaction.CreateSchema{
+			post.Name,
 		})
 	} else {
 		pre := other.(*Schema)
 
 		if pre.Name != post.Name {
-			actions = append(actions, ddldiff.Action{
-				"RENAME",
-				"SCHEMA",
-				*post,
-			})
+			// actions = append(actions, action.Action{
+			// 	"RENAME",
+			// 	"SCHEMA",
+			// 	*post,
+			// })
 		}
 	}
 
@@ -90,20 +94,20 @@ func (post *Schema) Diff(other ddldiff.Diffable) []ddldiff.Action {
 func (s *Schema) Children() []ddldiff.Diffable {
 	children := make([]ddldiff.Diffable, 0)
 
-	for i, _ := range s.Classes {
-		children = append(children, &s.Classes[i])
-	}
+	// for i, _ := range s.Classes {
+	// 	children = append(children, &s.Classes[i])
+	// }
 
 	return children
 }
 
-func (s *Schema) Drop() []ddldiff.Action {
-	return []ddldiff.Action{
-		ddldiff.Action{
-			"DROP",
-			"SCHEMA",
-			*s,
-		},
+func (s *Schema) Drop() []ddlaction.Action {
+	return []ddlaction.Action{
+		// ddldiff.Action{
+		// 	"DROP",
+		// 	"SCHEMA",
+		// 	*s,
+		// },
 	}
 }
 

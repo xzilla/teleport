@@ -2,6 +2,8 @@ package ddldiff
 
 import (
 	"testing"
+	"github.com/pagarme/teleport/batcher/ddlaction"
+	"github.com/jmoiron/sqlx"
 )
 
 // Foo implements Diffable
@@ -16,6 +18,20 @@ type Bar struct {
 	Id int
 }
 
+type FooAction struct {
+	Kind string
+}
+
+func (a *FooAction) Execute(tx *sqlx.Tx) {
+}
+
+type BarAction struct {
+	Kind string
+}
+
+func (a *BarAction) Execute(tx *sqlx.Tx) {
+}
+
 func NewFoo(name string, id int, bars []*Bar) *Foo {
 	return &Foo{name, id, bars}
 }
@@ -24,56 +40,48 @@ func NewBar(name string, id int) *Bar {
 	return &Bar{name, id}
 }
 
-func (post *Foo) Diff(other Diffable) []Action {
+func (post *Foo) Diff(other Diffable) []ddlaction.Action {
 	if other == nil {
-		return []Action{
-			Action{
-				"CREATE",
-				"OBJ",
-				post,
+		return []ddlaction.Action{
+			&FooAction{
+				"CREATE FOO",
 			},
 		}
 	} else {
 		pre := other.(*Foo)
 
 		if pre.Name != post.Name {
-			return []Action{
-				Action{
-					"RENAME",
-					"OBJ",
-					post,
+			return []ddlaction.Action{
+				&FooAction{
+					"RENAME FOO",
 				},
 			}
 		}
 	}
 
-	return []Action{}
+	return []ddlaction.Action{}
 }
 
-func (post *Bar) Diff(other Diffable) []Action {
+func (post *Bar) Diff(other Diffable) []ddlaction.Action {
 	if other == nil {
-		return []Action{
-			Action{
-				"CREATE",
-				"OBJ",
-				post,
+		return []ddlaction.Action{
+			&BarAction{
+				"CREATE BAR",
 			},
 		}
 	} else {
 		pre := other.(*Bar)
 
 		if pre.Name != post.Name {
-			return []Action{
-				Action{
-					"RENAME",
-					"OBJ",
-					post,
+			return []ddlaction.Action{
+				&BarAction{
+					"RENAME BAR",
 				},
 			}
 		}
 	}
 
-	return []Action{}
+	return []ddlaction.Action{}
 }
 
 func (f *Foo) Children() []Diffable {
@@ -90,22 +98,18 @@ func (b *Bar) Children() []Diffable {
 	return []Diffable{}
 }
 
-func (f *Foo) Drop() []Action {
-	return []Action{
-		Action{
-			"DROP",
-			"OBJ",
-			f,
+func (f *Foo) Drop() []ddlaction.Action {
+	return []ddlaction.Action{
+		&FooAction{
+			"DROP FOO",
 		},
 	}
 }
 
-func (b *Bar) Drop() []Action {
-	return []Action{
-		Action{
-			"DROP",
-			"OBJ",
-			b,
+func (b *Bar) Drop() []ddlaction.Action {
+	return []ddlaction.Action{
+		&BarAction{
+			"DROP BAR",
 		},
 	}
 }
@@ -128,7 +132,7 @@ func (b *Bar) IsEqual(other Diffable) bool {
 	return (otherBar.Id == b.Id)
 }
 
-// Test a diff that should create something
+// // Test a diff that should create something
 func TestDiffCreate(t *testing.T) {
 	pre := []Diffable{}
 
@@ -142,12 +146,10 @@ func TestDiffCreate(t *testing.T) {
 		t.Errorf("len actions => %d, want %d", len(actions), 1)
 	}
 
-	if actions[0].Kind != "CREATE" {
-		t.Errorf("action kind => %s, want %s", actions[0].Kind, "CREATE")
-	}
+	fooAction := actions[0].(*FooAction)
 
-	if actions[0].Object != post[0] {
-		t.Errorf("action object => %v, want %v", actions[0].Object, post[0])
+	if fooAction.Kind != "CREATE FOO" {
+		t.Errorf("action kind => %s, want %s", fooAction.Kind, "CREATE FOO")
 	}
 }
 
@@ -167,12 +169,10 @@ func TestDiffRename(t *testing.T) {
 		t.Errorf("len actions => %d, want %d", len(actions), 1)
 	}
 
-	if actions[0].Kind != "RENAME" {
-		t.Errorf("action kind => %s, want %s", actions[0].Kind, "RENAME")
-	}
+	fooAction := actions[0].(*FooAction)
 
-	if actions[0].Object != post[0] {
-		t.Errorf("action object => %v, want %v", actions[0].Object, post[0])
+	if fooAction.Kind != "RENAME FOO" {
+		t.Errorf("action kind => %s, want %s", fooAction.Kind, "RENAME FOO")
 	}
 }
 
@@ -190,12 +190,10 @@ func TestDiffDrop(t *testing.T) {
 		t.Errorf("len actions => %d, want %d", len(actions), 1)
 	}
 
-	if actions[0].Kind != "DROP" {
-		t.Errorf("action kind => %s, want %s", actions[0].Kind, "RENAME")
-	}
+	fooAction := actions[0].(*FooAction)
 
-	if actions[0].Object != pre[0] {
-		t.Errorf("action object => %v, want %v", actions[0].Object, pre[0])
+	if fooAction.Kind != "DROP FOO" {
+		t.Errorf("action kind => %s, want %s", fooAction.Kind, "DROP FOO")
 	}
 }
 
@@ -214,15 +212,11 @@ func TestDiffCreateRecursively(t *testing.T) {
 	if len(actions) != 1 {
 		t.Errorf("len actions => %d, want %d", len(actions), 1)
 	}
+	
+	barAction := actions[0].(*BarAction)
 
-	if actions[0].Kind != "CREATE" {
-		t.Errorf("action kind => %s, want %s", actions[0].Kind, "CREATE")
-	}
-
-	foo := post[0].(*Foo)
-
-	if actions[0].Object != foo.Bars[0] {
-		t.Errorf("action object => %v, want %v", actions[0].Object, foo.Bars[0])
+	if barAction.Kind != "CREATE BAR" {
+		t.Errorf("action kind => %s, want %s", barAction.Kind, "CREATE BAR")
 	}
 }
 
@@ -242,22 +236,15 @@ func TestDiffRenameRecursively(t *testing.T) {
 		t.Errorf("len actions => %d, want %d", len(actions), 2)
 	}
 
-	if actions[0].Kind != "RENAME" {
-		t.Errorf("action kind => %s, want %s", actions[0].Kind, "RENAME")
+	fooAction := actions[0].(*FooAction)
+	barAction := actions[1].(*BarAction)
+
+	if fooAction.Kind != "RENAME FOO" {
+		t.Errorf("action kind => %s, want %s", fooAction.Kind, "RENAME FOO")
 	}
 
-	if actions[1].Kind != "RENAME" {
-		t.Errorf("action kind => %s, want %s", actions[1].Kind, "RENAME")
-	}
-
-	foo := post[0].(*Foo)
-
-	if actions[0].Object != post[0] {
-		t.Errorf("action object => %v, want %v", actions[0].Object, post[0])
-	}
-
-	if actions[1].Object != foo.Bars[0] {
-		t.Errorf("action object => %v, want %v", actions[1].Object, foo.Bars[0])
+	if barAction.Kind != "RENAME BAR" {
+		t.Errorf("action kind => %s, want %s", barAction.Kind, "RENAME BAR")
 	}
 }
 
@@ -277,13 +264,9 @@ func TestDiffDropRecursively(t *testing.T) {
 		t.Errorf("len actions => %d, want %d", len(actions), 1)
 	}
 
-	if actions[0].Kind != "DROP" {
-		t.Errorf("action kind => %s, want %s", actions[0].Kind, "DROP")
-	}
+	barAction := actions[0].(*BarAction)
 
-	foo := pre[0].(*Foo)
-
-	if actions[0].Object != foo.Bars[0] {
-		t.Errorf("action object => %v, want %v", actions[0].Object, foo.Bars[0])
+	if barAction.Kind != "DROP BAR" {
+		t.Errorf("action kind => %s, want %s", barAction.Kind, "DROP BAR")
 	}
 }

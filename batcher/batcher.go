@@ -3,8 +3,11 @@ package batcher
 import (
 	"github.com/pagarme/teleport/client"
 	"github.com/pagarme/teleport/database"
+	"github.com/pagarme/teleport/batcher/ddlaction"
 	"log"
 	"time"
+	"encoding/gob"
+	"bytes"
 )
 
 type Batcher struct {
@@ -95,6 +98,28 @@ func (b *Batcher) processEvent(event database.Event) {
 		actions := ddl.Diff()
 		// actions := diff.Diff()
 		log.Printf("actions: %v\n", actions)
+
+		actions[0].Execute(nil)
+		
+		var network bytes.Buffer        // Stand-in for a network connection
+		enc := gob.NewEncoder(&network) // Will write to network.
+		dec := gob.NewDecoder(&network) // Will read from network.
+		// Encode (send) the value.
+		err := enc.Encode(&actions[0])
+		if err != nil {
+			log.Fatal("encode error:", err)
+		}
+		// Decode (receive) the value.
+		var q ddlaction.Action
+		err = dec.Decode(&q)
+		if err != nil {
+			log.Fatal("decode error:", err)
+		}
+		log.Println("execute again!")
+		q.Execute(nil)
+
+
+
 	} else if event.Kind == "dml" {
 		// Implement DML processor
 	}

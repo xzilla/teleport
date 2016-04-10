@@ -3,6 +3,7 @@ package database
 import (
 	"encoding/json"
 	"github.com/pagarme/teleport/batcher/ddldiff"
+	"github.com/pagarme/teleport/batcher/ddlaction"
 )
 
 type Ddl struct {
@@ -31,7 +32,7 @@ func (d *Ddl) schemaToDiffable(schema []Schema) []ddldiff.Diffable {
 	return diff
 }
 
-func (d *Ddl) Diff() []ddldiff.Action {
+func (d *Ddl) Diff() []ddlaction.Action {
 	return ddldiff.Diff(
 		d.schemaToDiffable(d.PreSchemas),
 		d.schemaToDiffable(d.PostSchemas),
