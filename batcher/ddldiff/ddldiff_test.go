@@ -2,7 +2,7 @@ package ddldiff
 
 import (
 	"github.com/jmoiron/sqlx"
-	"github.com/pagarme/teleport/batcher/ddlaction"
+	"github.com/pagarme/teleport/action"
 	"testing"
 )
 
@@ -25,11 +25,19 @@ type FooAction struct {
 func (a *FooAction) Execute(tx *sqlx.Tx) {
 }
 
+func (a *FooAction) Filter(targetExpression string) bool {
+	return true
+}
+
 type BarAction struct {
 	Kind string
 }
 
 func (a *BarAction) Execute(tx *sqlx.Tx) {
+}
+
+func (a *BarAction) Filter(targetExpression string) bool {
+	return true
 }
 
 func NewFoo(name string, id int, bars []*Bar) *Foo {
@@ -40,9 +48,9 @@ func NewBar(name string, id int) *Bar {
 	return &Bar{name, id}
 }
 
-func (post *Foo) Diff(other Diffable) []ddlaction.Action {
+func (post *Foo) Diff(other Diffable) []action.Action {
 	if other == nil {
-		return []ddlaction.Action{
+		return []action.Action{
 			&FooAction{
 				"CREATE FOO",
 			},
@@ -51,7 +59,7 @@ func (post *Foo) Diff(other Diffable) []ddlaction.Action {
 		pre := other.(*Foo)
 
 		if pre.Name != post.Name {
-			return []ddlaction.Action{
+			return []action.Action{
 				&FooAction{
 					"RENAME FOO",
 				},
@@ -59,12 +67,12 @@ func (post *Foo) Diff(other Diffable) []ddlaction.Action {
 		}
 	}
 
-	return []ddlaction.Action{}
+	return []action.Action{}
 }
 
-func (post *Bar) Diff(other Diffable) []ddlaction.Action {
+func (post *Bar) Diff(other Diffable) []action.Action {
 	if other == nil {
-		return []ddlaction.Action{
+		return []action.Action{
 			&BarAction{
 				"CREATE BAR",
 			},
@@ -73,7 +81,7 @@ func (post *Bar) Diff(other Diffable) []ddlaction.Action {
 		pre := other.(*Bar)
 
 		if pre.Name != post.Name {
-			return []ddlaction.Action{
+			return []action.Action{
 				&BarAction{
 					"RENAME BAR",
 				},
@@ -81,7 +89,7 @@ func (post *Bar) Diff(other Diffable) []ddlaction.Action {
 		}
 	}
 
-	return []ddlaction.Action{}
+	return []action.Action{}
 }
 
 func (f *Foo) Children() []Diffable {
@@ -98,16 +106,16 @@ func (b *Bar) Children() []Diffable {
 	return []Diffable{}
 }
 
-func (f *Foo) Drop() []ddlaction.Action {
-	return []ddlaction.Action{
+func (f *Foo) Drop() []action.Action {
+	return []action.Action{
 		&FooAction{
 			"DROP FOO",
 		},
 	}
 }
 
-func (b *Bar) Drop() []ddlaction.Action {
-	return []ddlaction.Action{
+func (b *Bar) Drop() []action.Action {
+	return []action.Action{
 		&BarAction{
 			"DROP BAR",
 		},
