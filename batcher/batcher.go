@@ -109,7 +109,6 @@ func (b *Batcher) createBatchWithEvents(events []database.Event, targetName stri
 		return nil
 	}
 
-	log.Printf("events: %v\n", events)
 	// Start a transaction
 	tx := b.db.NewTransaction()
 
