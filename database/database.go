@@ -7,7 +7,8 @@ import (
 	_ "github.com/lib/pq"
 	"io/ioutil"
 	"log"
-	"os"
+	"path"
+	"runtime"
 )
 
 // Database definition
@@ -84,7 +85,7 @@ func (db *Database) InstallTriggers(sourceTables string) error {
 
 // Install triggers in schema
 func (db *Database) installDDLTriggers() error {
-	_, err := db.runQueryFromFile("database/sql/source_trigger.sql")
+	_, err := db.runQueryFromFile("sql/source_trigger.sql")
 
 	if err == nil {
 		log.Printf("Installed triggers on database")
@@ -97,7 +98,7 @@ func (db *Database) installDDLTriggers() error {
 
 // Setup internal tables using setup script
 func (db *Database) setupTables() error {
-	_, err := db.runQueryFromFile("database/sql/setup.sql")
+	_, err := db.runQueryFromFile("sql/setup.sql")
 	return err
 }
 
@@ -111,16 +112,10 @@ func (db *Database) selectObjs(v interface{}, query string, args ...interface{})
 }
 
 // Open file and run query
-func (db *Database) runQueryFromFile(path string) (*sql.Rows, error) {
-	// Get current directory
-	pwd, err := os.Getwd()
-
-	if err != nil {
-		return nil, err
-	}
-
+func (db *Database) runQueryFromFile(file string) (*sql.Rows, error) {
 	// Read file
-	content, err := ioutil.ReadFile(pwd + "/" + path)
+	_, filename, _, _ := runtime.Caller(1)
+	content, err := ioutil.ReadFile(path.Join(path.Dir(filename), file))
 
 	if err != nil {
 		return nil, err
