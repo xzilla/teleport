@@ -50,37 +50,25 @@ func (b *Batcher) createBatches() error {
 		return nil
 	}
 
-	actionsForEvent := make(map[database.Event][]action.Action)
-
 	// Get actions for each event
-	for _, event := range events {
-		actions, err := b.actionsForEvent(event)
-
-		if err != nil {
-			return err
-		}
-
-		actionsForEvent[event] = actions
+	actionsForEvent, err := b.actionsForEvents(events)
+	
+	if err != nil {
+		return err
 	}
 
-	usedEvents := make([]database.Event, 0)
+	// Create batches for each target with the given targets/actions
+	usedEvents, err := b.createBatchesForTargets(b.targets, actionsForEvent)
 
-	// Create a batch for each target
-	for targetName, target := range b.targets {
-		events, err := b.eventsForTarget(target, actionsForEvent)
-		usedEvents = append(usedEvents, events...)
-
-		if err != nil {
-			return err
-		}
-
-		err = b.createBatchWithEvents(events, targetName)
-
-		if err != nil {
-			return err
-		}
+	if err != nil {
+		return err
 	}
 
+	// All unused events should have "ignored" as status
+	return b.markIgnoredEvents(usedEvents, actionsForEvent)
+}
+
+func (b *Batcher) markIgnoredEvents(usedEvents []database.Event, actionsForEvent map[database.Event][]action.Action) error {
 	// Mark unused events as ignored
 	tx := b.db.NewTransaction()
 
@@ -101,6 +89,45 @@ func (b *Batcher) createBatches() error {
 	}
 
 	return tx.Commit()
+}
+
+func (b *Batcher) createBatchesForTargets(targets map[string]*client.Client, actionsForEvent map[database.Event][]action.Action) ([]database.Event, error) {
+	usedEvents := make([]database.Event, 0)
+
+	// Create a batch for each target
+	for targetName, target := range b.targets {
+		events, err := b.eventsForTarget(target, actionsForEvent)
+		usedEvents = append(usedEvents, events...)
+
+		if err != nil {
+			return nil, err
+		}
+
+		err = b.createBatchWithEvents(events, targetName)
+
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	return usedEvents, nil
+}
+
+func (b *Batcher) actionsForEvents(events []database.Event) (map[database.Event][]action.Action, error) {
+	actionsForEvent := make(map[database.Event][]action.Action)
+
+	// Get actions for each event
+	for _, event := range events {
+		actions, err := b.actionsForEvent(event)
+
+		if err != nil {
+			return nil, err
+		}
+
+		actionsForEvent[event] = actions
+	}
+
+	return actionsForEvent, nil
 }
 
 func (b *Batcher) createBatchWithEvents(events []database.Event, targetName string) error {
