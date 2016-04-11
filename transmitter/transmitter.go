@@ -5,6 +5,7 @@ import (
 	"github.com/pagarme/teleport/database"
 	"log"
 	"time"
+	"fmt"
 )
 
 type Transmitter struct {
@@ -43,6 +44,10 @@ func (t *Transmitter) Watch(sleepTime time.Duration) {
 // Transmit a batch to a target
 func (t *Transmitter) Transmit(batch *database.Batch) error {
 	client := t.clients[batch.Target]
+
+	if client == nil {
+		return fmt.Errorf("could not find client for target '%s'", batch.Target)
+	}
 
 	_, err := client.SendRequest("/batches", batch)
 
