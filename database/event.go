@@ -63,26 +63,25 @@ func (e *Event) InsertQuery(tx *sqlx.Tx) error {
 		e.Data,
 	)
 
-	rows := tx.QueryRowx(query, args...)
-	rows.Scan(&e.Id)
-
-	return rows.Err()
+	return tx.Get(&e.Id, query, args...)
 }
 
 func (e *Event) UpdateQuery(tx *sqlx.Tx) error {
-	return tx.QueryRowx(
+	return tx.Get(
+		nil,
 		"UPDATE teleport.event SET status = $1 WHERE id = $2;",
 		e.Status,
 		e.Id,
-	).Err()
+	)
 }
 
 func (e *Event) BelongsToBatch(tx *sqlx.Tx, b *Batch) error {
-	return tx.QueryRowx(
+	return tx.Get(
+		nil,
 		"INSERT INTO teleport.batch_events (batch_id, event_id) VALUES ($1, $2);",
 		b.Id,
 		e.Id,
-	).Err()
+	)
 }
 
 // Implement ToString

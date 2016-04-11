@@ -45,18 +45,16 @@ func (b *Batch) InsertQuery(tx *sqlx.Tx) error {
 		b.Target,
 	)
 
-	rows := tx.QueryRowx(query, args...)
-	rows.Scan(&b.Id)
-
-	return rows.Err()
+	return tx.Get(&b.Id, query, args...)
 }
 
 func (b *Batch) UpdateQuery(tx *sqlx.Tx) error {
-	return tx.QueryRowx(
+	return tx.Get(
+		nil,
 		"UPDATE teleport.batch SET status = $1 WHERE id = $2",
 		b.Status,
 		b.Id,
-	).Err()
+	)
 }
 
 func (b *Batch) SetEvents(events []Event) {

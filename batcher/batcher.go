@@ -156,8 +156,7 @@ func (b *Batcher) createBatchWithEvents(events []database.Event, targetName stri
 	batch.Target = targetName
 
 	// Insert batch
-	err2 := batch.InsertQuery(tx)
-	log.Printf("error inserting batch query: %v\n", err2)
+	batch.InsertQuery(tx)
 
 	// Mark all events as belonging to this batch
 	for _, event := range events {

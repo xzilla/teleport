@@ -90,6 +90,12 @@ func TestMarkIgnoredEvents(t *testing.T) {
 }
 
 func TestEventsForTarget(t *testing.T) {
+	tx := db.NewTransaction()
+	stubEventData := "event data"
+	stubEvent.Data = &stubEventData
+	stubEvent.InsertQuery(tx)
+	tx.Commit()
+
 	events, _ := batcher.eventsForTarget(
 		batcher.targets["test_target"],
 		map[database.Event][]action.Action{
@@ -114,8 +120,11 @@ func TestEventsForTarget(t *testing.T) {
 }
 
 func TestCreateBatchWithEvents(t *testing.T) {
-	stubEventData := "ASD"
+	tx := db.NewTransaction()
+	stubEventData := "event data"
 	stubEvent.Data = &stubEventData
+	stubEvent.InsertQuery(tx)
+	tx.Commit()
 
 	batch, err := batcher.createBatchWithEvents([]database.Event{*stubEvent}, "test-target")
 
@@ -139,5 +148,13 @@ func TestCreateBatchWithEvents(t *testing.T) {
 
 	if event.Status != "batched" {
 		t.Errorf("event status => %s, want %s", event.Status, "batched")
+	}
+
+	tx = db.NewTransaction()
+	var batchId string
+	tx.Get(&batchId, "SELECT batch_id FROM teleport.batch_events WHERE batch_id = $1 AND event_id = $2;", batch.Id, stubEvent.Id)
+
+	if batchId != batch.Id {
+		t.Errorf("batch_id in batch_events table => %s, want %s", batchId, batch.Id)
 	}
 }
