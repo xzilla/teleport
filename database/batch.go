@@ -26,7 +26,7 @@ func (db *Database) GetBatches(status string) ([]Batch, error) {
 	return batches, err
 }
 
-func (b *Batch) InsertQuery(tx *sqlx.Tx) {
+func (b *Batch) InsertQuery(tx *sqlx.Tx) error {
 	args := make([]interface{}, 0)
 	var query string
 
@@ -45,15 +45,18 @@ func (b *Batch) InsertQuery(tx *sqlx.Tx) {
 		b.Target,
 	)
 
-	tx.QueryRowx(query, args...).Scan(&b.Id)
+	rows := tx.QueryRowx(query, args...)
+	rows.Scan(&b.Id)
+
+	return rows.Err()
 }
 
-func (b *Batch) UpdateQuery(tx *sqlx.Tx) {
-	tx.MustExec(
+func (b *Batch) UpdateQuery(tx *sqlx.Tx) error {
+	return tx.QueryRowx(
 		"UPDATE teleport.batch SET status = $1 WHERE id = $2",
 		b.Status,
 		b.Id,
-	)
+	).Err()
 }
 
 func (b *Batch) SetEvents(events []Event) {
@@ -63,7 +66,7 @@ func (b *Batch) SetEvents(events []Event) {
 	// Encode each event into buffer
 	for _, event := range events {
 		// Write event data to batch data
-		batchBuffer.WriteString(event.String())
+		batchBuffer.WriteString(event.ToString())
 		batchBuffer.WriteString("\n")
 	}
 

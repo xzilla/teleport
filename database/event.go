@@ -36,24 +36,53 @@ func (db *Database) GetEvents(status string) ([]Event, error) {
 	return events, err
 }
 
-func (e *Event) UpdateQuery(tx *sqlx.Tx) {
-	tx.MustExec(
+func (e *Event) InsertQuery(tx *sqlx.Tx) error {
+	fmt.Printf("inserting event: %v\n", e)
+
+	args := make([]interface{}, 0)
+	var query string
+
+	// If there's no id, insert without id
+	if e.Id == "" {
+		query = "INSERT INTO teleport.event (kind, status, trigger_tag, trigger_event, transaction_id, data) VALUES ($1, $2, $3, $4, $5, $6) RETURNING id;"
+	} else {
+		query = "INSERT INTO teleport.event (id, kind, status, trigger_tag, trigger_event, transaction_id, data) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING id;"
+		args = append(args, e.Id)
+	}
+
+	args = append(args,
+		e.Kind,
+		e.Status,
+		e.TriggerTag,
+		e.TriggerEvent,
+		e.TransactionId,
+		e.Data,
+	)
+
+	rows := tx.QueryRowx(query, args...)
+	rows.Scan(&e.Id)
+
+	return rows.Err()
+}
+
+func (e *Event) UpdateQuery(tx *sqlx.Tx) error {
+	return tx.QueryRowx(
 		"UPDATE teleport.event SET status = $1 WHERE id = $2;",
 		e.Status,
 		e.Id,
-	)
+	).Err()
 }
 
-func (e *Event) BelongsToBatch(tx *sqlx.Tx, b *Batch) {
-	tx.MustExec(
+func (e *Event) BelongsToBatch(tx *sqlx.Tx, b *Batch) error {
+	return tx.QueryRowx(
 		"INSERT INTO teleport.batch_events (batch_id, event_id) VALUES ($1, $2);",
 		b.Id,
 		e.Id,
-	)
+	).Err()
 }
 
-// Implement Stringer
-func (e *Event) String() string {
+// Implement ToString
+func (e *Event) ToString() string {
 	return fmt.Sprintf(
 		"%s,%s,%s,%s,%s,%s",
 		e.Id,
