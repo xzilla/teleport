@@ -36,9 +36,13 @@ func (db *Database) GetEvents(status string) ([]Event, error) {
 	return events, err
 }
 
-func (e *Event) InsertQuery(tx *sqlx.Tx) error {
-	fmt.Printf("inserting event: %v\n", e)
+func (db *Database) GetEvent(id string) (Event, error) {
+	var events []Event
+	err := db.selectObjs(&events, "SELECT * FROM teleport.event WHERE id = $1;", id)
+	return events[0], err
+}
 
+func (e *Event) InsertQuery(tx *sqlx.Tx) error {
 	args := make([]interface{}, 0)
 	var query string
 

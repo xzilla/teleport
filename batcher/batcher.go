@@ -52,7 +52,7 @@ func (b *Batcher) createBatches() error {
 
 	// Get actions for each event
 	actionsForEvent, err := b.actionsForEvents(events)
-	
+
 	if err != nil {
 		return err
 	}
@@ -103,7 +103,7 @@ func (b *Batcher) createBatchesForTargets(targets map[string]*client.Client, act
 			return nil, err
 		}
 
-		err = b.createBatchWithEvents(events, targetName)
+		_, err = b.createBatchWithEvents(events, targetName)
 
 		if err != nil {
 			return nil, err
@@ -130,10 +130,10 @@ func (b *Batcher) actionsForEvents(events []database.Event) (map[database.Event]
 	return actionsForEvent, nil
 }
 
-func (b *Batcher) createBatchWithEvents(events []database.Event, targetName string) error {
+func (b *Batcher) createBatchWithEvents(events []database.Event, targetName string) (*database.Batch, error) {
 	// Don't create batch if there are no events
 	if len(events) == 0 {
-		return nil
+		return nil, nil
 	}
 
 	// Start a transaction
@@ -156,7 +156,8 @@ func (b *Batcher) createBatchWithEvents(events []database.Event, targetName stri
 	batch.Target = targetName
 
 	// Insert batch
-	batch.InsertQuery(tx)
+	err2 := batch.InsertQuery(tx)
+	log.Printf("error inserting batch query: %v\n", err2)
 
 	// Mark all events as belonging to this batch
 	for _, event := range events {
@@ -167,12 +168,12 @@ func (b *Batcher) createBatchWithEvents(events []database.Event, targetName stri
 	err := tx.Commit()
 
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	log.Printf("Generated new batch: %v\n", batch)
 
-	return nil
+	return batch, nil
 }
 
 func (b *Batcher) eventsForTarget(target *client.Client, actionsForEvent map[database.Event][]action.Action) ([]database.Event, error) {

@@ -1,5 +1,5 @@
 database:
-  name: "finops-db"
+  name: "test-db"
   database: "postgres"
   hostname: "postgres"
   username: "postgres"
@@ -10,7 +10,7 @@ server:
   port: 3000
   # auth: asd
 targets:
-  tar:
+  test_target:
     target_expression: "public.*"
     endpoint:
       hostname: "target"

@@ -6,6 +6,8 @@ import (
 	"github.com/pagarme/teleport/database"
 	"github.com/pagarme/teleport/client"
 	"github.com/pagarme/teleport/action"
+	"github.com/jmoiron/sqlx"
+	"encoding/gob"
 	"os"
 	"fmt"
 )
@@ -15,6 +17,8 @@ var stubEvent *database.Event
 var batcher *Batcher
 
 func init() {
+	gob.Register(&StubAction{})
+
 	config := config.New()
 	err := config.ReadFromFile("../config_test.yml")
 
@@ -49,6 +53,18 @@ func init() {
 	batcher = New(db, targets)
 }
 
+// StubAction implements Action
+type StubAction struct {
+	ShouldFilter bool
+}
+
+func (a *StubAction) Execute(tx *sqlx.Tx) {
+}
+
+func (a *StubAction) Filter(targetExpression string) bool {
+	return a.ShouldFilter
+}
+
 func TestMarkIgnoredEvents(t *testing.T) {
 	tx := db.NewTransaction()
 	stubEvent.InsertQuery(tx)
@@ -70,5 +86,58 @@ func TestMarkIgnoredEvents(t *testing.T) {
 
 	if updatedEvent == nil {
 		t.Errorf("ignored event => nil, want %d", stubEvent)
+	}
+}
+
+func TestEventsForTarget(t *testing.T) {
+	events, _ := batcher.eventsForTarget(
+		batcher.targets["test_target"],
+		map[database.Event][]action.Action{
+			*stubEvent: []action.Action{&StubAction{false}},
+		},
+	)
+
+	if len(events) != 0 {
+		t.Errorf("events for target => %d, want %d", len(events), 0)
+	}
+
+	events, _ = batcher.eventsForTarget(
+		batcher.targets["test_target"],
+		map[database.Event][]action.Action{
+			*stubEvent: []action.Action{&StubAction{true}},
+		},
+	)
+
+	if len(events) != 1 {
+		t.Errorf("events for target => %d, want %d", len(events), 1)
+	}
+}
+
+func TestCreateBatchWithEvents(t *testing.T) {
+	stubEventData := "ASD"
+	stubEvent.Data = &stubEventData
+
+	batch, err := batcher.createBatchWithEvents([]database.Event{*stubEvent}, "test-target")
+
+	if err != nil {
+		t.Errorf("createBatchWithEvents returned error: %v", err)
+	}
+
+	if batch.Source != "test-db" {
+		t.Errorf("batch source => %s, want %", batch.Source, "test-db")
+	}
+
+	if batch.Target != "test-target" {
+		t.Errorf("batch source => %s, want %", batch.Target, "test-target")
+	}
+
+	if batch.Status != "waiting_transmission" {
+		t.Errorf("batch status => %s, want %", batch.Status, "waiting_transmission")
+	}
+
+	event, _ := db.GetEvent(stubEvent.Id)
+
+	if event.Status != "batched" {
+		t.Errorf("event status => %s, want %s", event.Status, "batched")
 	}
 }
