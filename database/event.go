@@ -4,6 +4,10 @@ import (
 	"fmt"
 	"github.com/jmoiron/sqlx"
 	"strings"
+	"github.com/pagarme/teleport/action"
+	"bytes"
+	"encoding/base64"
+	"encoding/gob"
 )
 
 type Event struct {
@@ -82,6 +86,23 @@ func (e *Event) BelongsToBatch(tx *sqlx.Tx, b *Batch) error {
 		b.Id,
 		e.Id,
 	)
+}
+
+func (e *Event) SetDataFromAction(action action.Action) error {
+	// Encode action into event data using gob
+	var buf bytes.Buffer
+	encoder := gob.NewEncoder(&buf)
+	err := encoder.Encode(&action)
+
+	if err != nil {
+		return err
+	}
+
+	// Update event data
+	encodedData := base64.StdEncoding.EncodeToString(buf.Bytes())
+	e.Data = &encodedData
+
+	return nil
 }
 
 // Implement ToString

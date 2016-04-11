@@ -1,14 +1,12 @@
 package batcher
 
 import (
-	"bytes"
-	"encoding/base64"
-	"encoding/gob"
 	"github.com/pagarme/teleport/action"
 	"github.com/pagarme/teleport/client"
 	"github.com/pagarme/teleport/database"
 	"log"
 	"time"
+	"fmt"
 )
 
 type Batcher struct {
@@ -184,20 +182,8 @@ func (b *Batcher) eventsForTarget(target *client.Client, actionsForEvent map[dat
 			if action.Filter(target.TargetExpression) {
 				// Each action is a new event.
 				newEvent := event
-
-				// Encode action into event data using gob
-				var buf bytes.Buffer
-				encoder := gob.NewEncoder(&buf)
-				err := encoder.Encode(&action)
-
-				if err != nil {
-					return nil, err
-				}
-
-				// Update event data
-				encodedData := base64.StdEncoding.EncodeToString(buf.Bytes())
-				newEvent.Data = &encodedData
-
+				// Encode action inside event's data
+				newEvent.SetDataFromAction(action)
 				events = append(events, newEvent)
 			}
 		}
@@ -207,6 +193,10 @@ func (b *Batcher) eventsForTarget(target *client.Client, actionsForEvent map[dat
 }
 
 func (b *Batcher) actionsForEvent(event database.Event) ([]action.Action, error) {
+	if event.Data == nil {
+		return []action.Action{}, fmt.Errorf("caught event with no data!")
+	}
+
 	if event.Kind == "ddl" {
 		ddl := database.NewDdl([]byte(*event.Data))
 		actions := ddl.Diff()
