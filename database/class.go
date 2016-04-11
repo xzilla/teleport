@@ -52,31 +52,34 @@ type Class struct {
 func (post *Class) Diff(other ddldiff.Diffable) []action.Action {
 	actions := make([]action.Action, 0)
 
-	if other == nil {
-		cols := make([]action.Column, 0)
+	// r = Tables
+	if post.RelationKind == "r" {
+		if other == nil {
+			cols := make([]action.Column, 0)
 
-		for _, attr := range post.Attributes {
-			cols = append(cols, action.Column{
-				attr.Name,
-				attr.TypeName,
+			for _, attr := range post.Attributes {
+				cols = append(cols, action.Column{
+					attr.Name,
+					attr.TypeName,
+				})
+			}
+
+			actions = append(actions, &action.CreateTable{
+				post.Schema.Name,
+				post.RelationName,
+				cols,
 			})
-		}
+		} else {
+			pre := other.(*Class)
 
-		actions = append(actions, &action.CreateTable{
-			post.Schema.Name,
-			post.RelationName,
-			cols,
-		})
-	} else {
-		// pre := other.(*Class)
-		//
-		// if pre.RelationName != post.RelationName {
-		// 	actions = append(actions, ddldiff.Action{
-		// 		"RENAME",
-		// 		"TABLE",
-		// 		*post,
-		// 	})
-		// }
+			if pre.RelationName != post.RelationName {
+				actions = append(actions, &action.AlterTable{
+					post.Schema.Name,
+					pre.RelationName,
+					post.RelationName,
+				})
+			}
+		}
 	}
 
 	return actions
