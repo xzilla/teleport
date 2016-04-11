@@ -88,19 +88,23 @@ func (post *Class) Diff(other ddldiff.Diffable) []action.Action {
 func (c *Class) Children() []ddldiff.Diffable {
 	children := make([]ddldiff.Diffable, 0)
 
-	// for _, attr := range c.Attributes {
-	// 	children = append(children, attr)
-	// }
+	for _, attr := range c.Attributes {
+		children = append(children, attr)
+	}
 
 	return children
 }
 
 func (c *Class) Drop() []action.Action {
-	return []action.Action{
-		&action.DropTable{
-			c.Schema.Name,
-			c.RelationName,
-		},
+	if c.RelationKind == "r" {
+		return []action.Action{
+			&action.DropTable{
+				c.Schema.Name,
+				c.RelationName,
+			},
+		}
+	} else {
+		return []action.Action{}
 	}
 }
 

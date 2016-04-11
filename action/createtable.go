@@ -7,11 +7,6 @@ import (
 	"strings"
 )
 
-type Column struct {
-	Name string
-	Type string
-}
-
 type CreateTable struct {
 	SchemaName string
 	TableName  string
