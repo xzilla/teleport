@@ -6,4 +6,5 @@ type Attribute struct {
 	Num      int    `json:"attr_num"`
 	TypeName string `json:"type_name"`
 	TypeOid  string `json:"type_oid"`
+	Class    *Class
 }

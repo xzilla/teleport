@@ -7,8 +7,8 @@ import (
 )
 
 type Ddl struct {
-	PreSchemas  []Schema `json:"pre"`
-	PostSchemas []Schema `json:"post"`
+	PreSchemas  []*Schema `json:"pre"`
+	PostSchemas []*Schema `json:"post"`
 }
 
 func NewDdl(data []byte) *Ddl {
@@ -19,14 +19,18 @@ func NewDdl(data []byte) *Ddl {
 		panic(err)
 	}
 
+	for _, schema := range append(ddl.PreSchemas, ddl.PostSchemas...) {
+		schema.fillParentReferences()
+	}
+
 	return &ddl
 }
 
-func (d *Ddl) schemaToDiffable(schema []Schema) []ddldiff.Diffable {
+func (d *Ddl) schemaToDiffable(schema []*Schema) []ddldiff.Diffable {
 	diff := make([]ddldiff.Diffable, 0)
 
 	for i, _ := range schema {
-		diff = append(diff, &schema[i])
+		diff = append(diff, schema[i])
 	}
 
 	return diff

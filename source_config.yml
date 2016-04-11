@@ -11,7 +11,7 @@ server:
   # auth: asd
 targets:
   tar:
-    target_expression: "asd10.*"
+    target_expression: "public.*"
     endpoint:
       hostname: "target"
       port: 3001

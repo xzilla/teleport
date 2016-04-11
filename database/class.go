@@ -1,15 +1,17 @@
 package database
 
 import (
-// "github.com/pagarme/teleport/batcher/ddldiff"
+	"github.com/pagarme/teleport/action"
+	"github.com/pagarme/teleport/batcher/ddldiff"
 )
 
 // Define a database table
 type Class struct {
-	Oid          string      `json:"oid"`
-	RelationKind string      `json:"relation_kind"`
-	RelationName string      `json:"relation_name"`
-	Attributes   []Attribute `json:"attributes"`
+	Oid          string       `json:"oid"`
+	RelationKind string       `json:"relation_kind"`
+	RelationName string       `json:"relation_name"`
+	Attributes   []*Attribute `json:"attributes"`
+	Schema       *Schema
 }
 
 // func (t *Table) InstallTriggers() error {
@@ -46,56 +48,64 @@ type Class struct {
 // 	// return tables, nil
 // }
 
-// // Implements Diffable
-// func (post *Class) Diff(other ddldiff.Diffable) []ddldiff.Action {
-// 	actions := make([]ddldiff.Action, 0)
-//
-// 	if other == nil {
-// 		actions = append(actions, ddldiff.Action{
-// 			"CREATE",
-// 			"TABLE",
-// 			*post,
-// 		})
-// 	} else {
-// 		pre := other.(*Class)
-//
-// 		if pre.RelationName != post.RelationName {
-// 			actions = append(actions, ddldiff.Action{
-// 				"RENAME",
-// 				"TABLE",
-// 				*post,
-// 			})
-// 		}
-// 	}
-//
-// 	return actions
-// }
-//
-// func (c *Class) Children() []ddldiff.Diffable {
-// 	children := make([]ddldiff.Diffable, 0)
-//
-// 	// for _, attr := range c.Attributes {
-// 	// 	children = append(children, attr)
-// 	// }
-//
-// 	return children
-// }
-//
-// func (c *Class) Drop() []ddldiff.Action {
-// 	return []ddldiff.Action{
-// 		ddldiff.Action{
-// 			"DROP",
-// 			"TABLE",
-// 			*c,
-// 		},
-// 	}
-// }
-//
-// func (c *Class) IsEqual(other ddldiff.Diffable) bool {
-// 	if other == nil {
-// 		return false
-// 	}
-//
-// 	otherClass := other.(*Class)
-// 	return (c.Oid == otherClass.Oid)
-// }
+// Implements Diffable
+func (post *Class) Diff(other ddldiff.Diffable) []action.Action {
+	actions := make([]action.Action, 0)
+
+	if other == nil {
+		cols := make([]action.Column, 0)
+
+		for _, attr := range post.Attributes {
+			cols = append(cols, action.Column{
+				attr.Name,
+				attr.TypeName,
+			})
+		}
+
+		actions = append(actions, &action.CreateTable{
+			post.Schema.Name,
+			post.RelationName,
+			cols,
+		})
+	} else {
+		// pre := other.(*Class)
+		//
+		// if pre.RelationName != post.RelationName {
+		// 	actions = append(actions, ddldiff.Action{
+		// 		"RENAME",
+		// 		"TABLE",
+		// 		*post,
+		// 	})
+		// }
+	}
+
+	return actions
+}
+
+func (c *Class) Children() []ddldiff.Diffable {
+	children := make([]ddldiff.Diffable, 0)
+
+	// for _, attr := range c.Attributes {
+	// 	children = append(children, attr)
+	// }
+
+	return children
+}
+
+func (c *Class) Drop() []action.Action {
+	return []action.Action{
+		&action.DropTable{
+			c.Schema.Name,
+			c.RelationName,
+		},
+	}
+}
+
+func (c *Class) IsEqual(other ddldiff.Diffable) bool {
+	if other == nil {
+		return false
+	}
+
+	otherClass := other.(*Class)
+	return (c.Oid == otherClass.Oid)
+}
