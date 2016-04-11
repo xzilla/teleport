@@ -13,9 +13,9 @@ type Schema struct {
 	Classes []*Class `json:"classes"`
 }
 
-type Schemas []Schema
+type Schemas []*Schema
 
-func ParseSchema(schemaContent string) ([]Schema, error) {
+func ParseSchema(schemaContent string) (Schemas, error) {
 	var schemas Schemas
 	err := json.Unmarshal([]byte(schemaContent), &schemas)
 
@@ -60,7 +60,7 @@ func (db *Database) fetchSchema() error {
 	}
 
 	// Parse schema
-	var schemas []Schema
+	var schemas Schemas
 	schemas, err = ParseSchema(string(schemaContent))
 
 	if err != nil {
@@ -68,7 +68,7 @@ func (db *Database) fetchSchema() error {
 	}
 
 	// Populate db.Schemas
-	db.Schemas = make(map[string]Schema)
+	db.Schemas = make(map[string]*Schema)
 
 	for _, schema := range schemas {
 		db.Schemas[schema.Name] = schema

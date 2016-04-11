@@ -19,7 +19,7 @@ type Database struct {
 	Username string
 	Password string
 	Port     int
-	Schemas  map[string]Schema
+	Schemas  map[string]*Schema
 	db       *sqlx.DB
 }
 
