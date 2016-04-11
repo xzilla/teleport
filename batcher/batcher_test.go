@@ -133,15 +133,15 @@ func TestCreateBatchWithEvents(t *testing.T) {
 	}
 
 	if batch.Source != "test-db" {
-		t.Errorf("batch source => %s, want %", batch.Source, "test-db")
+		t.Errorf("batch source => %s, want %s", batch.Source, "test-db")
 	}
 
 	if batch.Target != "test-target" {
-		t.Errorf("batch source => %s, want %", batch.Target, "test-target")
+		t.Errorf("batch source => %s, want %s", batch.Target, "test-target")
 	}
 
 	if batch.Status != "waiting_transmission" {
-		t.Errorf("batch status => %s, want %", batch.Status, "waiting_transmission")
+		t.Errorf("batch status => %s, want %s", batch.Status, "waiting_transmission")
 	}
 
 	event, _ := db.GetEvent(stubEvent.Id)
