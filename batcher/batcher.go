@@ -1,12 +1,12 @@
 package batcher
 
 import (
+	"fmt"
 	"github.com/pagarme/teleport/action"
 	"github.com/pagarme/teleport/client"
 	"github.com/pagarme/teleport/database"
 	"log"
 	"time"
-	"fmt"
 )
 
 type Batcher struct {

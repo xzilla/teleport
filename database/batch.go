@@ -49,12 +49,13 @@ func (b *Batch) InsertQuery(tx *sqlx.Tx) error {
 }
 
 func (b *Batch) UpdateQuery(tx *sqlx.Tx) error {
-	return tx.Get(
-		nil,
+	_, err := tx.Exec(
 		"UPDATE teleport.batch SET status = $1 WHERE id = $2",
 		b.Status,
 		b.Id,
 	)
+
+	return err
 }
 
 func (b *Batch) SetEvents(events []Event) {
@@ -62,10 +63,14 @@ func (b *Batch) SetEvents(events []Event) {
 	var batchBuffer bytes.Buffer
 
 	// Encode each event into buffer
-	for _, event := range events {
+	for i, event := range events {
 		// Write event data to batch data
 		batchBuffer.WriteString(event.ToString())
-		batchBuffer.WriteString("\n")
+
+		// Don't write newline after the last event
+		if i < len(events)-1 {
+			batchBuffer.WriteString("\n")
+		}
 	}
 
 	// Set batch data

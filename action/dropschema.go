@@ -2,6 +2,7 @@ package action
 
 import (
 	"encoding/gob"
+	"fmt"
 	"github.com/jmoiron/sqlx"
 )
 
@@ -14,11 +15,12 @@ func init() {
 	gob.Register(&DropSchema{})
 }
 
-func (a *DropSchema) Execute(tx *sqlx.Tx) {
-	tx.MustExec(
-		"DROP SCHEMA $1;",
-		a.SchemaName,
+func (a *DropSchema) Execute(tx *sqlx.Tx) error {
+	_, err := tx.Exec(
+		fmt.Sprintf("DROP SCHEMA %s;", a.SchemaName),
 	)
+
+	return err
 }
 
 func (a *DropSchema) Filter(targetExpression string) bool {

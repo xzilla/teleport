@@ -25,7 +25,7 @@ func (a *Applier) Watch(sleepTime time.Duration) {
 			log.Printf("Error fetching batches to apply! %v\n", err)
 		} else {
 			for _, batch := range batches {
-				err := a.Apply(&batch)
+				err := a.applyBatch(&batch)
 
 				if err != nil {
 					log.Printf("Error applying batch %s: %v\n", batch.Id, err)
@@ -38,21 +38,32 @@ func (a *Applier) Watch(sleepTime time.Duration) {
 }
 
 // Apply a batch
-func (a *Applier) Apply(batch *database.Batch) error {
-	log.Printf("applying batch %v\n", batch)
-	return nil
-}
+func (a *Applier) applyBatch(batch *database.Batch) error {
+	events := batch.GetEvents()
 
-func (a *Applier) markBatchApplied(batch *database.Batch) error {
 	// Start transaction
 	tx := a.db.NewTransaction()
 
-	// Update batch to transmitted
-	batch.Status = "applied"
+	log.Printf("applying batch %v\n", batch)
 
-	// Insert
+	for _, event := range events {
+		action, err := event.GetActionFromData()
+
+		if err != nil {
+			return err
+		}
+
+		// Execute action of the given event
+		err = action.Execute(tx)
+
+		if err != nil {
+			return err
+		}
+	}
+
+	// Mark batch as applied
+	batch.Status = "applied"
 	batch.UpdateQuery(tx)
 
-	// Commit transaction
 	return tx.Commit()
 }

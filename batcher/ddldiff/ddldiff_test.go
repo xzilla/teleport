@@ -22,7 +22,8 @@ type FooAction struct {
 	Kind string
 }
 
-func (a *FooAction) Execute(tx *sqlx.Tx) {
+func (a *FooAction) Execute(tx *sqlx.Tx) error {
+	return nil
 }
 
 func (a *FooAction) Filter(targetExpression string) bool {
@@ -33,7 +34,8 @@ type BarAction struct {
 	Kind string
 }
 
-func (a *BarAction) Execute(tx *sqlx.Tx) {
+func (a *BarAction) Execute(tx *sqlx.Tx) error {
+	return nil
 }
 
 func (a *BarAction) Filter(targetExpression string) bool {

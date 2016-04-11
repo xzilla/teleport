@@ -1,15 +1,15 @@
 package batcher
 
 import (
-	"testing"
+	"encoding/gob"
+	"fmt"
+	"github.com/jmoiron/sqlx"
+	"github.com/pagarme/teleport/action"
+	"github.com/pagarme/teleport/client"
 	"github.com/pagarme/teleport/config"
 	"github.com/pagarme/teleport/database"
-	"github.com/pagarme/teleport/client"
-	"github.com/pagarme/teleport/action"
-	"github.com/jmoiron/sqlx"
-	"encoding/gob"
 	"os"
-	"fmt"
+	"testing"
 )
 
 var db *database.Database
@@ -36,11 +36,11 @@ func init() {
 	db = &config.Database
 
 	stubEvent = &database.Event{
-		Id: "",
-		Kind: "ddl",
-		Status: "waiting_batch",
-		TriggerTag: "TAG",
-		TriggerEvent: "EVENT",
+		Id:            "",
+		Kind:          "ddl",
+		Status:        "waiting_batch",
+		TriggerTag:    "TAG",
+		TriggerEvent:  "EVENT",
 		TransactionId: "123",
 	}
 
@@ -58,7 +58,8 @@ type StubAction struct {
 	ShouldFilter bool
 }
 
-func (a *StubAction) Execute(tx *sqlx.Tx) {
+func (a *StubAction) Execute(tx *sqlx.Tx) error {
+	return nil
 }
 
 func (a *StubAction) Filter(targetExpression string) bool {

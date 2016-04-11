@@ -2,6 +2,7 @@ package action
 
 import (
 	"encoding/gob"
+	"fmt"
 	"github.com/jmoiron/sqlx"
 )
 
@@ -15,12 +16,12 @@ func init() {
 	gob.Register(&AlterSchema{})
 }
 
-func (a *AlterSchema) Execute(tx *sqlx.Tx) {
-	tx.MustExec(
-		"ALTER SCHEMA $1 RENAME TO $2;",
-		a.SourceName,
-		a.TargetName,
+func (a *AlterSchema) Execute(tx *sqlx.Tx) error {
+	_, err := tx.Exec(
+		fmt.Sprintf("ALTER SCHEMA %s RENAME TO %s;", a.SourceName, a.TargetName),
 	)
+
+	return err
 }
 
 func (a *AlterSchema) Filter(targetExpression string) bool {

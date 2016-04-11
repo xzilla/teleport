@@ -1,13 +1,13 @@
 package database
 
 import (
-	"fmt"
-	"github.com/jmoiron/sqlx"
-	"strings"
-	"github.com/pagarme/teleport/action"
 	"bytes"
 	"encoding/base64"
 	"encoding/gob"
+	"fmt"
+	"github.com/jmoiron/sqlx"
+	"github.com/pagarme/teleport/action"
+	"strings"
 )
 
 type Event struct {
@@ -71,21 +71,23 @@ func (e *Event) InsertQuery(tx *sqlx.Tx) error {
 }
 
 func (e *Event) UpdateQuery(tx *sqlx.Tx) error {
-	return tx.Get(
-		nil,
+	_, err := tx.Exec(
 		"UPDATE teleport.event SET status = $1 WHERE id = $2;",
 		e.Status,
 		e.Id,
 	)
+
+	return err
 }
 
 func (e *Event) BelongsToBatch(tx *sqlx.Tx, b *Batch) error {
-	return tx.Get(
-		nil,
+	_, err := tx.Exec(
 		"INSERT INTO teleport.batch_events (batch_id, event_id) VALUES ($1, $2);",
 		b.Id,
 		e.Id,
 	)
+
+	return err
 }
 
 func (e *Event) SetDataFromAction(action action.Action) error {
@@ -103,6 +105,23 @@ func (e *Event) SetDataFromAction(action action.Action) error {
 	e.Data = &encodedData
 
 	return nil
+}
+
+func (e *Event) GetActionFromData() (action.Action, error) {
+	decodedData, err := base64.StdEncoding.DecodeString(*e.Data)
+
+	if err != nil {
+		return nil, err
+	}
+
+	var buf bytes.Buffer
+	buf.Write(decodedData)
+
+	decoder := gob.NewDecoder(&buf)
+	var action action.Action
+	err = decoder.Decode(&action)
+
+	return action, err
 }
 
 // Implement ToString

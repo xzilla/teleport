@@ -1,11 +1,11 @@
 package transmitter
 
 import (
+	"fmt"
 	"github.com/pagarme/teleport/client"
 	"github.com/pagarme/teleport/database"
 	"log"
 	"time"
-	"fmt"
 )
 
 type Transmitter struct {
