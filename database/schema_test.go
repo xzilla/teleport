@@ -2,6 +2,8 @@ package database
 
 import (
 	"testing"
+	"github.com/pagarme/teleport/action"
+	"github.com/pagarme/teleport/batcher/ddldiff"
 )
 
 func TestParseSchema(t *testing.T) {
@@ -50,5 +52,71 @@ func TestParseSchema(t *testing.T) {
 				}
 			}
 		}
+	}
+}
+
+func TestDiffCreateSchema(t *testing.T) {
+	var pre ddldiff.Diffable
+	var post *Schema
+
+	// Test creating a Schema
+	pre = nil
+	post = &Schema{
+		"1234",
+		"test_schema",
+		[]*Class{},
+	}
+
+	actions := post.Diff(pre)
+
+	if len(actions) != 1 {
+		t.Errorf("actions => %d, want %d", len(actions), 1)
+	}
+
+	createAction, ok := actions[0].(*action.CreateSchema)
+
+	if !ok {
+		t.Errorf("action is not CreateSchema")
+	}
+
+	if createAction.SchemaName != post.Name {
+		t.Errorf("create action schema name => %s, want %s", createAction.SchemaName, post.Name)
+	}
+}
+
+func TestDiffRenameSchema(t *testing.T) {
+	var pre *Schema
+	var post *Schema
+
+	// Test creating a Schema
+	pre = &Schema{
+		"1234",
+		"test_schema",
+		[]*Class{},
+	}
+	post = &Schema{
+		"1234",
+		"test_schema_renamed",
+		[]*Class{},
+	}
+
+	actions := post.Diff(pre)
+
+	if len(actions) != 1 {
+		t.Errorf("actions => %d, want %d", len(actions), 1)
+	}
+
+	renameAction, ok := actions[0].(*action.AlterSchema)
+
+	if !ok {
+		t.Errorf("action is not AlterSchema")
+	}
+
+	if renameAction.SourceName != pre.Name {
+		t.Errorf("rename action source name => %s, want %s", renameAction.SourceName, pre.Name)
+	}
+
+	if renameAction.TargetName != post.Name {
+		t.Errorf("rename action target name => %s, want %s", renameAction.TargetName, post.Name)
 	}
 }
