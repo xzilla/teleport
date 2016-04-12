@@ -120,3 +120,33 @@ func TestDiffRenameSchema(t *testing.T) {
 		t.Errorf("rename action target name => %s, want %s", renameAction.TargetName, post.Name)
 	}
 }
+
+func TestChildren(t *testing.T) {
+	classes := []*Class {
+		&Class{
+			"567",
+			"t",
+			"test_table",
+			[]*Attribute{},
+			nil,
+		},
+	}
+
+	schema := &Schema{
+		"1234",
+		"test_schema",
+		classes,
+	}
+
+	children := schema.Children()
+
+	if len(children) != 1 {
+		t.Errorf("children => %d, want %d", len(children), 1)
+	}
+
+	for i, child := range children {
+		if child != classes[i] {
+			t.Errorf("child %i => %v, want %v", i, child, classes[i])
+		}
+	}
+}
