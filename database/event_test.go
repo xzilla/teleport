@@ -1,16 +1,34 @@
 package database
 
 import (
+	"encoding/gob"
 	"fmt"
+	"github.com/jmoiron/sqlx"
 	"github.com/pagarme/teleport/config"
 	"os"
 	"reflect"
 	"testing"
 )
 
+type StubAction struct {
+	Name string
+}
+
+func (s *StubAction) Execute(tx *sqlx.Tx) error {
+	return nil
+}
+
+func (s *StubAction) Filter(targetExpression string) bool {
+	return true
+}
+
 var db *Database
+var stubAction *StubAction
+var stubActionData string
 
 func init() {
+	gob.Register(&StubAction{})
+
 	config := config.New()
 	err := config.ReadFromFile("../config_test.yml")
 
@@ -33,6 +51,9 @@ func init() {
 		fmt.Printf("Erro starting database: ", err)
 		os.Exit(1)
 	}
+
+	stubAction = &StubAction{"action data"}
+	stubActionData = "OBAAFCpkYXRhYmFzZS5TdHViQWN0aW9u/4EDAQEKU3R1YkFjdGlvbgH/ggABAQEETmFtZQEMAAAAEf+CDgELYWN0aW9uIGRhdGEA"
 }
 
 func TestNewEvent(t *testing.T) {
@@ -247,5 +268,51 @@ func TestEventBelongsToBatch(t *testing.T) {
 
 	if batchId != batch.Id {
 		t.Errorf("batch_id in batch_events table => %s, want %s", batchId, batch.Id)
+	}
+}
+
+func TestEventSetDataFromAction(t *testing.T) {
+	testEvent := &Event{
+		Id:            "5",
+		Kind:          "ddl",
+		Status:        "waiting_batch",
+		TriggerTag:    "123",
+		TriggerEvent:  "event",
+		TransactionId: "456",
+		Data:          nil,
+	}
+
+	testEvent.SetDataFromAction(stubAction)
+
+	if stubActionData != *testEvent.Data {
+		t.Errorf("event data => %#v, want %#v", testEvent.Data, stubActionData)
+	}
+}
+
+func TestEventGetActionFromData(t *testing.T) {
+	testEvent := &Event{
+		Id:            "5",
+		Kind:          "ddl",
+		Status:        "waiting_batch",
+		TriggerTag:    "123",
+		TriggerEvent:  "event",
+		TransactionId: "456",
+		Data:          nil,
+	}
+
+	testEvent.Data = &stubActionData
+
+	action, err := testEvent.GetActionFromData()
+
+	if err != nil {
+		t.Errorf("get action from data returned error: %v", err)
+	}
+
+	if !reflect.DeepEqual(action, stubAction) {
+		t.Errorf(
+			"action data => %#v, want %#v",
+			action,
+			stubAction,
+		)
 	}
 }
