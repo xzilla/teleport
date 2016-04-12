@@ -67,9 +67,6 @@ func (db *Database) fetchSchema() error {
 		return err
 	}
 
-	// Populate db.Schemas
-	db.Schemas = make(map[string]*Schema)
-
 	for _, schema := range schemas {
 		db.Schemas[schema.Name] = schema
 	}

@@ -1,9 +1,9 @@
 package database
 
 import (
-	"testing"
 	"github.com/pagarme/teleport/action"
 	"github.com/pagarme/teleport/batcher/ddldiff"
+	"testing"
 )
 
 func TestParseSchema(t *testing.T) {
@@ -122,7 +122,7 @@ func TestDiffRenameSchema(t *testing.T) {
 }
 
 func TestSchemaChildren(t *testing.T) {
-	classes := []*Class {
+	classes := []*Class{
 		&Class{
 			"567",
 			"t",

@@ -1,10 +1,10 @@
 package database
 
 import (
-	"testing"
-	"reflect"
 	"github.com/pagarme/teleport/action"
 	"github.com/pagarme/teleport/batcher/ddldiff"
+	"reflect"
+	"testing"
 )
 
 var schema *Schema
@@ -19,8 +19,8 @@ func init() {
 
 func TestClassDiff(t *testing.T) {
 	var tests = []struct {
-		pre *Class
-		post *Class
+		pre    *Class
+		post   *Class
 		output []action.Action
 	}{
 		{
@@ -140,7 +140,7 @@ func TestClassDiff(t *testing.T) {
 }
 
 func TestClassChildren(t *testing.T) {
-	attrs := []*Attribute {
+	attrs := []*Attribute{
 		&Attribute{
 			"test_col",
 			1,

@@ -23,6 +23,18 @@ type Database struct {
 	db       *sqlx.DB
 }
 
+func New(name, database, hostname, username, password string, port int) *Database {
+	return &Database{
+		Name:     name,
+		Database: database,
+		Hostname: hostname,
+		Username: username,
+		Password: password,
+		Port:     port,
+		Schemas:  make(map[string]*Schema),
+	}
+}
+
 // Open connection with database and setup internal tables
 func (db *Database) Start() error {
 	var err error

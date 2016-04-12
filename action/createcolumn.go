@@ -8,8 +8,8 @@ import (
 
 type CreateColumn struct {
 	SchemaName string
-	TableName string
-	Column Column
+	TableName  string
+	Column     Column
 }
 
 // Register type for gob

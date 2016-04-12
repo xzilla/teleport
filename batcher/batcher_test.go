@@ -27,13 +27,20 @@ func init() {
 		os.Exit(1)
 	}
 
+	db = database.New(
+		config.Database.Name,
+		config.Database.Database,
+		config.Database.Hostname,
+		config.Database.Username,
+		config.Database.Password,
+		config.Database.Port,
+	)
+
 	// Start db
-	if err = config.Database.Start(); err != nil {
+	if err = db.Start(); err != nil {
 		fmt.Printf("Erro starting database: ", err)
 		os.Exit(1)
 	}
-
-	db = &config.Database
 
 	stubEvent = &database.Event{
 		Id:            "",

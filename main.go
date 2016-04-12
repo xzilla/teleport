@@ -7,6 +7,7 @@ import (
 	"github.com/pagarme/teleport/batcher"
 	"github.com/pagarme/teleport/client"
 	"github.com/pagarme/teleport/config"
+	"github.com/pagarme/teleport/database"
 	"github.com/pagarme/teleport/server"
 	"github.com/pagarme/teleport/transmitter"
 	"os"
@@ -27,8 +28,17 @@ func main() {
 		os.Exit(1)
 	}
 
+	db := database.New(
+		config.Database.Name,
+		config.Database.Database,
+		config.Database.Hostname,
+		config.Database.Username,
+		config.Database.Password,
+		config.Database.Port,
+	)
+
 	// Start db
-	if err = config.Database.Start(); err != nil {
+	if err = db.Start(); err != nil {
 		fmt.Printf("Erro starting database: ", err)
 		os.Exit(1)
 	}
@@ -39,23 +49,23 @@ func main() {
 	// Install triggers for each target
 	for key, target := range config.Targets {
 		targets[key] = client.New(target)
-		config.Database.InstallTriggers(targets[key].TargetExpression)
+		db.InstallTriggers(targets[key].TargetExpression)
 	}
 
 	// Start batcher on a separate goroutine
-	batcher := batcher.New(&config.Database, targets)
+	batcher := batcher.New(db, targets)
 	go batcher.Watch(5 * time.Second)
 
 	// Start transmitter on a separate goroutine
-	transmitter := transmitter.New(&config.Database, targets)
+	transmitter := transmitter.New(db, targets)
 	go transmitter.Watch(5 * time.Second)
 
 	// Start applier on a separate goroutine
-	applier := applier.New(&config.Database)
+	applier := applier.New(db)
 	go applier.Watch(5 * time.Second)
 
 	// Start HTTP server for receiving incoming requests
-	server := server.New(&config.Database, config.ServerHTTP)
+	server := server.New(db, config.ServerHTTP)
 
 	// Start HTTP server
 	if err = server.Start(); err != nil {

@@ -2,12 +2,11 @@ package config
 
 import (
 	"github.com/go-yaml/yaml"
-	"github.com/pagarme/teleport/database"
 	"io/ioutil"
 )
 
 type Config struct {
-	Database   database.Database `yaml:"database"`
+	Database   Database          `yaml:"database"`
 	ServerHTTP HTTP              `yaml:"server"`
 	Targets    map[string]Target `yaml:"targets"`
 }

@@ -8,9 +8,9 @@ import (
 
 type AlterColumn struct {
 	SchemaName string
-	TableName string
-	Column Column
-	NewColumn Column
+	TableName  string
+	Column     Column
+	NewColumn  Column
 }
 
 // Register type for gob

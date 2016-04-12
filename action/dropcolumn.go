@@ -9,7 +9,7 @@ import (
 type DropColumn struct {
 	SchemaName string
 	TableName  string
-	Column Column
+	Column     Column
 }
 
 // Register type for gob
