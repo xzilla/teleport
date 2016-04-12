@@ -150,3 +150,56 @@ func TestChildren(t *testing.T) {
 		}
 	}
 }
+
+func TestDrop(t *testing.T) {
+	var schema *Schema
+
+	schema = &Schema{
+		"1234",
+		"test_schema",
+		[]*Class{},
+	}
+
+	actions := schema.Drop()
+
+	if len(actions) != 1 {
+		t.Errorf("actions => %d, want %d", len(actions), 1)
+	}
+
+	dropAction, ok := actions[0].(*action.DropSchema)
+
+	if !ok {
+		t.Errorf("action is not DropSchema")
+	}
+
+	if dropAction.SchemaName != schema.Name {
+		t.Errorf("drop action schema name => %s, want %s", dropAction.SchemaName, schema.Name)
+	}
+}
+
+func TestIsEqual(t *testing.T) {
+	var pre *Schema
+	var post *Schema
+
+	pre = &Schema{
+		"1234",
+		"test_schema",
+		[]*Class{},
+	}
+	post = &Schema{
+		"1234",
+		"test_schema_renamed",
+		[]*Class{},
+	}
+
+	if !post.IsEqual(pre) {
+		t.Errorf("expect schemas to be equal")
+	}
+
+	post.Name = pre.Name
+	post.Oid = "1235"
+
+	if post.IsEqual(pre) {
+		t.Errorf("expect schemas not to be equal")
+	}
+}
