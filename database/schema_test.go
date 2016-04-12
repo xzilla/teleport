@@ -121,7 +121,7 @@ func TestDiffRenameSchema(t *testing.T) {
 	}
 }
 
-func TestChildren(t *testing.T) {
+func TestSchemaChildren(t *testing.T) {
 	classes := []*Class {
 		&Class{
 			"567",
@@ -151,7 +151,7 @@ func TestChildren(t *testing.T) {
 	}
 }
 
-func TestDrop(t *testing.T) {
+func TestSchemaDrop(t *testing.T) {
 	var schema *Schema
 
 	schema = &Schema{
@@ -177,7 +177,7 @@ func TestDrop(t *testing.T) {
 	}
 }
 
-func TestIsEqual(t *testing.T) {
+func TestSchemaIsEqual(t *testing.T) {
 	var pre *Schema
 	var post *Schema
 
