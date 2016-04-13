@@ -158,9 +158,8 @@ func TestCreateBatchWithEvents(t *testing.T) {
 		t.Errorf("event status => %s, want %s", event.Status, "batched")
 	}
 
-	tx = db.NewTransaction()
 	var batchId string
-	tx.Get(&batchId, "SELECT batch_id FROM teleport.batch_events WHERE batch_id = $1 AND event_id = $2;", batch.Id, stubEvent.Id)
+	db.Db.Get(&batchId, "SELECT batch_id FROM teleport.batch_events WHERE batch_id = $1 AND event_id = $2;", batch.Id, stubEvent.Id)
 
 	if batchId != batch.Id {
 		t.Errorf("batch_id in batch_events table => %s, want %s", batchId, batch.Id)

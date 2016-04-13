@@ -81,7 +81,7 @@ func TestNewEvent(t *testing.T) {
 }
 
 func TestGetEvents(t *testing.T) {
-	db.db.Exec(`
+	db.Db.Exec(`
 		TRUNCATE teleport.event;
 		INSERT INTO teleport.event
 			(id, kind, status, trigger_tag, trigger_event, transaction_id, data)
@@ -125,7 +125,7 @@ func TestGetEvents(t *testing.T) {
 }
 
 func TestGetEvent(t *testing.T) {
-	db.db.Exec(`
+	db.Db.Exec(`
 		TRUNCATE teleport.event;
 		INSERT INTO teleport.event
 			(id, kind, status, trigger_tag, trigger_event, transaction_id, data)
@@ -165,7 +165,7 @@ func TestGetEvent(t *testing.T) {
 }
 
 func TestEventInsertQuery(t *testing.T) {
-	db.db.Exec(`
+	db.Db.Exec(`
 		TRUNCATE teleport.event;
 	`)
 
@@ -197,7 +197,7 @@ func TestEventInsertQuery(t *testing.T) {
 }
 
 func TestEventUpdateQuery(t *testing.T) {
-	db.db.Exec(`
+	db.Db.Exec(`
 		TRUNCATE teleport.event;
 	`)
 
@@ -234,7 +234,7 @@ func TestEventUpdateQuery(t *testing.T) {
 }
 
 func TestEventBelongsToBatch(t *testing.T) {
-	db.db.Exec(`
+	db.Db.Exec(`
 		TRUNCATE teleport.event, teleport.batch_events;
 	`)
 

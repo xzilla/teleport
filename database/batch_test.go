@@ -51,7 +51,7 @@ func init() {
 }
 
 func TestGetBatches(t *testing.T) {
-	db.db.Exec(`
+	db.Db.Exec(`
 		TRUNCATE teleport.batch;
 		INSERT INTO teleport.batch
 			(id, status, data, source, target)
@@ -93,7 +93,7 @@ func TestGetBatches(t *testing.T) {
 }
 
 func TestBatchInsertQuery(t *testing.T) {
-	db.db.Exec(`
+	db.Db.Exec(`
 		TRUNCATE teleport.batch;
 	`)
 
@@ -123,7 +123,7 @@ func TestBatchInsertQuery(t *testing.T) {
 }
 
 func TestBatchUpdateQuery(t *testing.T) {
-	db.db.Exec(`
+	db.Db.Exec(`
 		TRUNCATE teleport.batch;
 	`)
 

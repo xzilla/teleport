@@ -20,7 +20,7 @@ type Database struct {
 	Password string
 	Port     int
 	Schemas  map[string]*Schema
-	db       *sqlx.DB
+	Db       *sqlx.DB
 }
 
 func New(name, database, hostname, username, password string, port int) *Database {
@@ -39,7 +39,7 @@ func New(name, database, hostname, username, password string, port int) *Databas
 func (db *Database) Start() error {
 	var err error
 
-	db.db, err = sqlx.Connect("postgres", fmt.Sprintf(
+	db.Db, err = sqlx.Connect("postgres", fmt.Sprintf(
 		"host=%s user=%s password=%s dbname=%s port=%d sslmode=disable",
 		db.Hostname,
 		db.Username,
@@ -68,7 +68,7 @@ func (db *Database) Start() error {
 }
 
 func (db *Database) NewTransaction() *sqlx.Tx {
-	return db.db.MustBegin()
+	return db.Db.MustBegin()
 }
 
 // Install triggers on a source table
@@ -116,11 +116,11 @@ func (db *Database) setupTables() error {
 
 // Run query on database
 func (db *Database) runQuery(query string, args ...interface{}) (*sql.Rows, error) {
-	return db.db.Query(query, args...)
+	return db.Db.Query(query, args...)
 }
 
 func (db *Database) selectObjs(v interface{}, query string, args ...interface{}) error {
-	return db.db.Select(v, query, args...)
+	return db.Db.Select(v, query, args...)
 }
 
 // Open file and run query
