@@ -224,8 +224,12 @@ func TestEventUpdateQuery(t *testing.T) {
 
 	event, _ := db.GetEvent("5")
 
-	if event.Status != "batched" {
-		t.Errorf("updated event status => %s, want %s", event.Status, "batched")
+	if !reflect.DeepEqual(event, *testEvent) {
+		t.Errorf(
+			"get event => %#v, want %#v",
+			event,
+			testEvent,
+		)
 	}
 }
 
