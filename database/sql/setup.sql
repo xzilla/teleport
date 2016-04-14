@@ -133,7 +133,47 @@ BEGIN
 						WHERE class.relkind IN ('r', 'i')
 					) class
 					WHERE class.namespace_oid = namespace.oid
-				) AS classes
+				) AS classes,
+				(
+					-- The catalog pg_type stores information about data types. Base types and enum
+					-- types (scalar types) are created with CREATE TYPE, and domains with CREATE
+					-- DOMAIN. A composite type is automatically created for each table in the
+					-- database, to represent the row structure of the table. It is also possible to
+					-- create composite types with CREATE TYPE AS.
+					SELECT array_to_json(array_agg(row_to_json(pgtype)))
+					FROM (
+						SELECT
+							pgtype.oid AS oid,
+							pgtype.typnamespace AS namespace_oid,
+							pgtype.typname AS type_name,
+							(
+								-- The catalog pg_attribute stores information about table columns. There will be
+								-- exactly one pg_attribute row for every column in every table in the database.
+								-- (There will also be attribute entries for indexes, and indeed all objects that
+								-- have pg_class entries.)
+								SELECT array_to_json(array_agg(row_to_json(enum)))
+								FROM (
+									SELECT
+										oid AS enum_oid,
+										enumtypid AS type_oid,
+										enumlabel AS name
+									FROM pg_enum
+								) enum
+								WHERE
+									enum.type_oid = pgtype.oid
+							) AS enums
+						FROM pg_type pgtype
+						-- typtype is:
+						-- b for a base type
+						-- c for a composite type (e.g., a table's row type)
+						-- d for a domain
+						-- e for an enum type
+						-- p for a pseudo-type
+						-- r for a range type
+						WHERE typtype = 'e'
+					) pgtype
+					WHERE pgtype.namespace_oid = namespace.oid
+				) AS types
 			FROM pg_namespace namespace
 			WHERE
 				namespace.nspname NOT IN ('pg_catalog', 'information_schema', 'pg_toast', 'teleport')
