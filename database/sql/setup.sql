@@ -154,7 +154,7 @@ BEGIN
 								SELECT array_to_json(array_agg(row_to_json(enum)))
 								FROM (
 									SELECT
-										oid AS enum_oid,
+										oid AS oid,
 										enumtypid AS type_oid,
 										enumlabel AS name
 									FROM pg_enum
