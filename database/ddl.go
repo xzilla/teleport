@@ -9,9 +9,10 @@ import (
 type Ddl struct {
 	PreSchemas  []*Schema `json:"pre"`
 	PostSchemas []*Schema `json:"post"`
+	Db *Database
 }
 
-func NewDdl(data []byte) *Ddl {
+func NewDdl(db *Database, data []byte) *Ddl {
 	var ddl Ddl
 	err := json.Unmarshal(data, &ddl)
 
@@ -21,6 +22,7 @@ func NewDdl(data []byte) *Ddl {
 
 	for _, schema := range append(ddl.PreSchemas, ddl.PostSchemas...) {
 		schema.fillParentReferences()
+		schema.Db = db
 	}
 
 	return &ddl

@@ -198,7 +198,7 @@ func (b *Batcher) actionsForEvent(event database.Event) ([]action.Action, error)
 	}
 
 	if event.Kind == "ddl" {
-		ddl := database.NewDdl([]byte(*event.Data))
+		ddl := database.NewDdl(b.db, []byte(*event.Data))
 		actions := ddl.Diff()
 		return actions, nil
 	} else if event.Kind == "dml" {

@@ -18,21 +18,7 @@ type Class struct {
 func (c *Class) InstallTriggers() error {
 	log.Printf("Installing triggers for %s.%s...", c.Schema.Name, c.RelationName)
 
-	actions := []action.Action{
-		&action.DropTrigger{
-			SchemaName:  c.Schema.Name,
-			TableName:   c.RelationName,
-			TriggerName: "teleport_dml_insert_update_delete",
-		},
-		&action.CreateTrigger{
-			SchemaName:     c.Schema.Name,
-			TableName:      c.RelationName,
-			TriggerName:    "teleport_dml_insert_update_delete",
-			ExecutionOrder: "AFTER",
-			Events:         []string{"INSERT", "UPDATE", "DELETE"},
-			ProcedureName:  "teleport_dml_event",
-		},
-	}
+	actions := c.installTriggerActions()
 
 	// Start transaction
 	tx := c.Schema.Db.NewTransaction()
@@ -51,35 +37,23 @@ func (c *Class) InstallTriggers() error {
 	return tx.Commit()
 }
 
-// Parses a string in the form "schemaname.table*" and returns all
-// the tables under this schema
-// func (db *Database) tablesForSourceTables(sourceTables string) ([]*Class, error) {
-// 	return nil, nil
-// 	// separator := strings.Split(sourceTables, ".")
-// 	// schemaName := separator[0]
-// 	//
-// 	// // // Fetch schema from database if it's not already loaded
-// 	// // if db.Schemas[schemaName] == nil {
-// 	// // 	if err := db.fetchSchema(schemaName); err != nil {
-// 	// // 		return nil, err
-// 	// // 	}
-// 	// // }
-// 	//
-// 	// schema := db.Schemas[schemaName]
-// 	//
-// 	// prefix := strings.Split(separator[1], "*")[0]
-// 	//
-// 	// var tables []*Table
-// 	//
-// 	// // Fetch tables with prefix before *
-// 	// for _, table := range schema.Tables {
-// 	// 	if strings.HasPrefix(table.Name, prefix) {
-// 	// 		tables = append(tables, table)
-// 	// 	}
-// 	// }
-// 	//
-// 	// return tables, nil
-// }
+func (c *Class) installTriggerActions() []action.Action {
+	return []action.Action{
+		&action.DropTrigger{
+			SchemaName:  c.Schema.Name,
+			TableName:   c.RelationName,
+			TriggerName: "teleport_dml_insert_update_delete",
+		},
+		&action.CreateTrigger{
+			SchemaName:     c.Schema.Name,
+			TableName:      c.RelationName,
+			TriggerName:    "teleport_dml_insert_update_delete",
+			ExecutionOrder: "AFTER",
+			Events:         []string{"INSERT", "UPDATE", "DELETE"},
+			ProcedureName:  "teleport_dml_event",
+		},
+	}
+}
 
 // Implements Diffable
 func (post *Class) Diff(other ddldiff.Diffable) []action.Action {
@@ -102,6 +76,9 @@ func (post *Class) Diff(other ddldiff.Diffable) []action.Action {
 				post.RelationName,
 				cols,
 			})
+
+			// Install triggers on table after creation
+			post.InstallTriggers()
 		} else {
 			pre := other.(*Class)
 

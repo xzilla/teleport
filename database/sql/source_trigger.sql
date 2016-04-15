@@ -6,8 +6,8 @@ BEGIN
 	(
 		get_schema()::text,
 		'ddl',
-		tg_tag,
 		tg_event,
+		tg_tag,
 		txid_current(),
 		'building'
 	);
@@ -38,26 +38,27 @@ END;
 $$
 LANGUAGE plpgsql;
 
-CREATE OR REPLACE FUNCTION teleport_dml_event() RETURNS TRIGGER AS $emp_audit$
+CREATE OR REPLACE FUNCTION teleport_dml_event() RETURNS TRIGGER AS $$
     BEGIN
+		INSERT INTO teleport.event (data, kind, trigger_tag, trigger_event, transaction_id, status) VALUES
+		(
+			(
+				SELECT json_agg(row_to_json(data)) FROM (
+					SELECT
+						(CASE WHEN TG_OP = 'INSERT' THEN NULL ELSE OLD END) as pre,
+						(CASE WHEN TG_OP = 'DELETE' THEN NULL ELSE NEW END) as post
+				) data
+			)::text,
+			-- row_to_json(CASE WHEN TG_OP = 'DELETE' THEN OLD ELSE NEW END)::text,
+			'dml',
+			CONCAT(TG_TABLE_SCHEMA, '.', TG_RELNAME),
+			TG_OP,
+			txid_current(),
+			'waiting_batch'
+		);
 		RETURN NULL;
-        --
-        -- Create a row in emp_audit to reflect the operation performed on emp,
-        -- make use of the special variable TG_OP to work out the operation.
-        --
-        -- IF (TG_OP = 'DELETE') THEN
-        --     INSERT INTO emp_audit SELECT 'D', now(), user, OLD.*;
-        --     RETURN OLD;
-        -- ELSIF (TG_OP = 'UPDATE') THEN
-        --     INSERT INTO emp_audit SELECT 'U', now(), user, NEW.*;
-        --     RETURN NEW;
-        -- ELSIF (TG_OP = 'INSERT') THEN
-        --     INSERT INTO emp_audit SELECT 'I', now(), user, NEW.*;
-        --     RETURN NEW;
-        -- END IF;
-        -- RETURN NULL; -- result is ignored since this is an AFTER trigger
     END;
-$emp_audit$ LANGUAGE plpgsql;
+$$ LANGUAGE plpgsql;
 
 -- Install ddl event when it starts and ends
 DO $$
