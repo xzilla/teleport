@@ -17,9 +17,10 @@ func init() {
 }
 
 func (a *CreateEnum) Execute(c Context) error {
+	// ALTER TYPE... ADD VALUE cannot run inside a transaction
 	_, err := c.Db.Exec(
 		fmt.Sprintf(
-			"ALTER TYPE %s.\"%s\" ADD VALUE '%s';",
+			"ALTER TYPE \"%s\".\"%s\" ADD VALUE '%s';",
 			a.SchemaName,
 			a.TypeName,
 			a.Name,

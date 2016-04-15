@@ -21,12 +21,12 @@ func (a *CreateTable) Execute(c Context) error {
 	cols := make([]string, 0)
 
 	for _, col := range a.Columns {
-		cols = append(cols, fmt.Sprintf("%s %s", col.Name, col.Type))
+		cols = append(cols, fmt.Sprintf("\"%s\" \"%s\"", col.Name, col.Type))
 	}
 
 	_, err := c.Tx.Exec(
 		fmt.Sprintf(
-			"CREATE TABLE %s.\"%s\" (%s);",
+			"CREATE TABLE \"%s\".\"%s\" (%s);",
 			a.SchemaName,
 			a.TableName,
 			strings.Join(cols, ","),

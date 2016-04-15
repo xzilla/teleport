@@ -16,7 +16,7 @@ func init() {
 
 func (a *DropSchema) Execute(c Context) error {
 	_, err := c.Tx.Exec(
-		fmt.Sprintf("DROP SCHEMA %s;", a.SchemaName),
+		fmt.Sprintf("DROP SCHEMA \"%s\";", a.SchemaName),
 	)
 
 	return err

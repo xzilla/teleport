@@ -17,7 +17,7 @@ func init() {
 
 func (a *AlterSchema) Execute(c Context) error {
 	_, err := c.Tx.Exec(
-		fmt.Sprintf("ALTER SCHEMA %s RENAME TO %s;", a.SourceName, a.TargetName),
+		fmt.Sprintf("ALTER SCHEMA \"%s\" RENAME TO \"%s\";", a.SourceName, a.TargetName),
 	)
 
 	return err

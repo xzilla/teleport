@@ -21,7 +21,7 @@ func (a *AlterColumn) Execute(c Context) error {
 	if a.Column.Name != a.NewColumn.Name {
 		_, err := c.Tx.Exec(
 			fmt.Sprintf(
-				"ALTER TABLE %s.\"%s\" RENAME COLUMN %s TO %s;",
+				"ALTER TABLE \"%s\".\"%s\" RENAME COLUMN \"%s\" TO \"%s\";",
 				a.SchemaName,
 				a.TableName,
 				a.Column.Name,
@@ -37,7 +37,7 @@ func (a *AlterColumn) Execute(c Context) error {
 	if a.Column.Type != a.NewColumn.Type {
 		_, err := c.Tx.Exec(
 			fmt.Sprintf(
-				"ALTER TABLE %s.\"%s\" ALTER COLUMN %s TYPE %s;",
+				"ALTER TABLE \"%s\".\"%s\" ALTER COLUMN \"%s\" TYPE \"%s\";",
 				a.SchemaName,
 				a.TableName,
 				a.NewColumn.Name,

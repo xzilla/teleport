@@ -16,7 +16,7 @@ func init() {
 
 func (a *CreateSchema) Execute(c Context) error {
 	_, err := c.Tx.Exec(
-		fmt.Sprintf("CREATE SCHEMA %s;", a.SchemaName),
+		fmt.Sprintf("CREATE SCHEMA \"%s\";", a.SchemaName),
 	)
 
 	return err

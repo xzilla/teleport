@@ -18,7 +18,7 @@ func init() {
 
 func (a *AlterTable) Execute(c Context) error {
 	_, err := c.Tx.Exec(
-		fmt.Sprintf("ALTER TABLE %s.\"%s\" RENAME TO %s;", a.SchemaName, a.SourceName, a.TargetName),
+		fmt.Sprintf("ALTER TABLE \"%s\".\"%s\" RENAME TO \"%s\";", a.SchemaName, a.SourceName, a.TargetName),
 	)
 
 	return err

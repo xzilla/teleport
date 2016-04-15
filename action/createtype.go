@@ -26,7 +26,7 @@ func (a *CreateType) Execute(c Context) error {
 
 	_, err := c.Tx.Exec(
 		fmt.Sprintf(
-			"CREATE TYPE %s.\"%s\" AS ENUM (%s);",
+			"CREATE TYPE \"%s\".\"%s\" AS ENUM (%s);",
 			a.SchemaName,
 			a.TypeName,
 			strings.Join(escapedEnums, ","),

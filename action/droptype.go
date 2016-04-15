@@ -17,7 +17,7 @@ func init() {
 
 func (a *DropType) Execute(c Context) error {
 	_, err := c.Tx.Exec(
-		fmt.Sprintf("DROP TYPE %s.\"%s\";", a.SchemaName, a.TypeName),
+		fmt.Sprintf("DROP TYPE \"%s\".\"%s\";", a.SchemaName, a.TypeName),
 	)
 
 	return err
