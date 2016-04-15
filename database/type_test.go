@@ -123,7 +123,7 @@ func TestTypeDiff(t *testing.T) {
 	}
 }
 
-func TestChildrenDiff(t *testing.T) {
+func TestTypeChildren(t *testing.T) {
 	enums := []*Enum{
 		&Enum{
 			"123",
@@ -184,5 +184,74 @@ func TestTypeDrop(t *testing.T) {
 
 	if dropAction.TypeName != typ.Name {
 		t.Errorf("drop action type name => %s, want %s", dropAction.TypeName, typ.Name)
+	}
+}
+
+func TestTypeIsEqual(t *testing.T) {
+	pre := &Type{
+		"789",
+		"test_type",
+		[]*Enum{
+			&Enum{
+				"123",
+				"test_enum1",
+				nil,
+			},
+			&Enum{
+				"124",
+				"test_enum2",
+				nil,
+			},
+		},
+		schema,
+	}
+
+	post := &Type{
+		"789",
+		"test_type_renamed",
+		[]*Enum{
+			&Enum{
+				"123",
+				"test_enum1",
+				nil,
+			},
+			&Enum{
+				"124",
+				"test_enum2",
+				nil,
+			},
+		},
+		schema,
+	}
+
+	preOtherType := &Class{
+		"123",
+		"r",
+		"test_table",
+		[]*Attribute{
+			&Attribute{
+				"test_col",
+				1,
+				"int4",
+				"0",
+				nil,
+			},
+		},
+		schema,
+	}
+
+	if !post.IsEqual(pre) {
+		t.Errorf("expect types to be equal")
+	}
+
+	post.Name = pre.Name
+	post.Oid = "890"
+
+	if post.IsEqual(pre) {
+		t.Errorf("expect types not to be equal")
+	}
+
+	if post.IsEqual(preOtherType) {
+		t.Errorf("expect two different types not to be equal")
 	}
 }
