@@ -18,7 +18,21 @@ type Class struct {
 func (c *Class) InstallTriggers() error {
 	log.Printf("Installing triggers for %s.%s...", c.Schema.Name, c.RelationName)
 
-	actions := c.installTriggerActions()
+	actions := []action.Action{
+		&action.DropTrigger{
+			SchemaName:  c.Schema.Name,
+			TableName:   c.RelationName,
+			TriggerName: "teleport_dml_insert_update_delete",
+		},
+		&action.CreateTrigger{
+			SchemaName:     c.Schema.Name,
+			TableName:      c.RelationName,
+			TriggerName:    "teleport_dml_insert_update_delete",
+			ExecutionOrder: "AFTER",
+			Events:         []string{"INSERT", "UPDATE", "DELETE"},
+			ProcedureName:  "teleport_dml_event",
+		},
+	}
 
 	// Start transaction
 	tx := c.Schema.Db.NewTransaction()
@@ -35,24 +49,6 @@ func (c *Class) InstallTriggers() error {
 	}
 
 	return tx.Commit()
-}
-
-func (c *Class) installTriggerActions() []action.Action {
-	return []action.Action{
-		&action.DropTrigger{
-			SchemaName:  c.Schema.Name,
-			TableName:   c.RelationName,
-			TriggerName: "teleport_dml_insert_update_delete",
-		},
-		&action.CreateTrigger{
-			SchemaName:     c.Schema.Name,
-			TableName:      c.RelationName,
-			TriggerName:    "teleport_dml_insert_update_delete",
-			ExecutionOrder: "AFTER",
-			Events:         []string{"INSERT", "UPDATE", "DELETE"},
-			ProcedureName:  "teleport_dml_event",
-		},
-	}
 }
 
 // Implements Diffable
