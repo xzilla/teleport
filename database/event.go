@@ -20,7 +20,7 @@ type Event struct {
 	Data          *string `db:"data"`
 }
 
-type Events []Event 
+type Events []Event
 
 func NewEvent(eventData string) *Event {
 	separator := strings.Split(eventData, ",")
@@ -151,13 +151,13 @@ func (e *Event) ToString() string {
 
 // Implement Interface
 func (slice Events) Len() int {
-    return len(slice)
+	return len(slice)
 }
 
 func (slice Events) Less(i, j int) bool {
-    return slice[i].Id < slice[j].Id;
+	return slice[i].Id < slice[j].Id
 }
 
 func (slice Events) Swap(i, j int) {
-    slice[i], slice[j] = slice[j], slice[i]
+	slice[i], slice[j] = slice[j], slice[i]
 }

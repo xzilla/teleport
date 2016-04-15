@@ -3,8 +3,8 @@ package database
 import (
 	"encoding/gob"
 	"fmt"
-	"github.com/pagarme/teleport/config"
 	"github.com/pagarme/teleport/action"
+	"github.com/pagarme/teleport/config"
 	"os"
 	"reflect"
 	"testing"

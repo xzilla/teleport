@@ -3,10 +3,10 @@ package applier
 import (
 	"encoding/gob"
 	"fmt"
+	"github.com/pagarme/teleport/action"
 	"github.com/pagarme/teleport/client"
 	"github.com/pagarme/teleport/config"
 	"github.com/pagarme/teleport/database"
-	"github.com/pagarme/teleport/action"
 	"os"
 	"testing"
 )
@@ -55,11 +55,11 @@ func init() {
 	stubEvent.SetDataFromAction(action)
 
 	stubBatch = &database.Batch{
-		Id: "1",
+		Id:     "1",
 		Status: "waiting_apply",
 		Source: "source",
 		Target: "target",
-		Data: nil,
+		Data:   nil,
 	}
 
 	stubBatch.SetEvents([]database.Event{*stubEvent})
@@ -74,7 +74,7 @@ func init() {
 }
 
 // StubAction implements Action
-type StubAction struct {}
+type StubAction struct{}
 
 func (a *StubAction) Execute(c action.Context) error {
 	_, err := c.Tx.Exec("CREATE TABLE test (id INT); INSERT INTO test (id) VALUES (3);")

@@ -8,8 +8,8 @@ import (
 
 type CreateType struct {
 	SchemaName string
-	TypeName  string
-	Enums    []string
+	TypeName   string
+	Enums      []string
 }
 
 // Register type for gob

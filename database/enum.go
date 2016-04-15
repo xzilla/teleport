@@ -6,7 +6,7 @@ import (
 )
 
 type Enum struct {
-	Oid string `json:"oid"`
+	Oid  string `json:"oid"`
 	Name string `json:"name"`
 	Type *Type
 }

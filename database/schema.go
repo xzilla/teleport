@@ -11,7 +11,8 @@ type Schema struct {
 	Oid     string   `json:"oid"`
 	Name    string   `json:"schema_name"`
 	Classes []*Class `json:"classes"`
-	Types []*Type `json:"types"`
+	Types   []*Type  `json:"types"`
+	Db      *Database
 }
 
 type Schemas []*Schema
@@ -77,6 +78,7 @@ func (db *Database) fetchSchema() error {
 
 	for _, schema := range schemas {
 		db.Schemas[schema.Name] = schema
+		schema.Db = db
 	}
 
 	return nil

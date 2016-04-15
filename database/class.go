@@ -3,6 +3,7 @@ package database
 import (
 	"github.com/pagarme/teleport/action"
 	"github.com/pagarme/teleport/batcher/ddldiff"
+	"log"
 )
 
 // Define a database table
@@ -14,9 +15,41 @@ type Class struct {
 	Schema       *Schema
 }
 
-// func (t *Table) InstallTriggers() error {
-// 	return nil
-// }
+func (c *Class) InstallTriggers() error {
+	log.Printf("Installing triggers for %s.%s...", c.Schema.Name, c.RelationName)
+
+	actions := []action.Action{
+		&action.DropTrigger{
+			SchemaName:  c.Schema.Name,
+			TableName:   c.RelationName,
+			TriggerName: "teleport_dml_insert_update_delete",
+		},
+		&action.CreateTrigger{
+			SchemaName:     c.Schema.Name,
+			TableName:      c.RelationName,
+			TriggerName:    "teleport_dml_insert_update_delete",
+			ExecutionOrder: "AFTER",
+			Events:         []string{"INSERT", "UPDATE", "DELETE"},
+			ProcedureName:  "teleport_dml_event",
+		},
+	}
+
+	// Start transaction
+	tx := c.Schema.Db.NewTransaction()
+
+	for _, currentAction := range actions {
+		err := currentAction.Execute(action.Context{
+			Tx: tx,
+			Db: c.Schema.Db.Db,
+		})
+
+		if err != nil {
+			log.Printf("Error creating triggers on %s: %v", c.RelationName, err)
+		}
+	}
+
+	return tx.Commit()
+}
 
 // Parses a string in the form "schemaname.table*" and returns all
 // the tables under this schema
@@ -116,6 +149,6 @@ func (c *Class) IsEqual(other ddldiff.Diffable) bool {
 	if otherClass, ok := other.(*Class); ok {
 		return (c.Oid == otherClass.Oid)
 	}
-	
+
 	return false
 }

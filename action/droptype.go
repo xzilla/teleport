@@ -7,7 +7,7 @@ import (
 
 type DropType struct {
 	SchemaName string
-	TypeName  string
+	TypeName   string
 }
 
 // Register type for gob

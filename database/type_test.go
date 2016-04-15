@@ -13,6 +13,7 @@ func init() {
 		"test_schema",
 		[]*Class{},
 		nil,
+		nil,
 	}
 }
 

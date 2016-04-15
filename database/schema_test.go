@@ -66,6 +66,7 @@ func TestDiffCreateSchema(t *testing.T) {
 		"test_schema",
 		[]*Class{},
 		nil,
+		nil,
 	}
 
 	actions := post.Diff(pre)
@@ -95,11 +96,13 @@ func TestDiffRenameSchema(t *testing.T) {
 		"test_schema",
 		[]*Class{},
 		nil,
+		nil,
 	}
 	post = &Schema{
 		"1234",
 		"test_schema_renamed",
 		[]*Class{},
+		nil,
 		nil,
 	}
 
@@ -149,6 +152,7 @@ func TestSchemaChildren(t *testing.T) {
 		"test_schema",
 		classes,
 		types,
+		nil,
 	}
 
 	children := schema.Children()
@@ -173,6 +177,7 @@ func TestSchemaDrop(t *testing.T) {
 		"1234",
 		"test_schema",
 		[]*Class{},
+		nil,
 		nil,
 	}
 
@@ -202,11 +207,13 @@ func TestSchemaIsEqual(t *testing.T) {
 		"test_schema",
 		[]*Class{},
 		nil,
+		nil,
 	}
 	post = &Schema{
 		"1234",
 		"test_schema_renamed",
 		[]*Class{},
+		nil,
 		nil,
 	}
 

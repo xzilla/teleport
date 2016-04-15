@@ -1,8 +1,8 @@
 package applier
 
 import (
-	"github.com/pagarme/teleport/database"
 	"github.com/pagarme/teleport/action"
+	"github.com/pagarme/teleport/database"
 	"log"
 	"time"
 )

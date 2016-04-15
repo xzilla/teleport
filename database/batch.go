@@ -3,8 +3,8 @@ package database
 import (
 	"bytes"
 	"github.com/jmoiron/sqlx"
-	"strings"
 	"sort"
+	"strings"
 )
 
 type Batch struct {

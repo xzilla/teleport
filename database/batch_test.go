@@ -66,11 +66,11 @@ func TestGetBatches(t *testing.T) {
 	testData := "data"
 
 	testBatch := Batch{
-		Id: "1",
+		Id:     "1",
 		Status: "waiting_transmission",
 		Source: "source",
 		Target: "target",
-		Data: &testData,
+		Data:   &testData,
 	}
 
 	batches, err := db.GetBatches("waiting_transmission")
@@ -100,11 +100,11 @@ func TestBatchInsertQuery(t *testing.T) {
 	testData := "data"
 
 	testBatch := &Batch{
-		Id: "1",
+		Id:     "1",
 		Status: "waiting_transmission",
 		Source: "source",
 		Target: "target",
-		Data: &testData,
+		Data:   &testData,
 	}
 
 	tx := db.NewTransaction()
@@ -130,11 +130,11 @@ func TestBatchUpdateQuery(t *testing.T) {
 	testData := "data"
 
 	testBatch := &Batch{
-		Id: "1",
+		Id:     "1",
 		Status: "waiting_transmission",
 		Source: "source",
 		Target: "target",
-		Data: &testData,
+		Data:   &testData,
 	}
 
 	tx := db.NewTransaction()
@@ -159,11 +159,11 @@ func TestBatchUpdateQuery(t *testing.T) {
 
 func TestBatchSetEvents(t *testing.T) {
 	testBatch := &Batch{
-		Id: "1",
+		Id:     "1",
 		Status: "waiting_transmission",
 		Source: "source",
 		Target: "target",
-		Data: nil,
+		Data:   nil,
 	}
 
 	testBatch.SetEvents([]Event{*stubEvent})
@@ -175,11 +175,11 @@ func TestBatchSetEvents(t *testing.T) {
 
 func TestBatchGetEvents(t *testing.T) {
 	testBatch := &Batch{
-		Id: "1",
+		Id:     "1",
 		Status: "waiting_transmission",
 		Source: "source",
 		Target: "target",
-		Data: &stubBatchData,
+		Data:   &stubBatchData,
 	}
 
 	events := testBatch.GetEvents()

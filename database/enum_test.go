@@ -1,4 +1,4 @@
-package database 
+package database
 
 import (
 	"github.com/pagarme/teleport/action"
@@ -14,6 +14,7 @@ func init() {
 		"123",
 		"test_schema",
 		[]*Class{},
+		nil,
 		nil,
 	}
 

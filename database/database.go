@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq"
+	"github.com/pagarme/teleport/action"
 	"io/ioutil"
 	"log"
 	"path"
@@ -74,25 +75,26 @@ func (db *Database) NewTransaction() *sqlx.Tx {
 }
 
 // Install triggers on a source table
-func (db *Database) InstallTriggers(sourceTables string) error {
+func (db *Database) InstallTriggers(targetExpression string) error {
 	err := db.installDDLTriggers()
 
 	if err != nil {
 		return err
 	}
 
-	// // Get tables for sourceTables string
-	// tables, err := db.tablesForSourceTables(sourceTables)
+	// Install triggers for each table
+	for _, schema := range db.Schemas {
+		for _, class := range schema.Classes {
+			// If class is not a table, continue...
+			if class.RelationKind != "r" {
+				continue
+			}
 
-	// if err != nil {
-	// 	return err
-	// }
-
-	// // Install triggers for each table/schema
-	// for _, table := range tables {
-	// 	table.InstallTriggers()
-	// 	fmt.Printf("Tables! %v\n", table.Name)
-	// }
+			if action.IsInTargetExpression(&targetExpression, &schema.Name, &class.RelationName) {
+				class.InstallTriggers()
+			}
+		}
+	}
 
 	return nil
 }

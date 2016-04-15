@@ -7,8 +7,8 @@ import (
 
 type CreateEnum struct {
 	SchemaName string
-	TypeName  string
-	Name string
+	TypeName   string
+	Name       string
 }
 
 // Register type for gob
