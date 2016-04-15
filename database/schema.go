@@ -11,6 +11,7 @@ type Schema struct {
 	Oid     string   `json:"oid"`
 	Name    string   `json:"schema_name"`
 	Classes []*Class `json:"classes"`
+	Types []*Type `json:"types"`
 }
 
 type Schemas []*Schema
@@ -36,6 +37,13 @@ func (s *Schema) fillParentReferences() {
 		class.Schema = s
 		for _, attr := range class.Attributes {
 			attr.Class = class
+		}
+	}
+
+	for _, typ := range s.Types {
+		typ.Schema = s
+		for _, enum := range typ.Enums {
+			enum.Type = typ
 		}
 	}
 }
@@ -101,6 +109,10 @@ func (s *Schema) Children() []ddldiff.Diffable {
 
 	for i, _ := range s.Classes {
 		children = append(children, s.Classes[i])
+	}
+
+	for i, _ := range s.Types {
+		children = append(children, s.Types[i])
 	}
 
 	return children

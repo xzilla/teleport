@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"github.com/jmoiron/sqlx"
 	"strings"
+	"sort"
 )
 
 type Batch struct {
@@ -58,9 +59,12 @@ func (b *Batch) UpdateQuery(tx *sqlx.Tx) error {
 	return err
 }
 
-func (b *Batch) SetEvents(events []Event) {
+func (b *Batch) SetEvents(events Events) {
 	// Store batch data
 	var batchBuffer bytes.Buffer
+
+	// Sort events by id first
+	sort.Sort(events)
 
 	// Encode each event into buffer
 	for i, event := range events {
@@ -78,16 +82,19 @@ func (b *Batch) SetEvents(events []Event) {
 	b.Data = &dataStr
 }
 
-func (b *Batch) GetEvents() []Event {
+func (b *Batch) GetEvents() Events {
 	// Split events data per line
 	eventsData := strings.Split(*b.Data, "\n")
 
-	events := make([]Event, 0)
+	events := make(Events, 0)
 
 	// Initialize new event
 	for _, eventData := range eventsData {
 		events = append(events, *NewEvent(eventData))
 	}
+
+	// Sort events by id before returning
+	sort.Sort(events)
 
 	return events
 }

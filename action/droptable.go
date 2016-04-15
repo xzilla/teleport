@@ -17,7 +17,7 @@ func init() {
 
 func (a *DropTable) Execute(c Context) error {
 	_, err := c.Tx.Exec(
-		fmt.Sprintf("DROP TABLE %s.%s;", a.SchemaName, a.TableName),
+		fmt.Sprintf("DROP TABLE %s.\"%s\";", a.SchemaName, a.TableName),
 	)
 
 	return err

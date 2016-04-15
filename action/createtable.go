@@ -26,7 +26,7 @@ func (a *CreateTable) Execute(c Context) error {
 
 	_, err := c.Tx.Exec(
 		fmt.Sprintf(
-			"CREATE TABLE %s.%s (%s);",
+			"CREATE TABLE %s.\"%s\" (%s);",
 			a.SchemaName,
 			a.TableName,
 			strings.Join(cols, ","),

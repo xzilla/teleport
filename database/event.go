@@ -20,6 +20,8 @@ type Event struct {
 	Data          *string `db:"data"`
 }
 
+type Events []Event 
+
 func NewEvent(eventData string) *Event {
 	separator := strings.Split(eventData, ",")
 
@@ -81,6 +83,16 @@ func (e *Event) UpdateQuery(tx *sqlx.Tx) error {
 }
 
 func (e *Event) BelongsToBatch(tx *sqlx.Tx, b *Batch) error {
+	var hasId string
+	tx.Get(&hasId, "SELECT event_id FROM teleport.batch_events WHERE batch_id = $1 AND event_id = $2;",
+		b.Id,
+		e.Id,
+	)
+
+	if hasId == e.Id {
+		return nil
+	}
+
 	_, err := tx.Exec(
 		"INSERT INTO teleport.batch_events (batch_id, event_id) VALUES ($1, $2);",
 		b.Id,
@@ -135,4 +147,17 @@ func (e *Event) ToString() string {
 		e.TransactionId,
 		*e.Data,
 	)
+}
+
+// Implement Interface
+func (slice Events) Len() int {
+    return len(slice)
+}
+
+func (slice Events) Less(i, j int) bool {
+    return slice[i].Id < slice[j].Id;
+}
+
+func (slice Events) Swap(i, j int) {
+    slice[i], slice[j] = slice[j], slice[i]
 }

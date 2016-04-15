@@ -48,6 +48,8 @@ func (db *Database) Start() error {
 		db.Port,
 	))
 
+	db.Db.SetMaxOpenConns(5)
+
 	if err != nil {
 		return err
 	}

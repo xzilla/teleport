@@ -61,6 +61,7 @@ func (a *Applier) applyBatch(batch *database.Batch) error {
 		})
 
 		if err != nil {
+			log.Printf("Error applying event %d: %v", event.Id, err)
 			return err
 		}
 	}

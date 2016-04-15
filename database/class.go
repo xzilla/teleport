@@ -113,6 +113,9 @@ func (c *Class) IsEqual(other ddldiff.Diffable) bool {
 		return false
 	}
 
-	otherClass := other.(*Class)
-	return (c.Oid == otherClass.Oid)
+	if otherClass, ok := other.(*Class); ok {
+		return (c.Oid == otherClass.Oid)
+	}
+	
+	return false
 }
