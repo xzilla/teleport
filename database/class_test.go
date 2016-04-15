@@ -14,6 +14,7 @@ func init() {
 		"123",
 		"test_schema",
 		[]*Class{},
+		nil,
 	}
 }
 
@@ -256,6 +257,13 @@ func TestClassIsEqual(t *testing.T) {
 		schema,
 	}
 
+	preOtherType := &Type{
+		"789",
+		"test_type",
+		[]*Enum{},
+		nil,
+	}
+
 	if !post.IsEqual(pre) {
 		t.Errorf("expect classes to be equal")
 	}
@@ -265,5 +273,9 @@ func TestClassIsEqual(t *testing.T) {
 
 	if post.IsEqual(pre) {
 		t.Errorf("expect classes not to be equal")
+	}
+
+	if post.IsEqual(preOtherType) {
+		t.Errorf("expect two different types not to be equal")
 	}
 }

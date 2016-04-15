@@ -65,6 +65,7 @@ func TestDiffCreateSchema(t *testing.T) {
 		"1234",
 		"test_schema",
 		[]*Class{},
+		nil,
 	}
 
 	actions := post.Diff(pre)
@@ -93,11 +94,13 @@ func TestDiffRenameSchema(t *testing.T) {
 		"1234",
 		"test_schema",
 		[]*Class{},
+		nil,
 	}
 	post = &Schema{
 		"1234",
 		"test_schema_renamed",
 		[]*Class{},
+		nil,
 	}
 
 	actions := post.Diff(pre)
@@ -132,22 +135,34 @@ func TestSchemaChildren(t *testing.T) {
 		},
 	}
 
+	types := []*Type{
+		&Type{
+			"789",
+			"test_type",
+			[]*Enum{},
+			nil,
+		},
+	}
+
 	schema := &Schema{
 		"1234",
 		"test_schema",
 		classes,
+		types,
 	}
 
 	children := schema.Children()
 
-	if len(children) != 1 {
-		t.Errorf("children => %d, want %d", len(children), 1)
+	if len(children) != 2 {
+		t.Errorf("children => %d, want %d", len(children), 2)
 	}
 
-	for i, child := range children {
-		if child != classes[i] {
-			t.Errorf("child %i => %v, want %v", i, child, classes[i])
-		}
+	if children[0] != classes[0] {
+		t.Errorf("child 0 => %v, want %v", children[0], classes[0])
+	}
+
+	if children[1] != types[0] {
+		t.Errorf("child 1 => %v, want %v", children[1], types[0])
 	}
 }
 
@@ -158,6 +173,7 @@ func TestSchemaDrop(t *testing.T) {
 		"1234",
 		"test_schema",
 		[]*Class{},
+		nil,
 	}
 
 	actions := schema.Drop()
@@ -185,11 +201,13 @@ func TestSchemaIsEqual(t *testing.T) {
 		"1234",
 		"test_schema",
 		[]*Class{},
+		nil,
 	}
 	post = &Schema{
 		"1234",
 		"test_schema_renamed",
 		[]*Class{},
+		nil,
 	}
 
 	if !post.IsEqual(pre) {

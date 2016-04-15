@@ -14,6 +14,7 @@ func init() {
 		"123",
 		"test_schema",
 		[]*Class{},
+		nil,
 	}
 
 	class = &Class{
