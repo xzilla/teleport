@@ -3,7 +3,6 @@ package batcher
 import (
 	"encoding/gob"
 	"fmt"
-	"github.com/jmoiron/sqlx"
 	"github.com/pagarme/teleport/action"
 	"github.com/pagarme/teleport/client"
 	"github.com/pagarme/teleport/config"
@@ -65,7 +64,7 @@ type StubAction struct {
 	ShouldFilter bool
 }
 
-func (a *StubAction) Execute(tx *sqlx.Tx) error {
+func (a *StubAction) Execute(c action.Context) error {
 	return nil
 }
 

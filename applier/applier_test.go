@@ -3,10 +3,10 @@ package applier
 import (
 	"encoding/gob"
 	"fmt"
-	"github.com/jmoiron/sqlx"
 	"github.com/pagarme/teleport/client"
 	"github.com/pagarme/teleport/config"
 	"github.com/pagarme/teleport/database"
+	"github.com/pagarme/teleport/action"
 	"os"
 	"testing"
 )
@@ -76,8 +76,8 @@ func init() {
 // StubAction implements Action
 type StubAction struct {}
 
-func (a *StubAction) Execute(tx *sqlx.Tx) error {
-	_, err := tx.Exec("CREATE TABLE test (id INT); INSERT INTO test (id) VALUES (3);")
+func (a *StubAction) Execute(c action.Context) error {
+	_, err := c.Tx.Exec("CREATE TABLE test (id INT); INSERT INTO test (id) VALUES (3);")
 	return err
 }
 

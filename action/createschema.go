@@ -3,7 +3,6 @@ package action
 import (
 	"encoding/gob"
 	"fmt"
-	"github.com/jmoiron/sqlx"
 )
 
 type CreateSchema struct {
@@ -15,8 +14,8 @@ func init() {
 	gob.Register(&CreateSchema{})
 }
 
-func (a *CreateSchema) Execute(tx *sqlx.Tx) error {
-	_, err := tx.Exec(
+func (a *CreateSchema) Execute(c Context) error {
+	_, err := c.Tx.Exec(
 		fmt.Sprintf("CREATE SCHEMA %s;", a.SchemaName),
 	)
 

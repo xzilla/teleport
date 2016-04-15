@@ -3,7 +3,6 @@ package action
 import (
 	"encoding/gob"
 	"fmt"
-	"github.com/jmoiron/sqlx"
 )
 
 type AlterColumn struct {
@@ -18,9 +17,9 @@ func init() {
 	gob.Register(&AlterColumn{})
 }
 
-func (a *AlterColumn) Execute(tx *sqlx.Tx) error {
+func (a *AlterColumn) Execute(c Context) error {
 	if a.Column.Name != a.NewColumn.Name {
-		_, err := tx.Exec(
+		_, err := c.Tx.Exec(
 			fmt.Sprintf(
 				"ALTER TABLE %s.%s RENAME COLUMN %s TO %s;",
 				a.SchemaName,
@@ -36,7 +35,7 @@ func (a *AlterColumn) Execute(tx *sqlx.Tx) error {
 	}
 
 	if a.Column.Type != a.NewColumn.Type {
-		_, err := tx.Exec(
+		_, err := c.Tx.Exec(
 			fmt.Sprintf(
 				"ALTER TABLE %s.%s ALTER COLUMN %s TYPE %s;",
 				a.SchemaName,

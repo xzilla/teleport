@@ -3,7 +3,6 @@ package action
 import (
 	"encoding/gob"
 	"fmt"
-	"github.com/jmoiron/sqlx"
 )
 
 type CreateColumn struct {
@@ -17,8 +16,8 @@ func init() {
 	gob.Register(&CreateColumn{})
 }
 
-func (a *CreateColumn) Execute(tx *sqlx.Tx) error {
-	_, err := tx.Exec(
+func (a *CreateColumn) Execute(c Context) error {
+	_, err := c.Tx.Exec(
 		fmt.Sprintf(
 			"ALTER TABLE %s.%s ADD COLUMN %s %s;",
 			a.SchemaName,

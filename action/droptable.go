@@ -3,7 +3,6 @@ package action
 import (
 	"encoding/gob"
 	"fmt"
-	"github.com/jmoiron/sqlx"
 )
 
 type DropTable struct {
@@ -16,8 +15,8 @@ func init() {
 	gob.Register(&DropTable{})
 }
 
-func (a *DropTable) Execute(tx *sqlx.Tx) error {
-	_, err := tx.Exec(
+func (a *DropTable) Execute(c Context) error {
+	_, err := c.Tx.Exec(
 		fmt.Sprintf("DROP TABLE %s.%s;", a.SchemaName, a.TableName),
 	)
 

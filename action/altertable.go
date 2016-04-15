@@ -3,7 +3,6 @@ package action
 import (
 	"encoding/gob"
 	"fmt"
-	"github.com/jmoiron/sqlx"
 )
 
 type AlterTable struct {
@@ -17,8 +16,8 @@ func init() {
 	gob.Register(&AlterTable{})
 }
 
-func (a *AlterTable) Execute(tx *sqlx.Tx) error {
-	_, err := tx.Exec(
+func (a *AlterTable) Execute(c Context) error {
+	_, err := c.Tx.Exec(
 		fmt.Sprintf("ALTER TABLE %s.%s RENAME TO %s;", a.SchemaName, a.SourceName, a.TargetName),
 	)
 

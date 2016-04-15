@@ -2,6 +2,7 @@ package applier
 
 import (
 	"github.com/pagarme/teleport/database"
+	"github.com/pagarme/teleport/action"
 	"log"
 	"time"
 )
@@ -47,14 +48,17 @@ func (a *Applier) applyBatch(batch *database.Batch) error {
 	log.Printf("applying batch %v\n", batch)
 
 	for _, event := range events {
-		action, err := event.GetActionFromData()
+		currentAction, err := event.GetActionFromData()
 
 		if err != nil {
 			return err
 		}
 
 		// Execute action of the given event
-		err = action.Execute(tx)
+		err = currentAction.Execute(action.Context{
+			Tx: tx,
+			Db: a.db.Db,
+		})
 
 		if err != nil {
 			return err

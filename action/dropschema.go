@@ -3,7 +3,6 @@ package action
 import (
 	"encoding/gob"
 	"fmt"
-	"github.com/jmoiron/sqlx"
 )
 
 type DropSchema struct {
@@ -15,8 +14,8 @@ func init() {
 	gob.Register(&DropSchema{})
 }
 
-func (a *DropSchema) Execute(tx *sqlx.Tx) error {
-	_, err := tx.Exec(
+func (a *DropSchema) Execute(c Context) error {
+	_, err := c.Tx.Exec(
 		fmt.Sprintf("DROP SCHEMA %s;", a.SchemaName),
 	)
 

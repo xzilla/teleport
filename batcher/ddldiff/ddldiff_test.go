@@ -1,7 +1,6 @@
 package ddldiff
 
 import (
-	"github.com/jmoiron/sqlx"
 	"github.com/pagarme/teleport/action"
 	"testing"
 )
@@ -22,7 +21,7 @@ type FooAction struct {
 	Kind string
 }
 
-func (a *FooAction) Execute(tx *sqlx.Tx) error {
+func (a *FooAction) Execute(c action.Context) error {
 	return nil
 }
 
@@ -34,7 +33,7 @@ type BarAction struct {
 	Kind string
 }
 
-func (a *BarAction) Execute(tx *sqlx.Tx) error {
+func (a *BarAction) Execute(c action.Context) error {
 	return nil
 }
 

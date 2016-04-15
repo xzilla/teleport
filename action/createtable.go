@@ -3,7 +3,6 @@ package action
 import (
 	"encoding/gob"
 	"fmt"
-	"github.com/jmoiron/sqlx"
 	"strings"
 )
 
@@ -18,14 +17,14 @@ func init() {
 	gob.Register(&CreateTable{})
 }
 
-func (a *CreateTable) Execute(tx *sqlx.Tx) error {
+func (a *CreateTable) Execute(c Context) error {
 	cols := make([]string, 0)
 
 	for _, col := range a.Columns {
 		cols = append(cols, fmt.Sprintf("%s %s", col.Name, col.Type))
 	}
 
-	_, err := tx.Exec(
+	_, err := c.Tx.Exec(
 		fmt.Sprintf(
 			"CREATE TABLE %s.%s (%s);",
 			a.SchemaName,

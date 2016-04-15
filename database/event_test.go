@@ -3,8 +3,8 @@ package database
 import (
 	"encoding/gob"
 	"fmt"
-	"github.com/jmoiron/sqlx"
 	"github.com/pagarme/teleport/config"
+	"github.com/pagarme/teleport/action"
 	"os"
 	"reflect"
 	"testing"
@@ -14,7 +14,7 @@ type StubAction struct {
 	Name string
 }
 
-func (s *StubAction) Execute(tx *sqlx.Tx) error {
+func (s *StubAction) Execute(c action.Context) error {
 	return nil
 }
 

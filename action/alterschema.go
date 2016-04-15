@@ -3,7 +3,6 @@ package action
 import (
 	"encoding/gob"
 	"fmt"
-	"github.com/jmoiron/sqlx"
 )
 
 type AlterSchema struct {
@@ -16,8 +15,8 @@ func init() {
 	gob.Register(&AlterSchema{})
 }
 
-func (a *AlterSchema) Execute(tx *sqlx.Tx) error {
-	_, err := tx.Exec(
+func (a *AlterSchema) Execute(c Context) error {
+	_, err := c.Tx.Exec(
 		fmt.Sprintf("ALTER SCHEMA %s RENAME TO %s;", a.SourceName, a.TargetName),
 	)
 
