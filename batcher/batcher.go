@@ -183,7 +183,12 @@ func (b *Batcher) eventsForTarget(target *client.Client, actionsForEvent map[dat
 				// Each action is a new event.
 				newEvent := event
 				// Encode action inside event's data
-				newEvent.SetDataFromAction(action)
+				err := newEvent.SetDataFromAction(action)
+
+				if err != nil {
+					return nil, err
+				}
+
 				events = append(events, newEvent)
 			}
 		}
@@ -199,10 +204,18 @@ func (b *Batcher) actionsForEvent(event database.Event) ([]action.Action, error)
 
 	if event.Kind == "ddl" {
 		ddl := database.NewDdl(b.db, []byte(*event.Data))
+
+		// Update database schema
+		for _, schema := range ddl.PostSchemas {
+			b.db.Schemas[schema.Name] = schema
+		}
+
 		actions := ddl.Diff()
 		return actions, nil
 	} else if event.Kind == "dml" {
-		// Implement DML processor
+		dml := database.NewDml(b.db, &event, []byte(*event.Data))
+		actions := dml.Diff()
+		return actions, nil
 	}
 
 	return []action.Action{}, nil

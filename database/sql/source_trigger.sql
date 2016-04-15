@@ -43,7 +43,7 @@ CREATE OR REPLACE FUNCTION teleport_dml_event() RETURNS TRIGGER AS $$
 		INSERT INTO teleport.event (data, kind, trigger_tag, trigger_event, transaction_id, status) VALUES
 		(
 			(
-				SELECT json_agg(row_to_json(data)) FROM (
+				SELECT row_to_json(data) FROM (
 					SELECT
 						(CASE WHEN TG_OP = 'INSERT' THEN NULL ELSE OLD END) as pre,
 						(CASE WHEN TG_OP = 'DELETE' THEN NULL ELSE NEW END) as post
