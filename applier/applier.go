@@ -30,6 +30,7 @@ func (a *Applier) Watch(sleepTime time.Duration) {
 
 				if err != nil {
 					log.Printf("Error applying batch %s: %v\n", batch.Id, err)
+					break
 				}
 			}
 		}
