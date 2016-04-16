@@ -96,6 +96,25 @@ func (d *Dml) Diff() []action.Action {
 		}
 	}
 
+	if d.Post == nil {
+		class := d.GetClass()
+		pkey := class.GetPrimaryKey()
+
+		return []action.Action{
+			&action.DeleteRow{
+				SchemaName: d.GetSchemaName(),
+				TableName:  d.GetTableName(),
+				PrimaryKey: action.Row{
+					Value: (*d.Pre)[pkey.Name],
+					Column: action.Column{
+						Name: pkey.Name,
+						Type: pkey.TypeName,
+					},
+				},
+			},
+		}
+	}
+
 	return []action.Action{}
 	// return ddldiff.Diff(
 	// 	d.schemaToDiffable(d.PreSchemas),

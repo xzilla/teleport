@@ -3,6 +3,7 @@ package database
 import (
 	"github.com/pagarme/teleport/action"
 	"github.com/pagarme/teleport/batcher/ddldiff"
+	"fmt"
 	"log"
 )
 
@@ -19,6 +20,10 @@ func (c *Class) InstallTriggers() error {
 	// Bail out if there's no schema/db
 	if c.Schema == nil || c.Schema.Db == nil {
 		return nil
+	}
+
+	if c.GetPrimaryKey() == nil {
+		return fmt.Errorf("table %s does not have primary key!", c.RelationName)
 	}
 
 	log.Printf("Installing triggers for %s.%s...", c.Schema.Name, c.RelationName)
@@ -56,6 +61,16 @@ func (c *Class) InstallTriggers() error {
 	return tx.Commit()
 }
 
+func (c *Class) GetPrimaryKey() *Attribute {
+	for _, attr := range c.Attributes {
+		if attr.IsPrimaryKey {
+			return attr
+		}
+	}
+
+	return nil
+}
+
 // Implements Diffable
 func (post *Class) Diff(other ddldiff.Diffable) []action.Action {
 	actions := make([]action.Action, 0)
@@ -63,6 +78,15 @@ func (post *Class) Diff(other ddldiff.Diffable) []action.Action {
 	// r = Tables
 	if post.RelationKind == "r" {
 		if other == nil {
+			// Install triggers on table after creation
+			err := post.InstallTriggers()
+
+			// Bail out on errors installing triggers
+			if err != nil {
+				fmt.Printf("Error installing triggers on table %s: %v\n", post.RelationName, err)
+				return actions
+			}
+
 			cols := make([]action.Column, 0)
 
 			for _, attr := range post.Attributes {
@@ -77,9 +101,6 @@ func (post *Class) Diff(other ddldiff.Diffable) []action.Action {
 				post.RelationName,
 				cols,
 			})
-
-			// Install triggers on table after creation
-			post.InstallTriggers()
 		} else {
 			pre := other.(*Class)
 
