@@ -60,64 +60,75 @@ func (d *Dml) GetClass() *Class {
 	return nil
 }
 
-func (d *Dml) Diff() []action.Action {
-	if d.Pre == nil {
-		// Insert row
-		rows := make([]action.Row, 0)
+func (d *Dml) generateRows(obj *map[string]interface{}) []action.Row {
+	rows := make([]action.Row, 0)
 
-		// Generate row for each key, value of DML
-		for key, value := range *d.Post {
-			class := d.GetClass()
+	// Generate row for each key, value of DML
+	for key, value := range *obj {
+		class := d.GetClass()
 
-			var attribute *Attribute
+		var attribute *Attribute
 
-			for _, att := range class.Attributes {
-				if att.Name == key {
-					attribute = att
-					break
-				}
+		for _, att := range class.Attributes {
+			if att.Name == key {
+				attribute = att
+				break
 			}
-
-			rows = append(rows, action.Row{
-				Value: value,
-				Column: action.Column{
-					Name: attribute.Name,
-					Type: attribute.TypeName,
-				},
-			})
 		}
 
+		rows = append(rows, action.Row{
+			Value: value,
+			Column: action.Column{
+				Name: attribute.Name,
+				Type: attribute.TypeName,
+			},
+		})
+	}
+
+	return rows
+}
+
+func (d *Dml) generatePrimaryKeyRow(obj *map[string]interface{}) action.Row {
+	class := d.GetClass()
+	pkey := class.GetPrimaryKey()
+
+	return action.Row{
+		Value: (*obj)[pkey.Name],
+		Column: action.Column{
+			Name: pkey.Name,
+			Type: pkey.TypeName,
+		},
+	}
+}
+
+func (d *Dml) Diff() []action.Action {
+	// Insert row
+	if d.Pre == nil {
 		return []action.Action{
 			&action.InsertRow{
 				SchemaName: d.GetSchemaName(),
 				TableName:  d.GetTableName(),
-				Rows:       rows,
+				Rows:       d.generateRows(d.Post),
 			},
 		}
 	}
 
 	if d.Post == nil {
-		class := d.GetClass()
-		pkey := class.GetPrimaryKey()
-
 		return []action.Action{
 			&action.DeleteRow{
 				SchemaName: d.GetSchemaName(),
 				TableName:  d.GetTableName(),
-				PrimaryKey: action.Row{
-					Value: (*d.Pre)[pkey.Name],
-					Column: action.Column{
-						Name: pkey.Name,
-						Type: pkey.TypeName,
-					},
-				},
+				PrimaryKey: d.generatePrimaryKeyRow(d.Pre),
 			},
 		}
 	}
 
-	return []action.Action{}
-	// return ddldiff.Diff(
-	// 	d.schemaToDiffable(d.PreSchemas),
-	// 	d.schemaToDiffable(d.PostSchemas),
-	// )
+	return []action.Action{
+		&action.UpdateRow{
+			SchemaName: d.GetSchemaName(),
+			TableName:  d.GetTableName(),
+			PrimaryKey: d.generatePrimaryKeyRow(d.Post),
+			Rows:       d.generateRows(d.Post),
+		},
+	}
 }
