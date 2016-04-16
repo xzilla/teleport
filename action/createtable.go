@@ -9,6 +9,7 @@ import (
 type CreateTable struct {
 	SchemaName string
 	TableName  string
+	PrimaryKey string
 	Columns    []Column
 }
 
@@ -21,7 +22,13 @@ func (a *CreateTable) Execute(c Context) error {
 	cols := make([]string, 0)
 
 	for _, col := range a.Columns {
-		cols = append(cols, fmt.Sprintf("\"%s\" \"%s\"", col.Name, col.Type))
+		var primaryKeyStr string
+
+		if a.PrimaryKey == col.Name {
+			primaryKeyStr = "PRIMARY KEY"
+		}
+
+		cols = append(cols, fmt.Sprintf("\"%s\" \"%s\" %s", col.Name, col.Type, primaryKeyStr))
 	}
 
 	_, err := c.Tx.Exec(

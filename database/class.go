@@ -99,6 +99,7 @@ func (post *Class) Diff(other ddldiff.Diffable) []action.Action {
 			actions = append(actions, &action.CreateTable{
 				post.Schema.Name,
 				post.RelationName,
+				post.GetPrimaryKey().Name,
 				cols,
 			})
 		} else {
