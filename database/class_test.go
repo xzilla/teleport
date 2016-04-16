@@ -57,7 +57,7 @@ func TestClassDiff(t *testing.T) {
 						1,
 						"int4",
 						"0",
-						false,
+						true,
 						nil,
 					},
 				},
@@ -67,6 +67,7 @@ func TestClassDiff(t *testing.T) {
 				&action.CreateTable{
 					"test_schema",
 					"test_table",
+					"test_col",
 					[]action.Column{
 						action.Column{
 							"test_col",

@@ -26,7 +26,7 @@ var db *Database
 var stubAction *StubAction
 var stubActionData string
 
-func init() {
+func setupEvent() {
 	gob.Register(&StubAction{})
 
 	config := config.New()
@@ -57,6 +57,7 @@ func init() {
 }
 
 func TestNewEvent(t *testing.T) {
+	setupEvent()
 	event := NewEvent("a,b,c,d,e,f")
 
 	data := "f"
@@ -81,6 +82,7 @@ func TestNewEvent(t *testing.T) {
 }
 
 func TestGetEvents(t *testing.T) {
+	setupEvent()
 	db.Db.Exec(`
 		TRUNCATE teleport.event;
 		INSERT INTO teleport.event
@@ -125,6 +127,7 @@ func TestGetEvents(t *testing.T) {
 }
 
 func TestGetEvent(t *testing.T) {
+	setupEvent()
 	db.Db.Exec(`
 		TRUNCATE teleport.event;
 		INSERT INTO teleport.event
@@ -165,6 +168,7 @@ func TestGetEvent(t *testing.T) {
 }
 
 func TestEventInsertQuery(t *testing.T) {
+	setupEvent()
 	db.Db.Exec(`
 		TRUNCATE teleport.event;
 	`)
@@ -197,6 +201,7 @@ func TestEventInsertQuery(t *testing.T) {
 }
 
 func TestEventUpdateQuery(t *testing.T) {
+	setupEvent()
 	db.Db.Exec(`
 		TRUNCATE teleport.event;
 	`)
@@ -234,6 +239,7 @@ func TestEventUpdateQuery(t *testing.T) {
 }
 
 func TestEventBelongsToBatch(t *testing.T) {
+	setupEvent()
 	db.Db.Exec(`
 		TRUNCATE teleport.event, teleport.batch_events;
 	`)
@@ -276,6 +282,7 @@ func TestEventBelongsToBatch(t *testing.T) {
 }
 
 func TestEventSetDataFromAction(t *testing.T) {
+	setupEvent()
 	testEvent := &Event{
 		Id:            "5",
 		Kind:          "ddl",
@@ -294,6 +301,7 @@ func TestEventSetDataFromAction(t *testing.T) {
 }
 
 func TestEventGetActionFromData(t *testing.T) {
+	setupEvent()
 	testEvent := &Event{
 		Id:            "5",
 		Kind:          "ddl",
