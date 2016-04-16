@@ -9,8 +9,8 @@ import (
 
 type InsertRow struct {
 	SchemaName string
-	TableName   string
-	Rows []Row
+	TableName  string
+	Rows       []Row
 }
 
 // Register type for gob
@@ -25,7 +25,7 @@ func (a *InsertRow) Execute(c Context) error {
 
 	for i, row := range a.Rows {
 		escapedCols = append(escapedCols, fmt.Sprintf("\"%s\"", row.Column.Name))
-		escapedRows = append(escapedRows, fmt.Sprintf("$%d::%s", i + 1, row.Column.Type))
+		escapedRows = append(escapedRows, fmt.Sprintf("$%d::%s", i+1, row.Column.Type))
 
 		// Marshall JSON objects as pg driver does not support it
 		if obj, ok := row.Value.(*map[string]interface{}); ok {
@@ -49,7 +49,7 @@ func (a *InsertRow) Execute(c Context) error {
 			strings.Join(escapedCols, ","),
 			strings.Join(escapedRows, ","),
 		),
-		values...
+		values...,
 	)
 
 	return err

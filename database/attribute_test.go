@@ -41,6 +41,7 @@ func TestAttributeDiff(t *testing.T) {
 				1,
 				"text",
 				"0",
+				false,
 				class,
 			},
 			[]action.Action{
@@ -61,6 +62,7 @@ func TestAttributeDiff(t *testing.T) {
 				1,
 				"text",
 				"0",
+				false,
 				class,
 			},
 			&Attribute{
@@ -68,6 +70,7 @@ func TestAttributeDiff(t *testing.T) {
 				1,
 				"int4",
 				"0",
+				false,
 				class,
 			},
 			[]action.Action{
@@ -117,6 +120,7 @@ func TestAttributeChildren(t *testing.T) {
 		1,
 		"text",
 		"0",
+		false,
 		class,
 	}
 
@@ -133,6 +137,7 @@ func TestAttributeDrop(t *testing.T) {
 		1,
 		"text",
 		"0",
+		false,
 		class,
 	}
 
@@ -171,6 +176,7 @@ func TestAttributeIsEqual(t *testing.T) {
 		1,
 		"text",
 		"0",
+		false,
 		class,
 	}
 
@@ -179,6 +185,7 @@ func TestAttributeIsEqual(t *testing.T) {
 		1,
 		"int4",
 		"0",
+		false,
 		class,
 	}
 

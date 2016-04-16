@@ -9,7 +9,7 @@ import (
 type Ddl struct {
 	PreSchemas  []*Schema `json:"pre"`
 	PostSchemas []*Schema `json:"post"`
-	Db *Database
+	Db          *Database
 }
 
 func NewDdl(db *Database, data []byte) *Ddl {

@@ -1,6 +1,6 @@
 package action
 
 type Row struct {
-	Value interface{}
+	Value  interface{}
 	Column Column
 }

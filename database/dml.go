@@ -1,8 +1,8 @@
 package database
 
 import (
-	"encoding/json"
 	"encoding/gob"
+	"encoding/json"
 	"github.com/pagarme/teleport/action"
 	// "github.com/pagarme/teleport/batcher/ddldiff"
 	"strings"
@@ -90,8 +90,8 @@ func (d *Dml) Diff() []action.Action {
 		return []action.Action{
 			&action.InsertRow{
 				SchemaName: d.GetSchemaName(),
-				TableName: d.GetTableName(),
-				Rows: rows,
+				TableName:  d.GetTableName(),
+				Rows:       rows,
 			},
 		}
 	}

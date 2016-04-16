@@ -16,6 +16,11 @@ type Class struct {
 }
 
 func (c *Class) InstallTriggers() error {
+	// Bail out if there's no schema/db
+	if c.Schema == nil || c.Schema.Db == nil {
+		return nil
+	}
+
 	log.Printf("Installing triggers for %s.%s...", c.Schema.Name, c.RelationName)
 
 	actions := []action.Action{

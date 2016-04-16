@@ -99,7 +99,12 @@ BEGIN
 										a.attname AS attr_name,
 										a.attnum AS attr_num,
 										t.typname AS type_name,
-										t.oid AS type_oid
+										t.oid AS type_oid,
+										COALESCE((
+											SELECT (a.attnum = ANY(indkey))
+											FROM pg_index i
+											WHERE indrelid = a.attrelid AND indisprimary
+										), false) AS is_primary_key
 									FROM pg_attribute a
 									INNER JOIN pg_type t
 										ON a.atttypid = t.oid

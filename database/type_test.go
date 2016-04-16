@@ -235,6 +235,7 @@ func TestTypeIsEqual(t *testing.T) {
 				1,
 				"int4",
 				"0",
+				false,
 				nil,
 			},
 		},
