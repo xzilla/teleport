@@ -1,9 +1,9 @@
 package database
 
 import (
+	"fmt"
 	"github.com/pagarme/teleport/action"
 	"github.com/pagarme/teleport/batcher/ddldiff"
-	"fmt"
 	"log"
 )
 

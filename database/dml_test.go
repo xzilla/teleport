@@ -29,7 +29,7 @@ func setupDml() {
 			nil,
 		},
 	}
-	
+
 	classes := []*Class{
 		&Class{
 			"123",
@@ -65,7 +65,7 @@ func TestDmlDiff(t *testing.T) {
 	setupDml()
 
 	var tests = []struct {
-		dml *Dml
+		dml    *Dml
 		output []action.Action
 	}{
 		{
@@ -73,7 +73,7 @@ func TestDmlDiff(t *testing.T) {
 			&Dml{
 				nil,
 				&map[string]interface{}{
-					"id": 5,
+					"id":      5,
 					"content": "test",
 				},
 				event,
@@ -106,7 +106,7 @@ func TestDmlDiff(t *testing.T) {
 			// Test delete a row
 			&Dml{
 				&map[string]interface{}{
-					"id": 5,
+					"id":      5,
 					"content": "test",
 				},
 				nil,
@@ -131,11 +131,11 @@ func TestDmlDiff(t *testing.T) {
 			// Test update a row
 			&Dml{
 				&map[string]interface{}{
-					"id": 5,
+					"id":      5,
 					"content": "test",
 				},
 				&map[string]interface{}{
-					"id": 5,
+					"id":      5,
 					"content": "test updated",
 				},
 				event,
