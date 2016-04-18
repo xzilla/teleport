@@ -23,6 +23,8 @@ func Diff(preObjs []Diffable, postObjs []Diffable) []action.Action {
 
 		if preObj != nil {
 			actions = append(actions, Diff(preObj.Children(), post.Children())...)
+		} else {
+			actions = append(actions, Diff([]Diffable{}, post.Children())...)
 		}
 	}
 

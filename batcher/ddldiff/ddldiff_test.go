@@ -207,6 +207,33 @@ func TestDiffDrop(t *testing.T) {
 }
 
 // Test a diff that should create something recursively
+func TestDiffCreateTree(t *testing.T) {
+	pre := []Diffable{
+	}
+
+	post := []Diffable{
+		Diffable(NewFoo("test", 1, []*Bar{NewBar("sub test", 1)})),
+	}
+
+	actions := Diff(pre, post)
+
+	if len(actions) != 2 {
+		t.Errorf("len actions => %d, want %d", len(actions), 2)
+	}
+
+	fooAction := actions[0].(*FooAction)
+	barAction := actions[1].(*BarAction)
+
+	if fooAction.Kind != "CREATE FOO" {
+		t.Errorf("action kind => %s, want %s", fooAction.Kind, "CREATE FOO")
+	}
+
+	if barAction.Kind != "CREATE BAR" {
+		t.Errorf("action kind => %s, want %s", barAction.Kind, "CREATE BAR")
+	}
+}
+
+// Test a diff that should create something recursively
 func TestDiffCreateRecursively(t *testing.T) {
 	pre := []Diffable{
 		Diffable(NewFoo("test", 1, []*Bar{})),
