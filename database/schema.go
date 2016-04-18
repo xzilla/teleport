@@ -109,12 +109,12 @@ func (post *Schema) Diff(other ddldiff.Diffable) []action.Action {
 func (s *Schema) Children() []ddldiff.Diffable {
 	children := make([]ddldiff.Diffable, 0)
 
-	for i, _ := range s.Classes {
-		children = append(children, s.Classes[i])
-	}
-
 	for i, _ := range s.Types {
 		children = append(children, s.Types[i])
+	}
+
+	for i, _ := range s.Classes {
+		children = append(children, s.Classes[i])
 	}
 
 	return children

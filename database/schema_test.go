@@ -161,12 +161,12 @@ func TestSchemaChildren(t *testing.T) {
 		t.Errorf("children => %d, want %d", len(children), 2)
 	}
 
-	if children[0] != classes[0] {
-		t.Errorf("child 0 => %v, want %v", children[0], classes[0])
+	if children[0] != types[0] {
+		t.Errorf("child 0 => %v, want %v", children[0], types[0])
 	}
 
-	if children[1] != types[0] {
-		t.Errorf("child 1 => %v, want %v", children[1], types[0])
+	if children[1] != classes[0] {
+		t.Errorf("child 1 => %v, want %v", children[1], classes[0])
 	}
 }
 
