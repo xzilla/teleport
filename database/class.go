@@ -87,20 +87,15 @@ func (post *Class) Diff(other ddldiff.Diffable) []action.Action {
 				return actions
 			}
 
-			cols := make([]action.Column, 0)
-
-			for _, attr := range post.Attributes {
-				cols = append(cols, action.Column{
-					attr.Name,
-					attr.TypeName,
-				})
-			}
+			primaryKeyAttr := post.GetPrimaryKey()
 
 			actions = append(actions, &action.CreateTable{
 				post.Schema.Name,
 				post.RelationName,
-				post.GetPrimaryKey().Name,
-				cols,
+				action.Column{
+					primaryKeyAttr.Name,
+					primaryKeyAttr.TypeName,
+				},
 			})
 		} else {
 			pre := other.(*Class)
@@ -120,9 +115,12 @@ func (post *Class) Diff(other ddldiff.Diffable) []action.Action {
 
 func (c *Class) Children() []ddldiff.Diffable {
 	children := make([]ddldiff.Diffable, 0)
+	primaryKey := c.GetPrimaryKey()
 
 	for _, attr := range c.Attributes {
-		children = append(children, attr)
+		if primaryKey == nil || attr.Name != primaryKey.Name {
+			children = append(children, attr)
+		}
 	}
 
 	return children

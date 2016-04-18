@@ -67,12 +67,9 @@ func TestClassDiff(t *testing.T) {
 				&action.CreateTable{
 					"test_schema",
 					"test_table",
-					"test_col",
-					[]action.Column{
-						action.Column{
-							"test_col",
-							"int4",
-						},
+					action.Column{
+						"test_col",
+						"int4",
 					},
 				},
 			},
@@ -152,7 +149,7 @@ func TestClassChildren(t *testing.T) {
 			1,
 			"int4",
 			"0",
-			false,
+			true,
 			nil,
 		},
 	}
@@ -167,14 +164,41 @@ func TestClassChildren(t *testing.T) {
 
 	children := class.Children()
 
+	// Should not return primary key
+	if len(children) != 0 {
+		t.Errorf("children => %d, want %d", len(children), 0)
+	}
+
+	attrs = []*Attribute{
+		&Attribute{
+			"test_col",
+			1,
+			"int4",
+			"0",
+			true,
+			nil,
+		},
+		&Attribute{
+			"other_col",
+			1,
+			"text",
+			"0",
+			false,
+			nil,
+		},
+	}
+
+	class.Attributes = attrs
+
+	children = class.Children()
+
+	// Should not return primary key (only the other key)
 	if len(children) != 1 {
 		t.Errorf("children => %d, want %d", len(children), 1)
 	}
 
-	for i, child := range children {
-		if child != attrs[i] {
-			t.Errorf("child %i => %v, want %v", i, child, attrs[i])
-		}
+	if children[0] != attrs[1] {
+		t.Errorf("child => %v, want %v", children[0], attrs[1])
 	}
 }
 
