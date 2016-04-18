@@ -45,3 +45,7 @@ func (a *CreateTrigger) Execute(c Context) error {
 func (a *CreateTrigger) Filter(targetExpression string) bool {
 	return IsInTargetExpression(&targetExpression, &a.SchemaName, &a.TableName)
 }
+
+func (a *CreateTrigger) NeedsSeparatedBatch() bool {
+	return false
+}

@@ -27,3 +27,7 @@ func (a *DropColumn) Execute(c Context) error {
 func (a *DropColumn) Filter(targetExpression string) bool {
 	return IsInTargetExpression(&targetExpression, &a.SchemaName, &a.TableName)
 }
+
+func (a *DropColumn) NeedsSeparatedBatch() bool {
+	return false
+}

@@ -8,7 +8,6 @@ import (
 type CreateType struct {
 	SchemaName string
 	TypeName   string
-	Enums      []string
 }
 
 // Register type for gob
@@ -30,4 +29,8 @@ func (a *CreateType) Execute(c Context) error {
 
 func (a *CreateType) Filter(targetExpression string) bool {
 	return IsInTargetExpression(&targetExpression, &a.SchemaName, nil)
+}
+
+func (a *CreateType) NeedsSeparatedBatch() bool {
+	return false
 }

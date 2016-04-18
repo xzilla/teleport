@@ -33,3 +33,7 @@ func (a *DeleteRow) Execute(c Context) error {
 func (a *DeleteRow) Filter(targetExpression string) bool {
 	return IsInTargetExpression(&targetExpression, &a.SchemaName, &a.TableName)
 }
+
+func (a *DeleteRow) NeedsSeparatedBatch() bool {
+	return false
+}

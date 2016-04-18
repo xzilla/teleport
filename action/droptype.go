@@ -26,3 +26,7 @@ func (a *DropType) Execute(c Context) error {
 func (a *DropType) Filter(targetExpression string) bool {
 	return IsInTargetExpression(&targetExpression, &a.SchemaName, &a.TypeName)
 }
+
+func (a *DropType) NeedsSeparatedBatch() bool {
+	return false
+}

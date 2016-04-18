@@ -29,6 +29,10 @@ func (a *FooAction) Filter(targetExpression string) bool {
 	return true
 }
 
+func (a *FooAction) NeedsSeparatedBatch() bool {
+	return false
+}
+
 type BarAction struct {
 	Kind string
 }
@@ -39,6 +43,10 @@ func (a *BarAction) Execute(c action.Context) error {
 
 func (a *BarAction) Filter(targetExpression string) bool {
 	return true
+}
+
+func (a *BarAction) NeedsSeparatedBatch() bool {
+	return false
 }
 
 func NewFoo(name string, id int, bars []*Bar) *Foo {

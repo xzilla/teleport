@@ -27,3 +27,7 @@ func (a *AlterType) Execute(c Context) error {
 func (a *AlterType) Filter(targetExpression string) bool {
 	return IsInTargetExpression(&targetExpression, &a.SchemaName, nil)
 }
+
+func (a *AlterType) NeedsSeparatedBatch() bool {
+	return false
+}

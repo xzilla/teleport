@@ -25,3 +25,7 @@ func (a *CreateSchema) Execute(c Context) error {
 func (a *CreateSchema) Filter(targetExpression string) bool {
 	return IsInTargetExpression(&targetExpression, &a.SchemaName, nil)
 }
+
+func (a *CreateSchema) NeedsSeparatedBatch() bool {
+	return false
+}

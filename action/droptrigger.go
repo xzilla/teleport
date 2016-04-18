@@ -32,3 +32,7 @@ func (a *DropTrigger) Execute(c Context) error {
 func (a *DropTrigger) Filter(targetExpression string) bool {
 	return IsInTargetExpression(&targetExpression, &a.SchemaName, &a.TableName)
 }
+
+func (a *DropTrigger) NeedsSeparatedBatch() bool {
+	return false
+}

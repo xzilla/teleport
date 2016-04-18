@@ -22,6 +22,10 @@ func (s *StubAction) Filter(targetExpression string) bool {
 	return true
 }
 
+func (a *StubAction) NeedsSeparatedBatch() bool {
+	return false
+}
+
 var db *Database
 var stubAction *StubAction
 var stubActionData string

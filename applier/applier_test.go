@@ -85,6 +85,10 @@ func (a *StubAction) Filter(targetExpression string) bool {
 	return true
 }
 
+func (a *StubAction) NeedsSeparatedBatch() bool {
+	return false
+}
+
 func TestApplyBatch(t *testing.T) {
 	db.Db.Exec(`
 		DROP TABLE test;

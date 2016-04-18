@@ -56,3 +56,7 @@ func (a *AlterColumn) Execute(c Context) error {
 func (a *AlterColumn) Filter(targetExpression string) bool {
 	return IsInTargetExpression(&targetExpression, &a.SchemaName, &a.TableName)
 }
+
+func (a *AlterColumn) NeedsSeparatedBatch() bool {
+	return false
+}

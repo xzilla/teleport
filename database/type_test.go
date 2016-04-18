@@ -47,10 +47,6 @@ func TestTypeDiff(t *testing.T) {
 				&action.CreateType{
 					"test_schema",
 					"test_type",
-					[]string{
-						"test_enum1",
-						"test_enum2",
-					},
 				},
 			},
 		},

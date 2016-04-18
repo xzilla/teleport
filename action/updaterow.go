@@ -62,3 +62,7 @@ func (a *UpdateRow) Execute(c Context) error {
 func (a *UpdateRow) Filter(targetExpression string) bool {
 	return IsInTargetExpression(&targetExpression, &a.SchemaName, &a.TableName)
 }
+
+func (a *UpdateRow) NeedsSeparatedBatch() bool {
+	return false
+}

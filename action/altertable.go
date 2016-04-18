@@ -27,3 +27,7 @@ func (a *AlterTable) Execute(c Context) error {
 func (a *AlterTable) Filter(targetExpression string) bool {
 	return IsInTargetExpression(&targetExpression, &a.SchemaName, &a.SourceName)
 }
+
+func (a *AlterTable) NeedsSeparatedBatch() bool {
+	return false
+}

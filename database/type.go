@@ -16,16 +16,9 @@ func (post *Type) Diff(other ddldiff.Diffable) []action.Action {
 	actions := make([]action.Action, 0)
 
 	if other == nil {
-		enumsStr := make([]string, 0)
-
-		for _, enum := range post.Enums {
-			enumsStr = append(enumsStr, enum.Name)
-		}
-
 		actions = append(actions, &action.CreateType{
 			post.Schema.Name,
 			post.Name,
-			enumsStr,
 		})
 	} else {
 		pre := other.(*Type)

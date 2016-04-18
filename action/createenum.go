@@ -33,3 +33,7 @@ func (a *CreateEnum) Execute(c Context) error {
 func (a *CreateEnum) Filter(targetExpression string) bool {
 	return IsInTargetExpression(&targetExpression, &a.SchemaName, nil)
 }
+
+func (a *CreateEnum) NeedsSeparatedBatch() bool {
+	return true
+}

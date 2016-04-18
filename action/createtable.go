@@ -34,3 +34,7 @@ func (a *CreateTable) Execute(c Context) error {
 func (a *CreateTable) Filter(targetExpression string) bool {
 	return IsInTargetExpression(&targetExpression, &a.SchemaName, &a.TableName)
 }
+
+func (a *CreateTable) NeedsSeparatedBatch() bool {
+	return false
+}

@@ -58,3 +58,7 @@ func (a *InsertRow) Execute(c Context) error {
 func (a *InsertRow) Filter(targetExpression string) bool {
 	return IsInTargetExpression(&targetExpression, &a.SchemaName, &a.TableName)
 }
+
+func (a *InsertRow) NeedsSeparatedBatch() bool {
+	return false
+}

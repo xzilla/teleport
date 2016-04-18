@@ -8,6 +8,7 @@ import (
 	"github.com/pagarme/teleport/config"
 	"github.com/pagarme/teleport/database"
 	"os"
+	"reflect"
 	"testing"
 )
 
@@ -62,6 +63,7 @@ func init() {
 // StubAction implements Action
 type StubAction struct {
 	ShouldFilter bool
+	SeparateBatch bool
 }
 
 func (a *StubAction) Execute(c action.Context) error {
@@ -70,6 +72,10 @@ func (a *StubAction) Execute(c action.Context) error {
 
 func (a *StubAction) Filter(targetExpression string) bool {
 	return a.ShouldFilter
+}
+
+func (a *StubAction) NeedsSeparatedBatch() bool {
+	return a.SeparateBatch
 }
 
 func TestMarkIgnoredEvents(t *testing.T) {
@@ -96,33 +102,29 @@ func TestMarkIgnoredEvents(t *testing.T) {
 	}
 }
 
-func TestEventsForTarget(t *testing.T) {
+func TestActionsForEvents(t *testing.T) {
+	testAction := &StubAction{true,false}
+
 	tx := db.NewTransaction()
-	stubEventData := "event data"
-	stubEvent.Data = &stubEventData
+	stubEvent.Kind = "test"
+	stubEvent.SetDataFromAction(testAction)
 	stubEvent.InsertQuery(tx)
 	tx.Commit()
 
-	events, _ := batcher.eventsForTarget(
-		batcher.targets["test_target"],
-		map[database.Event][]action.Action{
-			*stubEvent: []action.Action{&StubAction{false}},
+	output := map[database.Event][]action.Action{
+		*stubEvent: []action.Action{
+			testAction,
 		},
-	)
-
-	if len(events) != 0 {
-		t.Errorf("events for target => %d, want %d", len(events), 0)
 	}
 
-	events, _ = batcher.eventsForTarget(
-		batcher.targets["test_target"],
-		map[database.Event][]action.Action{
-			*stubEvent: []action.Action{&StubAction{true}},
-		},
-	)
+	actionsForEvents, _ := batcher.actionsForEvents([]database.Event{*stubEvent})
 
-	if len(events) != 1 {
-		t.Errorf("events for target => %d, want %d", len(events), 1)
+	if !reflect.DeepEqual(actionsForEvents, output) {
+		t.Errorf(
+			"action for event => %#v, want %#v",
+			actionsForEvents,
+			output,
+		)
 	}
 }
 
@@ -133,7 +135,7 @@ func TestCreateBatchWithEvents(t *testing.T) {
 	stubEvent.InsertQuery(tx)
 	tx.Commit()
 
-	batch, err := batcher.createBatchWithEvents([]database.Event{*stubEvent}, "test-target")
+	batch, err := batcher.createBatchWithEvents([]database.Event{*stubEvent}, "test_target")
 
 	if err != nil {
 		t.Errorf("createBatchWithEvents returned error: %v", err)
@@ -143,8 +145,8 @@ func TestCreateBatchWithEvents(t *testing.T) {
 		t.Errorf("batch source => %s, want %s", batch.Source, "test-db")
 	}
 
-	if batch.Target != "test-target" {
-		t.Errorf("batch source => %s, want %s", batch.Target, "test-target")
+	if batch.Target != "test_target" {
+		t.Errorf("batch source => %s, want %s", batch.Target, "test_target")
 	}
 
 	if batch.Status != "waiting_transmission" {
@@ -162,5 +164,78 @@ func TestCreateBatchWithEvents(t *testing.T) {
 
 	if batchId != batch.Id {
 		t.Errorf("batch_id in batch_events table => %s, want %s", batchId, batch.Id)
+	}
+}
+
+func TestCreateBatchesWithActions(t *testing.T) {
+	db.Db.Exec(`
+		TRUNCATE teleport.event;
+		TRUNCATE teleport.batch;
+	`)
+
+	tx := db.NewTransaction()
+	stubEvent.InsertQuery(tx)
+	tx.Commit()
+
+	usedEvents, batches, err := batcher.CreateBatchesWithActions(
+		map[database.Event][]action.Action{
+			*stubEvent: []action.Action{
+				&StubAction{true,false},
+				&StubAction{true,false},
+				&StubAction{true,false},
+				&StubAction{true,false},
+			},
+		},
+	)
+
+	if err != nil {
+		t.Errorf("createBatchWithEvents returned error: %v", err)
+	}
+
+	if len(usedEvents) != 4 {
+		t.Errorf("usedEvents => %d, want %d", len(usedEvents), 4)
+	}
+
+	if len(batches) != 1 {
+		t.Errorf("batches => %d, want %d", len(batches), 3)
+	}
+
+	if len(batches[0].GetEvents()) != 4 {
+		t.Errorf("batch 0 => %d, want %d", len(batches[0].GetEvents()), 4)
+	}
+
+	usedEvents, batches, err = batcher.CreateBatchesWithActions(
+		map[database.Event][]action.Action{
+			*stubEvent: []action.Action{
+				&StubAction{true,false},
+				&StubAction{true,false},
+				&StubAction{true,true},
+				&StubAction{true,false},
+			},
+		},
+	)
+
+	if err != nil {
+		t.Errorf("createBatchWithEvents returned error: %v", err)
+	}
+
+	if len(usedEvents) != 4 {
+		t.Errorf("usedEvents => %d, want %d", len(usedEvents), 4)
+	}
+
+	if len(batches) != 3 {
+		t.Errorf("batches => %d, want %d", len(batches), 3)
+	}
+
+	if len(batches[0].GetEvents()) != 2 {
+		t.Errorf("batch 0 => %d, want %d", len(batches[0].GetEvents()), 2)
+	}
+
+	if len(batches[1].GetEvents()) != 1 {
+		t.Errorf("batch 1 => %d, want %d", len(batches[1].GetEvents()), 1)
+	}
+
+	if len(batches[2].GetEvents()) != 1 {
+		t.Errorf("batch 2 => %d, want %d", len(batches[2].GetEvents()), 1)
 	}
 }

@@ -25,3 +25,7 @@ func (a *DropSchema) Execute(c Context) error {
 func (a *DropSchema) Filter(targetExpression string) bool {
 	return IsInTargetExpression(&targetExpression, &a.SchemaName, nil)
 }
+
+func (a *DropSchema) NeedsSeparatedBatch() bool {
+	return false
+}

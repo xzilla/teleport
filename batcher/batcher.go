@@ -56,7 +56,7 @@ func (b *Batcher) createBatches() error {
 	}
 
 	// Create batches for each target with the given targets/actions
-	usedEvents, err := b.createBatchesForTargets(b.targets, actionsForEvent)
+	usedEvents, _, err := b.CreateBatchesWithActions(actionsForEvent)
 
 	if err != nil {
 		return err
@@ -89,26 +89,72 @@ func (b *Batcher) markIgnoredEvents(usedEvents []database.Event, actionsForEvent
 	return tx.Commit()
 }
 
-func (b *Batcher) createBatchesForTargets(targets map[string]*client.Client, actionsForEvent map[database.Event][]action.Action) ([]database.Event, error) {
+func (b *Batcher) CreateBatchesWithActions(actionsForEvent map[database.Event][]action.Action) ([]database.Event, []*database.Batch, error) {
 	usedEvents := make([]database.Event, 0)
+	batches := make([]*database.Batch, 0)
 
 	// Create a batch for each target
 	for targetName, target := range b.targets {
-		events, err := b.eventsForTarget(target, actionsForEvent)
-		usedEvents = append(usedEvents, events...)
+		targetActionsEvents := b.filterActionsForTarget(target, actionsForEvent)
 
-		if err != nil {
-			return nil, err
+		currentBatch := make([]database.Event, 0)
+
+		// Create batch with pending items to batch
+		createBatch := func() error {
+			batch, err := b.createBatchWithEvents(currentBatch, targetName)
+
+			if err != nil {
+				return err
+			}
+
+			if batch != nil {
+				batches = append(batches, batch)
+			}
+
+			return nil
 		}
 
-		_, err = b.createBatchWithEvents(events, targetName)
+		for event, actions := range targetActionsEvents {
+			for _, act := range actions {
+				// Add event to used events
+				usedEvents = append(usedEvents, event)
 
-		if err != nil {
-			return nil, err
+				// Each action is a new event.
+				newEvent := event
+				// Encode action inside event's data
+				err := newEvent.SetDataFromAction(act)
+
+				if err != nil {
+					return nil, nil, err
+				}
+
+				if act.NeedsSeparatedBatch() {
+					// Create batch with pending items to batch
+					if err := createBatch(); err != nil {
+						return nil, nil, err
+					}
+
+					// Then create the new batch containing only this event
+					currentBatch = []database.Event{newEvent}
+					if err := createBatch(); err != nil {
+						return nil, nil, err
+					}
+
+					// Reset currentBatch for next events
+					currentBatch = make([]database.Event, 0)
+				} else {
+					// If action doesn't need separate batch, simply append the batch
+					currentBatch = append(currentBatch, newEvent)
+				}
+			}
+		}
+
+		if err := createBatch(); err != nil {
+			return nil, nil, err
 		}
 	}
 
-	return usedEvents, nil
+	return usedEvents, batches, nil
 }
 
 func (b *Batcher) actionsForEvents(events []database.Event) (map[database.Event][]action.Action, error) {
@@ -173,28 +219,22 @@ func (b *Batcher) createBatchWithEvents(events []database.Event, targetName stri
 	return batch, nil
 }
 
-func (b *Batcher) eventsForTarget(target *client.Client, actionsForEvent map[database.Event][]action.Action) ([]database.Event, error) {
-	events := make([]database.Event, 0)
+// func (b *Batcher) eventsForTarget(target *client.Client, actionsForEvent map[database.Event][]action.Action) ([]database.Event, error) {
+func (b *Batcher) filterActionsForTarget(target *client.Client, actionsForEvent map[database.Event][]action.Action) map[database.Event][]action.Action {
+	newActions := make(map[database.Event][]action.Action)
 
 	for event, actions := range actionsForEvent {
-		for _, action := range actions {
+		newActions[event] = make([]action.Action, 0)
+
+		for _, act := range actions {
 			// Filter action for target
-			if action.Filter(target.TargetExpression) {
-				// Each action is a new event.
-				newEvent := event
-				// Encode action inside event's data
-				err := newEvent.SetDataFromAction(action)
-
-				if err != nil {
-					return nil, err
-				}
-
-				events = append(events, newEvent)
+			if act.Filter(target.TargetExpression) {
+				newActions[event] = append(newActions[event], act)
 			}
 		}
 	}
 
-	return events, nil
+	return newActions
 }
 
 func (b *Batcher) actionsForEvent(event database.Event) ([]action.Action, error) {
@@ -216,6 +256,14 @@ func (b *Batcher) actionsForEvent(event database.Event) ([]action.Action, error)
 		dml := database.NewDml(b.db, &event, []byte(*event.Data))
 		actions := dml.Diff()
 		return actions, nil
+	} else {
+		act, err := event.GetActionFromData()
+
+		if err != nil {
+			return []action.Action{}, err
+		}
+
+		return []action.Action{act}, nil
 	}
 
 	return []action.Action{}, nil
