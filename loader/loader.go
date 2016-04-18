@@ -2,17 +2,17 @@ package loader
 
 import (
 	// "fmt"
+	"github.com/pagarme/teleport/action"
+	"github.com/pagarme/teleport/batcher"
 	"github.com/pagarme/teleport/client"
 	"github.com/pagarme/teleport/database"
-	"github.com/pagarme/teleport/batcher"
-	"github.com/pagarme/teleport/action"
 )
 
 type Loader struct {
-	db      *database.Database
-	target *client.Client
+	db         *database.Database
+	target     *client.Client
 	targetName string
-	batcher *batcher.Batcher
+	batcher    *batcher.Batcher
 }
 
 func New(db *database.Database, target *client.Client, targetName string) *Loader {
@@ -21,10 +21,10 @@ func New(db *database.Database, target *client.Client, targetName string) *Loade
 	})
 
 	return &Loader{
-		db: db,
-		target: target,
+		db:         db,
+		target:     target,
 		targetName: targetName,
-		batcher: batcher,
+		batcher:    batcher,
 	}
 }
 
@@ -57,12 +57,12 @@ func (l *Loader) createDDLBatch() error {
 
 	// Build a DDL event to hold the actions
 	event := &database.Event{
-		Kind: "ddl",
-		Status: "waiting_batch",
-		TriggerTag: l.target.TargetExpression,
-		TriggerEvent: "ddl_initial_load",
+		Kind:          "ddl",
+		Status:        "waiting_batch",
+		TriggerTag:    l.target.TargetExpression,
+		TriggerEvent:  "ddl_initial_load",
 		TransactionId: "0",
-		Data: nil,
+		Data:          nil,
 	}
 
 	event.InsertQuery(tx)

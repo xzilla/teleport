@@ -216,8 +216,7 @@ func TestDiffDrop(t *testing.T) {
 
 // Test a diff that should create something recursively
 func TestDiffCreateTree(t *testing.T) {
-	pre := []Diffable{
-	}
+	pre := []Diffable{}
 
 	post := []Diffable{
 		Diffable(NewFoo("test", 1, []*Bar{NewBar("sub test", 1)})),

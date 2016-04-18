@@ -62,7 +62,7 @@ func init() {
 
 // StubAction implements Action
 type StubAction struct {
-	ShouldFilter bool
+	ShouldFilter  bool
 	SeparateBatch bool
 }
 
@@ -103,7 +103,7 @@ func TestMarkIgnoredEvents(t *testing.T) {
 }
 
 func TestActionsForEvents(t *testing.T) {
-	testAction := &StubAction{true,false}
+	testAction := &StubAction{true, false}
 
 	tx := db.NewTransaction()
 	stubEvent.Kind = "test"
@@ -180,10 +180,10 @@ func TestCreateBatchesWithActions(t *testing.T) {
 	usedEvents, batches, err := batcher.CreateBatchesWithActions(
 		map[database.Event][]action.Action{
 			*stubEvent: []action.Action{
-				&StubAction{true,false},
-				&StubAction{true,false},
-				&StubAction{true,false},
-				&StubAction{true,false},
+				&StubAction{true, false},
+				&StubAction{true, false},
+				&StubAction{true, false},
+				&StubAction{true, false},
 			},
 		},
 	)
@@ -207,10 +207,10 @@ func TestCreateBatchesWithActions(t *testing.T) {
 	usedEvents, batches, err = batcher.CreateBatchesWithActions(
 		map[database.Event][]action.Action{
 			*stubEvent: []action.Action{
-				&StubAction{true,false},
-				&StubAction{true,false},
-				&StubAction{true,true},
-				&StubAction{true,false},
+				&StubAction{true, false},
+				&StubAction{true, false},
+				&StubAction{true, true},
+				&StubAction{true, false},
 			},
 		},
 	)

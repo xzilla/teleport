@@ -4,8 +4,8 @@ import (
 	"encoding/gob"
 	"encoding/json"
 	"github.com/pagarme/teleport/action"
-	"strings"
 	"sort"
+	"strings"
 )
 
 type Dml struct {
@@ -64,11 +64,11 @@ func (d *Dml) generateRows(obj *map[string]interface{}) []action.Row {
 	rows := make([]action.Row, 0)
 
 	// Sort keys to returned rows sorted by name
-    var keys []string
-    for k := range *obj {
-        keys = append(keys, k)
-    }
-    sort.Strings(keys)
+	var keys []string
+	for k := range *obj {
+		keys = append(keys, k)
+	}
+	sort.Strings(keys)
 
 	// Generate row for each key, value of DML
 	for _, key := range keys {

@@ -8,9 +8,9 @@ import (
 	"github.com/pagarme/teleport/client"
 	"github.com/pagarme/teleport/config"
 	"github.com/pagarme/teleport/database"
+	"github.com/pagarme/teleport/loader"
 	"github.com/pagarme/teleport/server"
 	"github.com/pagarme/teleport/transmitter"
-	"github.com/pagarme/teleport/loader"
 	"os"
 	"time"
 )
@@ -77,7 +77,7 @@ func main() {
 			os.Exit(1)
 		}
 	} else if *mode == "initial-load" {
-		target, ok := targets[*loadTarget];
+		target, ok := targets[*loadTarget]
 
 		if !ok {
 			fmt.Printf("Error starting loader: target %s not found!\n", *loadTarget)
