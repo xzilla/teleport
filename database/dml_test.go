@@ -85,17 +85,17 @@ func TestDmlDiff(t *testing.T) {
 					"test_table",
 					[]action.Row{
 						action.Row{
-							5,
-							action.Column{
-								"id",
-								"int4",
-							},
-						},
-						action.Row{
 							"test",
 							action.Column{
 								"content",
 								"text",
+							},
+						},
+						action.Row{
+							5,
+							action.Column{
+								"id",
+								"int4",
 							},
 						},
 					},
@@ -154,17 +154,17 @@ func TestDmlDiff(t *testing.T) {
 					},
 					[]action.Row{
 						action.Row{
-							5,
-							action.Column{
-								"id",
-								"int4",
-							},
-						},
-						action.Row{
 							"test updated",
 							action.Column{
 								"content",
 								"text",
+							},
+						},
+						action.Row{
+							5,
+							action.Column{
+								"id",
+								"int4",
 							},
 						},
 					},
@@ -180,8 +180,8 @@ func TestDmlDiff(t *testing.T) {
 			t.Errorf(
 				"diff %#v => %#v, want %#v",
 				test.dml,
-				actions,
-				test.output,
+				actions[0],
+				test.output[0],
 			)
 		}
 	}

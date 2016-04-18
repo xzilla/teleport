@@ -4,8 +4,8 @@ import (
 	"encoding/gob"
 	"encoding/json"
 	"github.com/pagarme/teleport/action"
-	// "github.com/pagarme/teleport/batcher/ddldiff"
 	"strings"
+	"sort"
 )
 
 type Dml struct {
@@ -63,8 +63,16 @@ func (d *Dml) GetClass() *Class {
 func (d *Dml) generateRows(obj *map[string]interface{}) []action.Row {
 	rows := make([]action.Row, 0)
 
+	// Sort keys to returned rows sorted by name
+    var keys []string
+    for k := range *obj {
+        keys = append(keys, k)
+    }
+    sort.Strings(keys)
+
 	// Generate row for each key, value of DML
-	for key, value := range *obj {
+	for _, key := range keys {
+		value := (*obj)[key]
 		class := d.GetClass()
 
 		var attribute *Attribute
@@ -113,6 +121,7 @@ func (d *Dml) Diff() []action.Action {
 		}
 	}
 
+	// Delete row
 	if d.Post == nil {
 		return []action.Action{
 			&action.DeleteRow{
@@ -123,6 +132,7 @@ func (d *Dml) Diff() []action.Action {
 		}
 	}
 
+	// Update row
 	return []action.Action{
 		&action.UpdateRow{
 			SchemaName: d.GetSchemaName(),
