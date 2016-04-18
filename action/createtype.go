@@ -3,7 +3,6 @@ package action
 import (
 	"encoding/gob"
 	"fmt"
-	"strings"
 )
 
 type CreateType struct {
@@ -18,18 +17,11 @@ func init() {
 }
 
 func (a *CreateType) Execute(c Context) error {
-	escapedEnums := make([]string, 0)
-
-	for _, enum := range a.Enums {
-		escapedEnums = append(escapedEnums, fmt.Sprintf("'%s'", enum))
-	}
-
 	_, err := c.Tx.Exec(
 		fmt.Sprintf(
-			"CREATE TYPE \"%s\".\"%s\" AS ENUM (%s);",
+			"CREATE TYPE \"%s\".\"%s\" AS ENUM ();",
 			a.SchemaName,
 			a.TypeName,
-			strings.Join(escapedEnums, ","),
 		),
 	)
 
