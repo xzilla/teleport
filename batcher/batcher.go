@@ -66,7 +66,7 @@ func (b *Batcher) createBatches() error {
 	return b.markIgnoredEvents(usedEvents, actionsForEvent)
 }
 
-func (b *Batcher) markIgnoredEvents(usedEvents []database.Event, actionsForEvent map[database.Event][]action.Action) error {
+func (b *Batcher) markIgnoredEvents(usedEvents []*database.Event, actionsForEvent map[database.Event][]action.Action) error {
 	// Mark unused events as ignored
 	tx := b.db.NewTransaction()
 
@@ -89,8 +89,8 @@ func (b *Batcher) markIgnoredEvents(usedEvents []database.Event, actionsForEvent
 	return tx.Commit()
 }
 
-func (b *Batcher) CreateBatchesWithActions(actionsForEvent map[database.Event][]action.Action) ([]database.Event, []*database.Batch, error) {
-	usedEvents := make([]database.Event, 0)
+func (b *Batcher) CreateBatchesWithActions(actionsForEvent map[database.Event][]action.Action) ([]*database.Event, []*database.Batch, error) {
+	usedEvents := make([]*database.Event, 0)
 	batches := make([]*database.Batch, 0)
 
 	// Create a batch for each target
@@ -117,7 +117,7 @@ func (b *Batcher) CreateBatchesWithActions(actionsForEvent map[database.Event][]
 		for event, actions := range targetActionsEvents {
 			for _, act := range actions {
 				// Add event to used events
-				usedEvents = append(usedEvents, event)
+				usedEvents = append(usedEvents, &event)
 
 				// Each action is a new event.
 				newEvent := event

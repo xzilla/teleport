@@ -83,7 +83,7 @@ func TestMarkIgnoredEvents(t *testing.T) {
 	stubEvent.InsertQuery(tx)
 	tx.Commit()
 
-	batcher.markIgnoredEvents([]database.Event{}, map[database.Event][]action.Action{
+	batcher.markIgnoredEvents([]*database.Event{}, map[database.Event][]action.Action{
 		*stubEvent: []action.Action{},
 	})
 
