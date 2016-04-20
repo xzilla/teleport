@@ -242,7 +242,7 @@ func TestEventUpdateQuery(t *testing.T) {
 	}
 }
 
-func TestEventBelongsToBatch(t *testing.T) {
+func TestEventBatchRelationships(t *testing.T) {
 	setupEvent()
 	db.Db.Exec(`
 		TRUNCATE teleport.event, teleport.batch_events;
@@ -270,6 +270,7 @@ func TestEventBelongsToBatch(t *testing.T) {
 
 	tx := db.NewTransaction()
 	testEvent.InsertQuery(tx)
+	batch.InsertQuery(tx)
 	tx.Commit()
 
 	tx = db.NewTransaction()
@@ -282,6 +283,16 @@ func TestEventBelongsToBatch(t *testing.T) {
 
 	if batchId != batch.Id {
 		t.Errorf("batch_id in batch_events table => %s, want %s", batchId, batch.Id)
+	}
+
+	batches, _ := testEvent.GetBatches(db)
+
+	if len(batches) != 1 {
+		t.Errorf("get batches => %d, want %d", len(batches), 1)
+	}
+
+	if !reflect.DeepEqual(batches[0], *batch) {
+		t.Errorf("get batches => %#v, want %#v", batches[0], batch)
 	}
 }
 

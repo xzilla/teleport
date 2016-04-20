@@ -102,6 +102,21 @@ func (e *Event) BelongsToBatch(tx *sqlx.Tx, b *Batch) error {
 	return err
 }
 
+func (e *Event) GetBatches(db *Database) ([]Batch, error) {
+	var batches []Batch
+
+	err := db.selectObjs(&batches, `
+		SELECT
+			b.*
+		FROM teleport.batch b
+		INNER JOIN teleport.batch_events be
+			ON b.id = be.batch_id
+		WHERE be.event_id = $1 ORDER BY id ASC;
+	`, e.Id)
+
+	return batches, err
+}
+
 func (e *Event) SetDataFromAction(action action.Action) error {
 	// Encode action into event data using gob
 	var buf bytes.Buffer
