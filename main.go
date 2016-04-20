@@ -85,7 +85,7 @@ func main() {
 		}
 
 		loader := loader.New(db, target, *loadTarget)
-		err := loader.CreateEvents()
+		err := loader.Load()
 
 		if err != nil {
 			fmt.Printf("Error creating events: %#v\n", err)
