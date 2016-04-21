@@ -29,7 +29,7 @@ func NewBatch(storageType string) *Batch {
 
 	if batch.StorageType == "fs" {
 		batch.generateBatchFilename()
-		batch.appendData(nil)
+		batch.AppendData(nil)
 	}
 
 	return batch
@@ -56,7 +56,7 @@ func (b *Batch) generateBatchFilename() {
 	b.Data = &filename
 }
 
-func (b *Batch) appendData(data *string) error {
+func (b *Batch) AppendData(data *string) error {
 	if b.StorageType != "fs" {
 		return fmt.Errorf("appending data is only supported in fs storage type")
 	}
@@ -78,7 +78,7 @@ func (b *Batch) appendData(data *string) error {
 	return nil
 }
 
-func (b *Batch) setData(data *string) error {
+func (b *Batch) SetData(data *string) error {
 	if b.StorageType == "fs" {
 		f, err := os.OpenFile(*b.Data, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0600)
 
@@ -100,7 +100,7 @@ func (b *Batch) setData(data *string) error {
 	return nil
 }
 
-func (b *Batch) getData() (*string, error) {
+func (b *Batch) GetData() (*string, error) {
 	if b.StorageType == "fs" {
 		data, err := ioutil.ReadFile(*b.Data)
 
@@ -117,7 +117,7 @@ func (b *Batch) getData() (*string, error) {
 	return nil, nil
 }
 
-func (b *Batch) purgeData() error {
+func (b *Batch) PurgeData() error {
 	if b.StorageType == "fs" {
 		err := os.Remove(*b.Data)
 
@@ -156,15 +156,16 @@ func (b *Batch) InsertQuery(tx *sqlx.Tx) error {
 
 func (b *Batch) UpdateQuery(tx *sqlx.Tx) error {
 	_, err := tx.Exec(
-		"UPDATE teleport.batch SET status = $1 WHERE id = $2",
+		"UPDATE teleport.batch SET status = $1, data = $2 WHERE id = $3",
 		b.Status,
+		b.Data,
 		b.Id,
 	)
 
 	return err
 }
 
-func (b *Batch) SetEvents(events Events) error {
+func (b *Batch) generateDataForEvents(events Events) string {
 	// Store batch data
 	var batchBuffer bytes.Buffer
 
@@ -182,23 +183,27 @@ func (b *Batch) SetEvents(events Events) error {
 		}
 	}
 
-	// Set batch data
-	dataStr := string(batchBuffer.Bytes())
-	return b.setData(&dataStr)
+	// Return batch data
+	return string(batchBuffer.Bytes())
+}
+
+func (b *Batch) SetEvents(events Events) error {
+	data := b.generateDataForEvents(events)
+	return b.SetData(&data)
 }
 
 func (b *Batch) GetEvents() (Events, error) {
 	// Split events data per line
 	events := make(Events, 0)
 
-	if *b.Data == "" {
-		return events, nil
-	}
-
-	data, err := b.getData()
+	data, err := b.GetData()
 
 	if err != nil {
 		return events, err
+	}
+
+	if *data == "" {
+		return events, nil
 	}
 
 	eventsData := strings.Split(*data, "\n")
@@ -214,19 +219,7 @@ func (b *Batch) GetEvents() (Events, error) {
 	return events, nil
 }
 
-func (b *Batch) AppendEvents(tx *sqlx.Tx, events Events) error {
-	existingEvents, err := b.GetEvents()
-
-	if err != nil {
-		return err
-	}
-
-	for _, newEvent := range events {
-		existingEvents = append(existingEvents, newEvent)
-	}
-
-	b.SetEvents(existingEvents)
-	b.UpdateQuery(tx)
-
-	return nil
+func (b *Batch) AppendEvents(events Events) error {
+	data := fmt.Sprintf("\n%s", b.generateDataForEvents(events))
+	return b.AppendData(&data)
 }

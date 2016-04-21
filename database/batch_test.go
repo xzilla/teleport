@@ -214,17 +214,54 @@ func TestBatchGetEvents(t *testing.T) {
 	}
 }
 
+func TestBatchAppendEvents(t *testing.T) {
+	testBatch := NewBatch("db")
+
+	testBatch.SetEvents([]Event{*stubEvent})
+	err := testBatch.AppendEvents([]Event{*stubEvent})
+
+	if err == nil {
+		t.Errorf("append event for db storage did not return error!")
+	}
+
+	testBatch = NewBatch("fs")
+
+	testBatch.SetEvents([]Event{*stubEvent})
+	err = testBatch.AppendEvents([]Event{*stubEvent})
+
+	if err != nil {
+		t.Errorf("append event returned error: %#v\n", err)
+	}
+
+	events, _ := testBatch.GetEvents()
+	output := Events{*stubEvent, *stubEvent}
+
+	if len(events) != 2 {
+		t.Errorf("get events => %d, want %d", len(events), 2)
+	}
+
+	if !reflect.DeepEqual(events, output) {
+		t.Errorf(
+			"get events after append => %#v, want %#v",
+			events,
+			output,
+		)
+	}
+
+	testBatch.PurgeData()
+}
+
 func TestBatchGetSetData(t *testing.T) {
 	data := "asdasdasdasd"
 
 	testBatch := NewBatch("db")
-	err := testBatch.setData(&data)
+	err := testBatch.SetData(&data)
 
 	if err != nil {
 		t.Errorf("set data returned error: %#v\n", err)
 	}
 
-	resultData, err := testBatch.getData()
+	resultData, err := testBatch.GetData()
 
 	if err != nil {
 		t.Errorf("get data returned error: %#v\n", err)
@@ -235,13 +272,13 @@ func TestBatchGetSetData(t *testing.T) {
 	}
 
 	testBatch = NewBatch("fs")
-	err = testBatch.setData(&data)
+	err = testBatch.SetData(&data)
 
 	if err != nil {
 		t.Errorf("set data returned error: %#v\n", err)
 	}
 
-	resultData, err = testBatch.getData()
+	resultData, err = testBatch.GetData()
 
 	if err != nil {
 		t.Errorf("get data returned error: %#v\n", err)
@@ -252,13 +289,13 @@ func TestBatchGetSetData(t *testing.T) {
 	}
 
 	newData := "appended data!!!!!!!!"
-	err = testBatch.appendData(&newData)
+	err = testBatch.AppendData(&newData)
 
 	if err != nil {
 		t.Errorf("append data returned error: %#v\n", err)
 	}
 
-	resultData, err = testBatch.getData()
+	resultData, err = testBatch.GetData()
 
 	if err != nil {
 		t.Errorf("get data returned error: %#v\n", err)
@@ -281,7 +318,7 @@ func TestBatchGetSetData(t *testing.T) {
 	}
 
 	oldFilename := *testBatch.Data
-	err = testBatch.purgeData()
+	err = testBatch.PurgeData()
 
 	if err != nil {
 		t.Errorf("purge data returned error: %#v", err)

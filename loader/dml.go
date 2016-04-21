@@ -109,11 +109,10 @@ func (l *Loader) resumeDMLEvent(event *database.Event) error {
 
 	// Create a new batch with initial data
 	batch := database.NewBatch("fs")
-	initialData := ""
-	batch.Data = &initialData
-	// Set source and target
 	batch.Source = l.db.Name
 	batch.Target = l.targetName
+	initialData := ""
+	batch.SetData(&initialData)
 
 	batch.InsertQuery(tx)
 
@@ -150,7 +149,11 @@ func (l *Loader) resumeDMLEvent(event *database.Event) error {
 			events = append(events, newEvent)
 		}
 
-		batch.AppendEvents(tx, events)
+		err = batch.AppendEvents(events)
+
+		if err != nil {
+			return err
+		}
 	}
 
 	return tx.Commit()
