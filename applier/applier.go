@@ -41,7 +41,11 @@ func (a *Applier) Watch(sleepTime time.Duration) {
 
 // Apply a batch
 func (a *Applier) applyBatch(batch *database.Batch) error {
-	events := batch.GetEvents()
+	events, err := batch.GetEvents()
+
+	if err != nil {
+		return err
+	}
 
 	// Start transaction
 	tx := a.db.NewTransaction()

@@ -35,6 +35,15 @@ BEGIN
 END
 $$;
 
+-- Define batch_storage_type type.
+DO $$
+BEGIN
+	IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'batch_storage_type') THEN
+		CREATE TYPE teleport.batch_storage_type AS ENUM ('db', 'fs');
+	END IF;
+END
+$$;
+
 -- Create table to store teleport events
 CREATE TABLE IF NOT EXISTS teleport.event (
 	id serial primary key,
@@ -50,6 +59,7 @@ CREATE TABLE IF NOT EXISTS teleport.event (
 CREATE TABLE IF NOT EXISTS teleport.batch (
 	id serial primary key,
 	status teleport.batch_status,
+	storage_type teleport.batch_storage_type,
 	data text,
 	source text,
 	target text

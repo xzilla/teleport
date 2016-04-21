@@ -184,7 +184,7 @@ func (b *Batcher) createBatchWithEvents(events []database.Event, targetName stri
 	tx := b.db.NewTransaction()
 
 	// Allocate a new batch
-	batch := database.NewBatch()
+	batch := database.NewBatch("db")
 
 	// Set events
 	batch.SetEvents(events)

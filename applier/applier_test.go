@@ -55,11 +55,12 @@ func init() {
 	stubEvent.SetDataFromAction(action)
 
 	stubBatch = &database.Batch{
-		Id:     "1",
-		Status: "waiting_apply",
-		Source: "source",
-		Target: "target",
-		Data:   nil,
+		Id:          "1",
+		Status:      "waiting_apply",
+		Source:      "source",
+		Target:      "target",
+		Data:        nil,
+		StorageType: "db",
 	}
 
 	stubBatch.SetEvents([]database.Event{*stubEvent})

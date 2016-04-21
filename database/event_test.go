@@ -261,11 +261,12 @@ func TestEventBatchRelationships(t *testing.T) {
 	}
 
 	batch := &Batch{
-		Id:     "2",
-		Status: "waiting_transmission",
-		Source: "asd",
-		Target: "asd",
-		Data:   nil,
+		Id:          "2",
+		Status:      "waiting_transmission",
+		Source:      "asd",
+		Target:      "asd",
+		Data:        nil,
+		StorageType: "db",
 	}
 
 	tx := db.NewTransaction()

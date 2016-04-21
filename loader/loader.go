@@ -45,7 +45,7 @@ func (l *Loader) Load() error {
 
 		// Create DML events
 		events, err = l.createDMLEvents()
-	} 
+	}
 
 	// Resume initial load (from existing events or new events)
 	return l.resumeDMLEvents(events)

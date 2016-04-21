@@ -3,6 +3,7 @@ package database
 import (
 	"fmt"
 	"github.com/pagarme/teleport/config"
+	"io/ioutil"
 	"os"
 	"reflect"
 	"testing"
@@ -50,13 +51,28 @@ func init() {
 	}
 }
 
+func TestNewBatch(t *testing.T) {
+	testBatch := NewBatch("db")
+
+	if testBatch.Data != nil {
+		t.Errorf("data => %#v, want nil", *testBatch.Data)
+	}
+
+	// Should initialize the batch file
+	testBatch = NewBatch("fs")
+
+	if testBatch.Data == nil {
+		t.Errorf("data => nil, want not nil")
+	}
+}
+
 func TestGetBatches(t *testing.T) {
 	db.Db.Exec(`
 		TRUNCATE teleport.batch;
 		INSERT INTO teleport.batch
-			(id, status, data, source, target)
+			(id, status, data, source, target, storage_type)
 			VALUES
-			(1, 'waiting_transmission', 'data', 'source', 'target');
+			(1, 'waiting_transmission', 'data', 'source', 'target', 'db');
 		INSERT INTO teleport.batch
 			(id, status, data, source, target)
 			VALUES
@@ -66,11 +82,12 @@ func TestGetBatches(t *testing.T) {
 	testData := "data"
 
 	testBatch := Batch{
-		Id:     "1",
-		Status: "waiting_transmission",
-		Source: "source",
-		Target: "target",
-		Data:   &testData,
+		Id:          "1",
+		Status:      "waiting_transmission",
+		Source:      "source",
+		Target:      "target",
+		Data:        &testData,
+		StorageType: "db",
 	}
 
 	batches, err := db.GetBatches("waiting_transmission")
@@ -100,11 +117,12 @@ func TestBatchInsertQuery(t *testing.T) {
 	testData := "data"
 
 	testBatch := &Batch{
-		Id:     "1",
-		Status: "waiting_transmission",
-		Source: "source",
-		Target: "target",
-		Data:   &testData,
+		Id:          "1",
+		Status:      "waiting_transmission",
+		Source:      "source",
+		Target:      "target",
+		Data:        &testData,
+		StorageType: "db",
 	}
 
 	tx := db.NewTransaction()
@@ -130,11 +148,12 @@ func TestBatchUpdateQuery(t *testing.T) {
 	testData := "data"
 
 	testBatch := &Batch{
-		Id:     "1",
-		Status: "waiting_transmission",
-		Source: "source",
-		Target: "target",
-		Data:   &testData,
+		Id:          "1",
+		Status:      "waiting_transmission",
+		Source:      "source",
+		Target:      "target",
+		Data:        &testData,
+		StorageType: "db",
 	}
 
 	tx := db.NewTransaction()
@@ -159,11 +178,12 @@ func TestBatchUpdateQuery(t *testing.T) {
 
 func TestBatchSetEvents(t *testing.T) {
 	testBatch := &Batch{
-		Id:     "1",
-		Status: "waiting_transmission",
-		Source: "source",
-		Target: "target",
-		Data:   nil,
+		Id:          "1",
+		Status:      "waiting_transmission",
+		Source:      "source",
+		Target:      "target",
+		Data:        nil,
+		StorageType: "db",
 	}
 
 	testBatch.SetEvents([]Event{*stubEvent})
@@ -175,14 +195,15 @@ func TestBatchSetEvents(t *testing.T) {
 
 func TestBatchGetEvents(t *testing.T) {
 	testBatch := &Batch{
-		Id:     "1",
-		Status: "waiting_transmission",
-		Source: "source",
-		Target: "target",
-		Data:   &stubBatchData,
+		Id:          "1",
+		Status:      "waiting_transmission",
+		Source:      "source",
+		Target:      "target",
+		Data:        &stubBatchData,
+		StorageType: "db",
 	}
 
-	events := testBatch.GetEvents()
+	events, _ := testBatch.GetEvents()
 
 	if !reflect.DeepEqual(events[0], *stubEvent) {
 		t.Errorf(
@@ -190,5 +211,72 @@ func TestBatchGetEvents(t *testing.T) {
 			events[0],
 			testBatch,
 		)
+	}
+}
+
+func TestBatchGetSetData(t *testing.T) {
+	data := "asdasdasdasd"
+
+	testBatch := NewBatch("db")
+	err := testBatch.setData(&data)
+
+	if err != nil {
+		t.Errorf("set data returned error: %#v\n", err)
+	}
+
+	resultData, err := testBatch.getData()
+
+	if err != nil {
+		t.Errorf("get data returned error: %#v\n", err)
+	}
+
+	if *resultData != data {
+		t.Errorf("result data => %#v, want %#v", *resultData, data)
+	}
+
+	testBatch = NewBatch("fs")
+	err = testBatch.setData(&data)
+
+	if err != nil {
+		t.Errorf("set data returned error: %#v\n", err)
+	}
+
+	resultData, err = testBatch.getData()
+
+	if err != nil {
+		t.Errorf("get data returned error: %#v\n", err)
+	}
+
+	if *resultData != data {
+		t.Errorf("result data => %#v, want %#v", *resultData, data)
+	}
+
+	newData := "appended data!!!!!!!!"
+	err = testBatch.appendData(&newData)
+
+	if err != nil {
+		t.Errorf("append data returned error: %#v\n", err)
+	}
+
+	resultData, err = testBatch.getData()
+
+	if err != nil {
+		t.Errorf("get data returned error: %#v\n", err)
+	}
+
+	expectedOutput := fmt.Sprintf("%s%s", data, newData)
+
+	if *resultData != expectedOutput {
+		t.Errorf("result data => %#v, want %#v", *resultData, expectedOutput)
+	}
+
+	fileData, err := ioutil.ReadFile(*testBatch.Data)
+
+	if err != nil {
+		t.Errorf("read file returned error: %#v", err)
+	}
+
+	if string(fileData) != *resultData {
+		t.Errorf("file data -> %#v, want %#v", fileData, *resultData)
 	}
 }

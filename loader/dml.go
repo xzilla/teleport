@@ -2,9 +2,9 @@ package loader
 
 import (
 	"fmt"
+	"github.com/jmoiron/sqlx"
 	"github.com/pagarme/teleport/action"
 	"github.com/pagarme/teleport/database"
-	"github.com/jmoiron/sqlx"
 	"strings"
 )
 
@@ -79,7 +79,7 @@ func (l *Loader) getDMLEventSchemaClass(event *database.Event) (*database.Schema
 	return schema, class
 }
 
-func (l *Loader) generateColumnsForAttributes(attributes []*database.Attribute) (map[string]action.Column) {
+func (l *Loader) generateColumnsForAttributes(attributes []*database.Attribute) map[string]action.Column {
 	attributeCol := make(map[string]action.Column)
 
 	for _, attr := range attributes {
@@ -88,7 +88,7 @@ func (l *Loader) generateColumnsForAttributes(attributes []*database.Attribute) 
 			Type: attr.TypeName,
 		}
 	}
-	
+
 	return attributeCol
 }
 
@@ -103,12 +103,12 @@ func (l *Loader) resumeDMLEvent(event *database.Event) error {
 	}
 
 	colsForAttributes := l.generateColumnsForAttributes(class.Attributes)
-	
+
 	event.Status = "batched"
 	event.UpdateQuery(tx)
 
 	// Create a new batch with initial data
-	batch := database.NewBatch()
+	batch := database.NewBatch("fs")
 	initialData := ""
 	batch.Data = &initialData
 	// Set source and target

@@ -200,8 +200,10 @@ func TestCreateBatchesWithActions(t *testing.T) {
 		t.Errorf("batches => %d, want %d", len(batches), 3)
 	}
 
-	if len(batches[0].GetEvents()) != 4 {
-		t.Errorf("batch 0 => %d, want %d", len(batches[0].GetEvents()), 4)
+	events, _ := batches[0].GetEvents()
+
+	if len(events) != 4 {
+		t.Errorf("batch 0 => %d, want %d", len(events), 4)
 	}
 
 	usedEvents, batches, err = batcher.CreateBatchesWithActions(
@@ -227,15 +229,21 @@ func TestCreateBatchesWithActions(t *testing.T) {
 		t.Errorf("batches => %d, want %d", len(batches), 3)
 	}
 
-	if len(batches[0].GetEvents()) != 2 {
-		t.Errorf("batch 0 => %d, want %d", len(batches[0].GetEvents()), 2)
+	events, _ = batches[0].GetEvents()
+
+	if len(events) != 2 {
+		t.Errorf("batch 0 => %d, want %d", len(events), 2)
 	}
 
-	if len(batches[1].GetEvents()) != 1 {
-		t.Errorf("batch 1 => %d, want %d", len(batches[1].GetEvents()), 1)
+	events, _ = batches[1].GetEvents()
+
+	if len(events) != 1 {
+		t.Errorf("batch 1 => %d, want %d", len(events), 1)
 	}
 
-	if len(batches[2].GetEvents()) != 1 {
-		t.Errorf("batch 2 => %d, want %d", len(batches[2].GetEvents()), 1)
+	events, _ = batches[2].GetEvents()
+
+	if len(events) != 1 {
+		t.Errorf("batch 2 => %d, want %d", len(events), 1)
 	}
 }
