@@ -105,7 +105,7 @@ func (db *Database) InstallTriggers(targetExpression string) error {
 
 // Install triggers in schema
 func (db *Database) installDDLTriggers() error {
-	_, err := db.runQueryFromFile("sql/source_trigger.sql")
+	_, err := db.runQueryFromFile("../sql/source_trigger.sql")
 
 	if err == nil {
 		log.Printf("Installed triggers on database")
@@ -118,7 +118,7 @@ func (db *Database) installDDLTriggers() error {
 
 // Setup internal tables using setup script
 func (db *Database) setupTables() error {
-	_, err := db.runQueryFromFile("sql/setup.sql")
+	_, err := db.runQueryFromFile("../sql/setup.sql")
 	return err
 }
 
@@ -134,7 +134,7 @@ func (db *Database) selectObjs(v interface{}, query string, args ...interface{})
 // Open file and run query
 func (db *Database) runQueryFromFile(file string) (*sql.Rows, error) {
 	// Read file
-	_, filename, _, _ := runtime.Caller(1)
+	_, filename, _, _ := runtime.Caller(0)
 	content, err := ioutil.ReadFile(path.Join(path.Dir(filename), file))
 
 	if err != nil {
