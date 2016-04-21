@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/pagarme/teleport/action"
 	"github.com/pagarme/teleport/database"
+	"github.com/jmoiron/sqlx"
 	"strings"
 )
 
@@ -35,7 +36,7 @@ func (l *Loader) createDMLEvents() ([]database.Event, error) {
 			events = append(events, *event)
 		}
 	}
-	
+
 	err := tx.Commit()
 
 	if err != nil {
@@ -56,6 +57,8 @@ func (l *Loader) resumeDMLEvents(events []database.Event) error {
 		if err != nil {
 			return err
 		}
+
+		fmt.Printf("Ended processing event %#v\n", event)
 	}
 
 	return nil
@@ -76,10 +79,125 @@ func (l *Loader) getDMLEventSchemaClass(event *database.Event) (*database.Schema
 	return schema, class
 }
 
+func (l *Loader) generateColumnsForAttributes(attributes []*database.Attribute) (map[string]action.Column) {
+	attributeCol := make(map[string]action.Column)
+
+	for _, attr := range attributes {
+		attributeCol[attr.Name] = action.Column{
+			Name: attr.Name,
+			Type: attr.TypeName,
+		}
+	}
+	
+	return attributeCol
+}
+
 func (l *Loader) resumeDMLEvent(event *database.Event) error {
 	tx := l.db.NewTransaction()
 
 	schema, class := l.getDMLEventSchemaClass(event)
+	tableCount, err := l.getTableCount(tx, schema, class)
+
+	if err != nil {
+		return err
+	}
+
+	colsForAttributes := l.generateColumnsForAttributes(class.Attributes)
+	
+	event.Status = "batched"
+	event.UpdateQuery(tx)
+
+	// Create a new batch with initial data
+	batch := database.NewBatch()
+	initialData := ""
+	batch.Data = &initialData
+	// Set source and target
+	batch.Source = l.db.Name
+	batch.Target = l.targetName
+
+	batch.InsertQuery(tx)
+
+	// Generate OFFSET/LIMITs to iterate
+	for i := 0; i < tableCount; i += l.BatchSize {
+		rows, err := l.fetchRows(tx, schema, class, l.BatchSize, i)
+
+		if err != nil {
+			return err
+		}
+
+		fmt.Printf("OFFSET %d / LIMIT %d\n", i, l.BatchSize)
+
+		events := make([]database.Event, 0)
+
+		for _, row := range rows {
+			actionRows := make([]action.Row, 0)
+
+			for key, value := range *row {
+				actionRows = append(actionRows, action.Row{
+					Value:  value,
+					Column: colsForAttributes[key],
+				})
+			}
+
+			act := &action.InsertRow{
+				SchemaName: schema.Name,
+				TableName:  class.RelationName,
+				Rows:       actionRows,
+			}
+
+			newEvent := *event
+			newEvent.SetDataFromAction(act)
+			events = append(events, newEvent)
+		}
+
+		batch.AppendEvents(tx, events)
+	}
 
 	return tx.Commit()
+}
+
+func (l *Loader) getTableCount(tx *sqlx.Tx, schema *database.Schema, table *database.Class) (int, error) {
+	var count int
+
+	err := tx.Get(&count,
+		fmt.Sprintf(
+			`SELECT count(*) FROM "%s"."%s";`,
+			schema.Name,
+			table.RelationName,
+		),
+	)
+
+	return count, err
+}
+
+func (l *Loader) fetchRows(tx *sqlx.Tx, schema *database.Schema, table *database.Class, limit, offset int) ([]*map[string]interface{}, error) {
+	result := make([]*map[string]interface{}, 0)
+
+	rows, err := tx.Queryx(
+		fmt.Sprintf(
+			`SELECT * FROM "%s"."%s" ORDER BY "%s" LIMIT %d OFFSET %d;`,
+			schema.Name,
+			table.RelationName,
+			table.GetPrimaryKey().Name,
+			limit,
+			offset,
+		),
+	)
+
+	if err != nil {
+		return []*map[string]interface{}{}, err
+	}
+
+	for rows.Next() {
+		results := make(map[string]interface{})
+		err = rows.MapScan(results)
+
+		if err != nil {
+			return []*map[string]interface{}{}, err
+		}
+
+		result = append(result, &results)
+	}
+
+	return result, nil
 }

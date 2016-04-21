@@ -7,13 +7,14 @@ import (
 )
 
 type Loader struct {
+	BatchSize  int
 	db         *database.Database
 	target     *client.Client
 	targetName string
 	batcher    *batcher.Batcher
 }
 
-func New(db *database.Database, target *client.Client, targetName string) *Loader {
+func New(db *database.Database, target *client.Client, targetName string, batchSize int) *Loader {
 	batcher := batcher.New(db, map[string]*client.Client{
 		targetName: target,
 	})
@@ -23,6 +24,7 @@ func New(db *database.Database, target *client.Client, targetName string) *Loade
 		target:     target,
 		targetName: targetName,
 		batcher:    batcher,
+		BatchSize:  batchSize,
 	}
 }
 

@@ -51,8 +51,9 @@ func (b *Batch) InsertQuery(tx *sqlx.Tx) error {
 
 func (b *Batch) UpdateQuery(tx *sqlx.Tx) error {
 	_, err := tx.Exec(
-		"UPDATE teleport.batch SET status = $1 WHERE id = $2",
+		"UPDATE teleport.batch SET status = $1, data = $2 WHERE id = $3",
 		b.Status,
+		b.Data,
 		b.Id,
 	)
 
@@ -84,9 +85,13 @@ func (b *Batch) SetEvents(events Events) {
 
 func (b *Batch) GetEvents() Events {
 	// Split events data per line
-	eventsData := strings.Split(*b.Data, "\n")
-
 	events := make(Events, 0)
+
+	if *b.Data == "" {
+		return events
+	}
+
+	eventsData := strings.Split(*b.Data, "\n")
 
 	// Initialize new event
 	for _, eventData := range eventsData {
@@ -97,4 +102,15 @@ func (b *Batch) GetEvents() Events {
 	sort.Sort(events)
 
 	return events
+}
+
+func (b *Batch) AppendEvents(tx *sqlx.Tx, events Events) {
+	existingEvents := b.GetEvents()
+
+	for _, newEvent := range events {
+		existingEvents = append(existingEvents, newEvent)
+	}
+
+	b.SetEvents(existingEvents)
+	b.UpdateQuery(tx)
 }

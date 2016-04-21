@@ -84,7 +84,7 @@ func main() {
 			os.Exit(1)
 		}
 
-		loader := loader.New(db, target, *loadTarget)
+		loader := loader.New(db, target, *loadTarget, 2)
 		err := loader.Load()
 
 		if err != nil {
