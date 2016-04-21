@@ -64,6 +64,8 @@ func TestNewBatch(t *testing.T) {
 	if testBatch.Data == nil {
 		t.Errorf("data => nil, want not nil")
 	}
+
+	testBatch.PurgeData()
 }
 
 func TestGetBatches(t *testing.T) {
