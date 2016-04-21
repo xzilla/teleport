@@ -29,7 +29,8 @@ func NewBatch(storageType string) *Batch {
 
 	if batch.StorageType == "fs" {
 		batch.generateBatchFilename()
-		batch.AppendData(nil)
+		tempData := ""
+		batch.SetData(&tempData)
 	}
 
 	return batch
@@ -210,7 +211,9 @@ func (b *Batch) GetEvents() (Events, error) {
 
 	// Initialize new event
 	for _, eventData := range eventsData {
-		events = append(events, *NewEvent(eventData))
+		if eventData != "" {
+			events = append(events, *NewEvent(eventData))
+		}
 	}
 
 	// Sort events by id before returning

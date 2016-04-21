@@ -217,7 +217,6 @@ func TestBatchGetEvents(t *testing.T) {
 func TestBatchAppendEvents(t *testing.T) {
 	testBatch := NewBatch("db")
 
-	testBatch.SetEvents([]Event{*stubEvent})
 	err := testBatch.AppendEvents([]Event{*stubEvent})
 
 	if err == nil {
@@ -226,7 +225,7 @@ func TestBatchAppendEvents(t *testing.T) {
 
 	testBatch = NewBatch("fs")
 
-	testBatch.SetEvents([]Event{*stubEvent})
+	err = testBatch.AppendEvents([]Event{*stubEvent})
 	err = testBatch.AppendEvents([]Event{*stubEvent})
 
 	if err != nil {
