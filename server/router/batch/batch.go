@@ -4,9 +4,12 @@ import (
 	"encoding/json"
 	"github.com/pagarme/teleport/database"
 	"github.com/pagarme/teleport/server/httputils"
+	"github.com/gorilla/mux"
 	"github.com/pagarme/teleport/server/router"
+	"fmt"
 	"log"
 	"net/http"
+	"io"
 )
 
 type batchRouter struct {
@@ -29,8 +32,16 @@ func (b *batchRouter) create(w http.ResponseWriter, r *http.Request) error {
 	// Start transaction
 	tx := b.db.NewTransaction()
 
-	// New batches are waiting_apply always
-	newBatch.Status = "waiting_apply"
+	if newBatch.StorageType == "db" {
+		// Batches with db storage are ready to be applied
+		newBatch.Status = "waiting_apply"
+	} else {
+		// Other batches need to wait for data from source
+		newBatch.Status = "waiting_data"
+	}
+
+	newData := fmt.Sprintf("out_%s", *newBatch.Data)
+	newBatch.Data = &newData
 
 	// Insert
 	newBatch.InsertQuery(tx)
@@ -48,6 +59,64 @@ func (b *batchRouter) create(w http.ResponseWriter, r *http.Request) error {
 	return httputils.WriteJSON(w, http.StatusOK, nil)
 }
 
+func (b *batchRouter) update(w http.ResponseWriter, r *http.Request) error {
+	vars := mux.Vars(r)
+	batchId := vars["id"]
+
+	batch, err := b.db.GetBatch(batchId)
+
+	if err != nil {
+		return err
+	}
+
+	if batch == nil {
+		return fmt.Errorf("batch not found!")
+	}
+
+	if batch.Status != "waiting_data" {
+		return fmt.Errorf("batch is not waiting for data!")
+	}
+
+ 	file, _, err := r.FormFile("data")
+
+ 	if err != nil {
+		return err
+ 	}
+
+ 	defer file.Close()
+
+	out, err := batch.GetFile()
+
+ 	if err != nil {
+ 		return fmt.Errorf("unable to create the file for writing!")
+ 	}
+
+ 	defer out.Close()
+
+ 	// write the content from POST to the file
+ 	_, err = io.Copy(out, file)
+
+ 	if err != nil {
+		return err
+ 	}
+
+	// Start transaction
+	tx := b.db.NewTransaction()
+
+	batch.Status = "waiting_apply"
+	batch.UpdateQuery(tx)
+
+	// Commit transaction
+	err = tx.Commit()
+
+	if err != nil {
+		return err
+	}
+
+	// Respond HTTP OK
+	return httputils.WriteJSON(w, http.StatusOK, nil)
+}
+
 func (b *batchRouter) Routes() []router.Route {
 	return b.routes
 }
@@ -55,5 +124,6 @@ func (b *batchRouter) Routes() []router.Route {
 func (b *batchRouter) initRoutes() {
 	b.routes = []router.Route{
 		router.NewPostRoute("/batches", b.create),
+		router.NewPutRoute("/batches/{id}", b.update),
 	}
 }

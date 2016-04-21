@@ -42,10 +42,19 @@ func (db *Database) GetBatches(status string) ([]Batch, error) {
 	return batches, err
 }
 
-func (db *Database) GetBatch(id string) (Batch, error) {
-	var batches []Batch
+func (db *Database) GetBatch(id string) (*Batch, error) {
+	var batches []*Batch
 	err := db.selectObjs(&batches, "SELECT * FROM teleport.batch WHERE id = $1;", id)
-	return batches[0], err
+
+	if err != nil {
+		return nil, err
+	}
+
+	if len(batches) == 0 {
+		return nil, nil
+	}
+
+	return batches[0], nil
 }
 
 func (b *Batch) generateBatchFilename() {
@@ -231,4 +240,12 @@ func (b *Batch) GetEvents() (Events, error) {
 func (b *Batch) AppendEvents(events Events) error {
 	data := fmt.Sprintf("\n%s", b.generateDataForEvents(events))
 	return b.AppendData(&data)
+}
+
+func (b *Batch) GetFile() (*os.File, error) {
+	if b.StorageType != "fs" {
+		return nil, fmt.Errorf("batch storage type is not fs")
+	}
+
+	return os.Create(*b.Data)
 }

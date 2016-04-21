@@ -30,7 +30,7 @@ $$;
 DO $$
 BEGIN
 	IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'batch_status') THEN
-		CREATE TYPE teleport.batch_status AS ENUM ('waiting_transmission', 'transmitted', 'waiting_apply', 'applied');
+		CREATE TYPE teleport.batch_status AS ENUM ('waiting_data', 'waiting_transmission', 'transmitted', 'waiting_apply', 'applied');
 	END IF;
 END
 $$;
