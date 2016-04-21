@@ -279,4 +279,17 @@ func TestBatchGetSetData(t *testing.T) {
 	if string(fileData) != *resultData {
 		t.Errorf("file data -> %#v, want %#v", fileData, *resultData)
 	}
+
+	oldFilename := *testBatch.Data
+	err = testBatch.purgeData()
+
+	if err != nil {
+		t.Errorf("purge data returned error: %#v", err)
+	}
+
+	_, err = ioutil.ReadFile(oldFilename)
+
+	if err == nil {
+		t.Errorf("read file did not return error for purged file!")
+	}
 }

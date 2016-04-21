@@ -117,6 +117,20 @@ func (b *Batch) getData() (*string, error) {
 	return nil, nil
 }
 
+func (b *Batch) purgeData() error {
+	if b.StorageType == "fs" {
+		err := os.Remove(*b.Data)
+
+		if err != nil {
+			return err
+		}
+	}
+
+	b.Data = nil
+
+	return nil
+}
+
 func (b *Batch) InsertQuery(tx *sqlx.Tx) error {
 	args := make([]interface{}, 0)
 	var query string
