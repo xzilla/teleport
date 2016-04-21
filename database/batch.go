@@ -53,7 +53,7 @@ func (b *Batch) generateBatchFilename() {
 	for i := 0; i < 20; i++ {
 		result[i] = chars[rand.Intn(len(chars))]
 	}
-	filename := string(result)
+	filename := fmt.Sprintf("%s.csv", string(result))
 	b.Data = &filename
 }
 
