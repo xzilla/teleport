@@ -42,6 +42,12 @@ func (db *Database) GetBatches(status string) ([]Batch, error) {
 	return batches, err
 }
 
+func (db *Database) GetBatch(id string) (Batch, error) {
+	var batches []Batch
+	err := db.selectObjs(&batches, "SELECT * FROM teleport.batch WHERE id = $1;", id)
+	return batches[0], err
+}
+
 func (b *Batch) generateBatchFilename() {
 	if b.StorageType != "fs" {
 		panic("batch storage type is not fs")

@@ -176,6 +176,16 @@ func TestBatchUpdateQuery(t *testing.T) {
 			testBatch,
 		)
 	}
+
+	batch, _ := db.GetBatch(batches[0].Id)
+
+	if !reflect.DeepEqual(batches[0], batch) {
+		t.Errorf(
+			"get batch => %#v, want %#v",
+			batch,
+			batches[0],
+		)
+	}
 }
 
 func TestBatchSetEvents(t *testing.T) {
