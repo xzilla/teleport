@@ -23,6 +23,10 @@ func (l *Loader) createDMLEvents() ([]database.Event, error) {
 				continue
 			}
 
+			if class.GetPrimaryKey() == nil {
+				continue
+			}
+
 			event := &database.Event{
 				Kind:          "dml",
 				Status:        "building",
@@ -123,8 +127,6 @@ func (l *Loader) resumeDMLEvent(event *database.Event) error {
 		if err != nil {
 			return err
 		}
-
-		fmt.Printf("OFFSET %d / LIMIT %d\n", i, l.BatchSize)
 
 		events := make([]database.Event, 0)
 
