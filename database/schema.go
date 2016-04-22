@@ -50,7 +50,7 @@ func (s *Schema) fillParentReferences() {
 }
 
 // Fetches the schema from the database and update Schema
-func (db *Database) fetchSchema() error {
+func (db *Database) RefreshSchema() error {
 	// Get schema from query
 	rows, err := db.runQuery("SELECT get_schema();")
 	defer rows.Close()

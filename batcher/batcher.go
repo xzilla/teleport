@@ -43,6 +43,12 @@ func (b *Batcher) createBatches() error {
 		return err
 	}
 
+	err =  b.db.RefreshSchema()
+
+	if err != nil {
+		return err
+	}
+
 	// Stop if there are no events
 	if len(events) == 0 {
 		return nil

@@ -24,17 +24,7 @@ DECLARE
 BEGIN
 	SELECT * INTO event_row FROM teleport.event WHERE status = 'building' LIMIT 1;
 
-	IF (SELECT event_row.id IS NULL) THEN
-		INSERT INTO teleport.event (data, kind, trigger_tag, trigger_event, transaction_id, status) VALUES
-		(
-			get_schema()::text,
-			'ddl',
-			'ddl_command_start',
-			'',
-			txid_current(),
-			'building'
-		);
-	ELSE
+	IF (SELECT event_row.id IS NOT NULL) THEN
 		WITH all_json_key_value AS (
 			SELECT 'pre' AS key, data::json AS value FROM teleport.event WHERE id = event_row.id
 			UNION ALL
@@ -47,6 +37,16 @@ BEGIN
 				)
 		WHERE id = event_row.id;
 	END IF;
+
+	INSERT INTO teleport.event (data, kind, trigger_tag, trigger_event, transaction_id, status) VALUES
+	(
+		get_schema()::text,
+		'ddl',
+		'ddl_command_start',
+		'',
+		txid_current(),
+		'building'
+	);
 EXCEPTION WHEN OTHERS THEN
 END;
 $$

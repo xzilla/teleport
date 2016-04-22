@@ -20,6 +20,7 @@ type Batch struct {
 	Target      string  `db:"target" json:"target"`
 	Data        *string `db:"data" json:"data"`
 	StorageType string  `db:"storage_type" json:"storage_type"`
+	WaitingReexecution bool  `db:"waiting_reexecution" json:"waiting_reexecution"`
 }
 
 func NewBatch(storageType string) *Batch {
@@ -39,7 +40,7 @@ func NewBatch(storageType string) *Batch {
 
 func (db *Database) GetBatches(status string) ([]*Batch, error) {
 	var batches []*Batch
-	err := db.selectObjs(&batches, "SELECT * FROM teleport.batch WHERE status = $1 ORDER BY id ASC;", status)
+	err := db.selectObjs(&batches, "SELECT * FROM teleport.batch WHERE status = $1 ORDER BY waiting_reexecution, id ASC;", status)
 	return batches, err
 }
 
@@ -173,9 +174,10 @@ func (b *Batch) InsertQuery(tx *sqlx.Tx) error {
 
 func (b *Batch) UpdateQuery(tx *sqlx.Tx) error {
 	_, err := tx.Exec(
-		"UPDATE teleport.batch SET status = $1, data = $2 WHERE id = $3",
+		"UPDATE teleport.batch SET status = $1, data = $2, waiting_reexecution = $3 WHERE id = $4",
 		b.Status,
 		b.Data,
+		b.WaitingReexecution,
 		b.Id,
 	)
 

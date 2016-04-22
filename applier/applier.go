@@ -74,12 +74,41 @@ func (a *Applier) applyBatch(batch *database.Batch) error {
 		return err
 	}
 
+	// Update batch status based on a error
+	updateBatchStatus := func(previousErr error) error {
+		if previousErr != nil {
+			// Create new transaction because the old one failed
+			tx = a.db.NewTransaction()
+
+			batch.Status = "waiting_apply"
+			batch.WaitingReexecution = true
+		} else {
+			// Mark batch as applied (no error)
+			batch.Status = "applied"
+			batch.WaitingReexecution = false
+		}
+
+		err := batch.UpdateQuery(tx)
+
+		if err != nil {
+			return err
+		}
+
+		err = tx.Commit()
+
+		if err != nil {
+			return err
+		}
+
+		return previousErr
+	}
+
 	if batch.StorageType == "db" {
 		for _, event := range events {
 			err := a.applyEvent(&event, tx)
 
 			if err != nil {
-				return err
+				return updateBatchStatus(err)
 			}
 		}
 	} else if batch.StorageType == "fs" {
@@ -100,20 +129,16 @@ func (a *Applier) applyBatch(batch *database.Batch) error {
 			err := a.applyEvent(event, tx)
 
 			if err != nil {
-				return err
+				return updateBatchStatus(err)
 			}
 		}
 
 		if err := scanner.Err(); err != nil {
-			return err
+			return updateBatchStatus(err)
 		}
 	}
 
 	log.Printf("Applied batch: %v\n", batch)
 
-	// Mark batch as applied
-	batch.Status = "applied"
-	batch.UpdateQuery(tx)
-
-	return tx.Commit()
+	return updateBatchStatus(nil)
 }

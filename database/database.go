@@ -59,7 +59,7 @@ func (db *Database) Start() error {
 		return err
 	}
 
-	err = db.fetchSchema()
+	err = db.RefreshSchema()
 
 	if err != nil {
 		return err
