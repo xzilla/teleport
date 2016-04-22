@@ -8,23 +8,20 @@ services:
     build: .
     command: go test ./...
     volumes:
-      - goroot:/go
       - .:/go/src/github.com/pagarme/teleport/
 
   source:
     build: .
-    command: go run main.go -config source_config.yml
+    command: teleport -config source_config.yml
     volumes:
-      - goroot:/go
       - .:/go/src/github.com/pagarme/teleport/
     ports:
       - 3000:3000
 
   target:
     build: .
-    command: go run main.go -config target_config.yml
+    command: teleport -config target_config.yml
     volumes:
-      - goroot:/go
       - .:/go/src/github.com/pagarme/teleport/
     ports:
       - 3001:3001

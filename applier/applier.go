@@ -10,11 +10,13 @@ import (
 
 type Applier struct {
 	db *database.Database
+	batchSize int
 }
 
-func New(db *database.Database) *Applier {
+func New(db *database.Database, batchSize int) *Applier {
 	return &Applier{
 		db: db,
+		batchSize: batchSize,
 	}
 }
 

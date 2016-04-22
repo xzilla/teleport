@@ -78,7 +78,7 @@ func main() {
 		go transmitter.Watch(processingInterval)
 
 		// Start applier on a separate goroutine
-		applier := applier.New(db)
+		applier := applier.New(db, config.BatchSize)
 		go applier.Watch(processingInterval)
 
 		// Start vacuum on a separate goroutine
