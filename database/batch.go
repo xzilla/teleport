@@ -1,13 +1,13 @@
 package database
 
 import (
+	"bufio"
 	"bytes"
 	"fmt"
 	"github.com/jmoiron/sqlx"
 	"io/ioutil"
 	"math/rand"
 	"os"
-	"bufio"
 	"sort"
 	"strings"
 	"time"
@@ -272,11 +272,11 @@ func (b *Batch) GetFile() (*os.File, error) {
 func (b *Batch) GetFileScanner() (*bufio.Scanner, *os.File, error) {
 	file, err := b.GetFile()
 
-    if err != nil {
+	if err != nil {
 		return nil, nil, err
-    }
+	}
 
-    scanner := bufio.NewScanner(file)
+	scanner := bufio.NewScanner(file)
 
 	return scanner, file, nil
 }

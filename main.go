@@ -2,7 +2,6 @@ package main
 
 import (
 	"flag"
-	"fmt"
 	"github.com/pagarme/teleport/applier"
 	"github.com/pagarme/teleport/batcher"
 	"github.com/pagarme/teleport/client"
@@ -11,6 +10,7 @@ import (
 	"github.com/pagarme/teleport/loader"
 	"github.com/pagarme/teleport/server"
 	"github.com/pagarme/teleport/transmitter"
+	"log"
 	"os"
 	"time"
 )
@@ -27,7 +27,17 @@ func main() {
 	err := config.ReadFromFile(*configPath)
 
 	if err != nil {
-		fmt.Printf("Error opening config file '%s': %v\n", *configPath, err)
+		log.Printf("Error opening config file '%s': %v\n", *configPath, err)
+		os.Exit(1)
+	}
+
+	if config.ProcessingInterval == 0 {
+		log.Printf("Invalid config value 0 for ProcessingInterval\n")
+		os.Exit(1)
+	}
+
+	if config.BatchSize == 0 {
+		log.Printf("Invalid config value 0 for BatchSize\n")
 		os.Exit(1)
 	}
 
@@ -42,7 +52,7 @@ func main() {
 
 	// Start db
 	if err = db.Start(); err != nil {
-		fmt.Printf("Erro starting database: ", err)
+		log.Printf("Erro starting database: ", err)
 		os.Exit(1)
 	}
 
@@ -58,37 +68,37 @@ func main() {
 	if *mode == "replication" {
 		// Start batcher on a separate goroutine
 		batcher := batcher.New(db, targets)
-		go batcher.Watch(5 * time.Second)
+		go batcher.Watch(time.Duration(config.ProcessingInterval) * time.Millisecond)
 
 		// Start transmitter on a separate goroutine
 		transmitter := transmitter.New(db, targets)
-		go transmitter.Watch(5 * time.Second)
+		go transmitter.Watch(time.Duration(config.ProcessingInterval) * time.Millisecond)
 
 		// Start applier on a separate goroutine
 		applier := applier.New(db)
-		go applier.Watch(5 * time.Second)
+		go applier.Watch(time.Duration(config.ProcessingInterval) * time.Millisecond)
 
 		// Start HTTP server for receiving incoming requests
 		server := server.New(db, config.ServerHTTP)
 
 		// Start HTTP server
 		if err = server.Start(); err != nil {
-			fmt.Printf("Error starting HTTP server: %v\n", err)
+			log.Printf("Error starting HTTP server: %v\n", err)
 			os.Exit(1)
 		}
 	} else if *mode == "initial-load" {
 		target, ok := targets[*loadTarget]
 
 		if !ok {
-			fmt.Printf("Error starting loader: target %s not found!\n", *loadTarget)
+			log.Printf("Error starting loader: target %s not found!\n", *loadTarget)
 			os.Exit(1)
 		}
 
-		loader := loader.New(db, target, *loadTarget, 10000)
+		loader := loader.New(db, target, *loadTarget, config.BatchSize)
 		err := loader.Load()
 
 		if err != nil {
-			fmt.Printf("Error creating events: %#v\n", err)
+			log.Printf("Error creating events: %#v\n", err)
 		}
 	}
 }

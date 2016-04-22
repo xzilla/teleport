@@ -6,9 +6,11 @@ import (
 )
 
 type Config struct {
-	Database   Database          `yaml:"database"`
-	ServerHTTP HTTP              `yaml:"server"`
-	Targets    map[string]Target `yaml:"targets"`
+	Database           Database          `yaml:"database"`
+	ServerHTTP         HTTP              `yaml:"server"`
+	Targets            map[string]Target `yaml:"targets"`
+	BatchSize          int               `yaml:"batch_size"`
+	ProcessingInterval int               `yaml:"processing_interval"`
 }
 
 func New() *Config {

@@ -42,7 +42,7 @@ func (c *Client) SendRequest(path string, obj interface{}) (*http.Response, erro
 }
 
 func (c *Client) SendFile(path, formField string, file *os.File) (*http.Response, error) {
-    return http.Post(
+	return http.Post(
 		c.urlForRequest(path),
 		"application/json",
 		file,

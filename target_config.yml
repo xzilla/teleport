@@ -1,3 +1,5 @@
+batch_size: 10000
+processing_interval: 100
 database:
   name: "tar"
   database: "postgres2"

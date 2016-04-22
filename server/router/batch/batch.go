@@ -2,14 +2,14 @@ package batch
 
 import (
 	"encoding/json"
+	"fmt"
+	"github.com/gorilla/mux"
 	"github.com/pagarme/teleport/database"
 	"github.com/pagarme/teleport/server/httputils"
-	"github.com/gorilla/mux"
 	"github.com/pagarme/teleport/server/router"
-	"fmt"
+	"io"
 	"log"
 	"net/http"
-	"io"
 )
 
 type batchRouter struct {
@@ -76,24 +76,24 @@ func (b *batchRouter) update(w http.ResponseWriter, r *http.Request) error {
 		return fmt.Errorf("batch is not waiting for data!")
 	}
 
- 	if err != nil {
+	if err != nil {
 		return err
- 	}
+	}
 
 	out, err := batch.CreateFile()
 
- 	if err != nil {
- 		return fmt.Errorf("unable to create the file for writing!")
- 	}
+	if err != nil {
+		return fmt.Errorf("unable to create the file for writing!")
+	}
 
- 	defer out.Close()
+	defer out.Close()
 
- 	// write the content from POST to the file
- 	_, err = io.Copy(out, r.Body)
+	// write the content from POST to the file
+	_, err = io.Copy(out, r.Body)
 
- 	if err != nil {
+	if err != nil {
 		return err
- 	}
+	}
 
 	// Start transaction
 	tx := b.db.NewTransaction()

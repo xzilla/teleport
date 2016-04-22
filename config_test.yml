@@ -1,3 +1,5 @@
+batch_size: 10000
+processing_interval: 5000
 database:
   name: "test-db"
   database: "postgres"

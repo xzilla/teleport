@@ -1,9 +1,9 @@
 package applier
 
 import (
+	"github.com/jmoiron/sqlx"
 	"github.com/pagarme/teleport/action"
 	"github.com/pagarme/teleport/database"
-	"github.com/jmoiron/sqlx"
 	"log"
 	"time"
 )
