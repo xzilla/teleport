@@ -35,13 +35,12 @@ func (b *batchRouter) create(w http.ResponseWriter, r *http.Request) error {
 	if newBatch.StorageType == "db" {
 		// Batches with db storage are ready to be applied
 		newBatch.Status = "waiting_apply"
-	} else {
+	} else if newBatch.StorageType == "fs" {
 		// Other batches need to wait for data from source
 		newBatch.Status = "waiting_data"
+		newData := fmt.Sprintf("out_%s", *newBatch.Data)
+		newBatch.Data = &newData
 	}
-
-	newData := fmt.Sprintf("out_%s", *newBatch.Data)
-	newBatch.Data = &newData
 
 	// Insert
 	newBatch.InsertQuery(tx)

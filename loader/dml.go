@@ -8,9 +8,9 @@ import (
 	"strings"
 )
 
-func (l *Loader) createDMLEvents() ([]database.Event, error) {
+func (l *Loader) createDMLEvents() ([]*database.Event, error) {
 	tx := l.db.NewTransaction()
-	events := make([]database.Event, 0)
+	events := make([]*database.Event, 0)
 
 	for _, schema := range l.db.Schemas {
 		for _, class := range schema.Classes {
@@ -37,26 +37,26 @@ func (l *Loader) createDMLEvents() ([]database.Event, error) {
 			}
 
 			event.InsertQuery(tx)
-			events = append(events, *event)
+			events = append(events, event)
 		}
 	}
 
 	err := tx.Commit()
 
 	if err != nil {
-		return []database.Event{}, err
+		return []*database.Event{}, err
 	}
 
 	return events, nil
 }
 
-func (l *Loader) resumeDMLEvents(events []database.Event) error {
+func (l *Loader) resumeDMLEvents(events []*database.Event) error {
 	for _, event := range events {
 		if event.TriggerEvent != "dml_initial_load" {
 			continue
 		}
 
-		err := l.resumeDMLEvent(&event)
+		err := l.resumeDMLEvent(event)
 
 		if err != nil {
 			return err

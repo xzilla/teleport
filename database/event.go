@@ -36,14 +36,14 @@ func NewEvent(eventData string) *Event {
 	}
 }
 
-func (db *Database) GetEvents(status string) ([]Event, error) {
-	var events []Event
+func (db *Database) GetEvents(status string) ([]*Event, error) {
+	var events []*Event
 	err := db.selectObjs(&events, "SELECT * FROM teleport.event WHERE status = $1 ORDER BY id ASC;", status)
 	return events, err
 }
 
-func (db *Database) GetEvent(id string) (Event, error) {
-	var events []Event
+func (db *Database) GetEvent(id string) (*Event, error) {
+	var events []*Event
 	err := db.selectObjs(&events, "SELECT * FROM teleport.event WHERE id = $1;", id)
 	return events[0], err
 }

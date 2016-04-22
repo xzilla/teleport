@@ -157,18 +157,18 @@ func (b *Batcher) CreateBatchesWithActions(actionsForEvent map[database.Event][]
 	return usedEvents, batches, nil
 }
 
-func (b *Batcher) actionsForEvents(events []database.Event) (map[database.Event][]action.Action, error) {
+func (b *Batcher) actionsForEvents(events []*database.Event) (map[database.Event][]action.Action, error) {
 	actionsForEvent := make(map[database.Event][]action.Action)
 
 	// Get actions for each event
 	for _, event := range events {
-		actions, err := b.actionsForEvent(event)
+		actions, err := b.actionsForEvent(*event)
 
 		if err != nil {
 			return nil, err
 		}
 
-		actionsForEvent[event] = actions
+		actionsForEvent[*event] = actions
 	}
 
 	return actionsForEvent, nil
@@ -214,12 +214,11 @@ func (b *Batcher) createBatchWithEvents(events []database.Event, targetName stri
 		return nil, err
 	}
 
-	log.Printf("Generated new batch: %v\n", batch)
+	log.Printf("Generated new batch: %#v\n", batch)
 
 	return batch, nil
 }
 
-// func (b *Batcher) eventsForTarget(target *client.Client, actionsForEvent map[database.Event][]action.Action) ([]database.Event, error) {
 func (b *Batcher) filterActionsForTarget(target *client.Client, actionsForEvent map[database.Event][]action.Action) map[database.Event][]action.Action {
 	newActions := make(map[database.Event][]action.Action)
 

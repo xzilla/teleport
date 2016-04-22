@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"math/rand"
 	"os"
+	"bufio"
 	"sort"
 	"strings"
 	"time"
@@ -36,8 +37,8 @@ func NewBatch(storageType string) *Batch {
 	return batch
 }
 
-func (db *Database) GetBatches(status string) ([]Batch, error) {
-	var batches []Batch
+func (db *Database) GetBatches(status string) ([]*Batch, error) {
+	var batches []*Batch
 	err := db.selectObjs(&batches, "SELECT * FROM teleport.batch WHERE status = $1 ORDER BY id ASC;", status)
 	return batches, err
 }
@@ -208,6 +209,14 @@ func (b *Batch) SetEvents(events Events) error {
 	return b.SetData(&data)
 }
 
+func (b *Batch) EventFromData(data string) *Event {
+	if data == "" {
+		return nil
+	}
+
+	return NewEvent(data)
+}
+
 func (b *Batch) GetEvents() (Events, error) {
 	// Split events data per line
 	events := make(Events, 0)
@@ -226,8 +235,10 @@ func (b *Batch) GetEvents() (Events, error) {
 
 	// Initialize new event
 	for _, eventData := range eventsData {
-		if eventData != "" {
-			events = append(events, *NewEvent(eventData))
+		event := b.EventFromData(eventData)
+
+		if event != nil {
+			events = append(events, *event)
 		}
 	}
 
@@ -256,4 +267,16 @@ func (b *Batch) GetFile() (*os.File, error) {
 	}
 
 	return os.Open(*b.Data)
+}
+
+func (b *Batch) GetFileScanner() (*bufio.Scanner, *os.File, error) {
+	file, err := b.GetFile()
+
+    if err != nil {
+		return nil, nil, err
+    }
+
+    scanner := bufio.NewScanner(file)
+
+	return scanner, file, nil
 }

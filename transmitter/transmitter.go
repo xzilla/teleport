@@ -29,7 +29,7 @@ func (t *Transmitter) Watch(sleepTime time.Duration) {
 			log.Printf("Error fetching batches for transmission! %v\n", err)
 		} else {
 			for _, batch := range batches {
-				err := t.Transmit(&batch)
+				err := t.Transmit(batch)
 
 				if err != nil {
 					log.Printf("Error transmitting batch! %v\n", err)
@@ -74,6 +74,8 @@ func (t *Transmitter) Transmit(batch *database.Batch) error {
 			return err
 		}
 	}
+
+	log.Printf("Transmitted batch: %#v", batch)
 
 	return t.markBatchTransmitted(batch)
 }

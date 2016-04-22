@@ -83,7 +83,7 @@ func (post *Class) Diff(other ddldiff.Diffable) []action.Action {
 
 			// Bail out on errors installing triggers
 			if err != nil {
-				fmt.Printf("Error installing triggers on table %s: %v\n", post.RelationName, err)
+				log.Printf("Error installing triggers on table %s: %v\n", post.RelationName, err)
 				return actions
 			}
 
