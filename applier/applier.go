@@ -78,6 +78,7 @@ func (a *Applier) applyBatch(batch *database.Batch) error {
 	updateBatchStatus := func(previousErr error) error {
 		if previousErr != nil {
 			// Create new transaction because the old one failed
+			tx.Rollback()
 			tx = a.db.NewTransaction()
 
 			batch.Status = "waiting_apply"
@@ -116,7 +117,7 @@ func (a *Applier) applyBatch(batch *database.Batch) error {
 		defer file.Close()
 
 		if err != nil {
-			return err
+			return updateBatchStatus(err)
 		}
 
 		for scanner.Scan() {
