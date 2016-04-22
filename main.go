@@ -67,21 +67,23 @@ func main() {
 	}
 
 	if *mode == "replication" {
+		processingInterval := time.Duration(config.ProcessingInterval) * time.Millisecond
+
 		// Start batcher on a separate goroutine
 		batcher := batcher.New(db, targets)
-		go batcher.Watch(time.Duration(config.ProcessingInterval) * time.Millisecond)
+		go batcher.Watch(processingInterval)
 
 		// Start transmitter on a separate goroutine
 		transmitter := transmitter.New(db, targets)
-		go transmitter.Watch(time.Duration(config.ProcessingInterval) * time.Millisecond)
+		go transmitter.Watch(processingInterval)
 
 		// Start applier on a separate goroutine
 		applier := applier.New(db)
-		go applier.Watch(time.Duration(config.ProcessingInterval) * time.Millisecond)
+		go applier.Watch(processingInterval)
 
 		// Start vacuum on a separate goroutine
 		vacuum := vacuum.New(db)
-		go vacuum.Watch(time.Duration(config.ProcessingInterval) * time.Millisecond)
+		go vacuum.Watch(processingInterval)
 
 		// Start HTTP server for receiving incoming requests
 		server := server.New(db, config.ServerHTTP)
