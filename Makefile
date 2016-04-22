@@ -2,7 +2,7 @@ all: teleport
 
 asset:
 	mkdir -p asset
-	$(GOPATH)/bin/go-bindata -pkg asset -o asset/asset.go data/...
+	$(GOPATH)/bin/go-bindata $(ASSET_FLAGS) -pkg asset -o asset/asset.go data/...
 
 teleport: asset
 	go build
