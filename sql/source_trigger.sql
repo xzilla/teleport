@@ -11,6 +11,7 @@ BEGIN
 		txid_current(),
 		'building'
 	);
+EXCEPTION WHEN OTHERS THEN
 END;
 $$
 LANGUAGE plpgsql;
@@ -34,30 +35,33 @@ BEGIN
 				FROM all_json_key_value s
 			)
 	WHERE id = event_row.id;
+EXCEPTION WHEN OTHERS THEN
 END;
 $$
 LANGUAGE plpgsql;
 
 CREATE OR REPLACE FUNCTION teleport_dml_event() RETURNS TRIGGER AS $$
-    BEGIN
-		INSERT INTO teleport.event (data, kind, trigger_tag, trigger_event, transaction_id, status) VALUES
+BEGIN
+	INSERT INTO teleport.event (data, kind, trigger_tag, trigger_event, transaction_id, status) VALUES
+	(
 		(
-			(
-				SELECT row_to_json(data) FROM (
-					SELECT
-						(CASE WHEN TG_OP = 'INSERT' THEN NULL ELSE OLD END) as pre,
-						(CASE WHEN TG_OP = 'DELETE' THEN NULL ELSE NEW END) as post
-				) data
-			)::text,
-			-- row_to_json(CASE WHEN TG_OP = 'DELETE' THEN OLD ELSE NEW END)::text,
-			'dml',
-			CONCAT(TG_TABLE_SCHEMA, '.', TG_RELNAME),
-			TG_OP,
-			txid_current(),
-			'waiting_batch'
-		);
-		RETURN NULL;
-    END;
+			SELECT row_to_json(data) FROM (
+				SELECT
+					(CASE WHEN TG_OP = 'INSERT' THEN NULL ELSE OLD END) as pre,
+					(CASE WHEN TG_OP = 'DELETE' THEN NULL ELSE NEW END) as post
+			) data
+		)::text,
+		-- row_to_json(CASE WHEN TG_OP = 'DELETE' THEN OLD ELSE NEW END)::text,
+		'dml',
+		CONCAT(TG_TABLE_SCHEMA, '.', TG_RELNAME),
+		TG_OP,
+		txid_current(),
+		'waiting_batch'
+	);
+	RETURN NULL;
+EXCEPTION WHEN OTHERS THEN
+	RETURN NULL;
+END;
 $$ LANGUAGE plpgsql;
 
 -- Install ddl event when it starts and ends
