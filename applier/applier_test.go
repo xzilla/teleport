@@ -71,7 +71,7 @@ func init() {
 		targets[key] = client.New(target)
 	}
 
-	applier = New(db)
+	applier = New(db, 100)
 }
 
 // StubAction implements Action

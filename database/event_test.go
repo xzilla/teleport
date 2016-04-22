@@ -101,7 +101,7 @@ func TestGetEvents(t *testing.T) {
 
 	data := "asd"
 
-	testEvent := Event{
+	testEvent := &Event{
 		Id:            "1",
 		Kind:          "ddl",
 		Status:        "waiting_batch",
@@ -146,7 +146,7 @@ func TestGetEvent(t *testing.T) {
 
 	data := "asd_one"
 
-	testEvent := Event{
+	testEvent := &Event{
 		Id:            "1",
 		Kind:          "ddl",
 		Status:        "waiting_batch",
@@ -195,7 +195,7 @@ func TestEventInsertQuery(t *testing.T) {
 
 	event, _ := db.GetEvent("5")
 
-	if !reflect.DeepEqual(event, *testEvent) {
+	if !reflect.DeepEqual(event, testEvent) {
 		t.Errorf(
 			"get event => %#v, want %#v",
 			event,
@@ -233,7 +233,7 @@ func TestEventUpdateQuery(t *testing.T) {
 
 	event, _ := db.GetEvent("5")
 
-	if !reflect.DeepEqual(event, *testEvent) {
+	if !reflect.DeepEqual(event, testEvent) {
 		t.Errorf(
 			"get event => %#v, want %#v",
 			event,

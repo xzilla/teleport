@@ -92,7 +92,7 @@ func TestMarkIgnoredEvents(t *testing.T) {
 
 	for _, event := range ignoredEvents {
 		if stubEvent.Id == event.Id {
-			updatedEvent = &event
+			updatedEvent = event
 			break
 		}
 	}
@@ -117,7 +117,7 @@ func TestActionsForEvents(t *testing.T) {
 		},
 	}
 
-	actionsForEvents, _ := batcher.actionsForEvents([]database.Event{*stubEvent})
+	actionsForEvents, _ := batcher.actionsForEvents([]*database.Event{stubEvent})
 
 	if !reflect.DeepEqual(actionsForEvents, output) {
 		t.Errorf(

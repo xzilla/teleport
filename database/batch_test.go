@@ -83,7 +83,7 @@ func TestGetBatches(t *testing.T) {
 
 	testData := "data"
 
-	testBatch := Batch{
+	testBatch := &Batch{
 		Id:          "1",
 		Status:      "waiting_transmission",
 		Source:      "source",
@@ -133,7 +133,7 @@ func TestBatchInsertQuery(t *testing.T) {
 
 	batches, _ := db.GetBatches("waiting_transmission")
 
-	if !reflect.DeepEqual(batches[0], *testBatch) {
+	if !reflect.DeepEqual(batches[0], testBatch) {
 		t.Errorf(
 			"get batch => %#v, want %#v",
 			batches[0],
@@ -169,7 +169,7 @@ func TestBatchUpdateQuery(t *testing.T) {
 
 	batches, _ := db.GetBatches("applied")
 
-	if !reflect.DeepEqual(batches[0], *testBatch) {
+	if !reflect.DeepEqual(batches[0], testBatch) {
 		t.Errorf(
 			"get batch => %#v, want %#v",
 			batches[0],
