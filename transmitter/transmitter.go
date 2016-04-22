@@ -68,6 +68,8 @@ func (t *Transmitter) Transmit(batch *database.Batch) error {
 			file,
 		)
 
+		defer file.Close()
+
 		if err != nil {
 			return err
 		}

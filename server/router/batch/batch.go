@@ -77,13 +77,9 @@ func (b *batchRouter) update(w http.ResponseWriter, r *http.Request) error {
 		return fmt.Errorf("batch is not waiting for data!")
 	}
 
- 	file, _, err := r.FormFile("data")
-
  	if err != nil {
 		return err
  	}
-
- 	defer file.Close()
 
 	out, err := batch.CreateFile()
 
@@ -94,7 +90,7 @@ func (b *batchRouter) update(w http.ResponseWriter, r *http.Request) error {
  	defer out.Close()
 
  	// write the content from POST to the file
- 	_, err = io.Copy(out, file)
+ 	_, err = io.Copy(out, r.Body)
 
  	if err != nil {
 		return err

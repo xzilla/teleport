@@ -5,9 +5,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/pagarme/teleport/config"
-	"mime/multipart"
+	// "mime/multipart"
 	"net/http"
-	"io"
+	// "io"
 	"os"
 )
 
@@ -42,28 +42,9 @@ func (c *Client) SendRequest(path string, obj interface{}) (*http.Response, erro
 }
 
 func (c *Client) SendFile(path, formField string, file *os.File) (*http.Response, error) {
-	bodyBuf := &bytes.Buffer{}
-    bodyWriter := multipart.NewWriter(bodyBuf)
-
-    fileWriter, err := bodyWriter.CreateFormFile(formField, formField)
-
-    if err != nil {
-        fmt.Println("error writing to buffer")
-        return nil, err
-    }
-
-    _, err = io.Copy(fileWriter, file)
-
-    if err != nil {
-        return nil, err
-    }
-
-    contentType := bodyWriter.FormDataContentType()
-    bodyWriter.Close()
-
     return http.Post(
 		c.urlForRequest(path),
-		contentType,
-		bodyBuf,
+		"application/json",
+		file,
 	)
 }
