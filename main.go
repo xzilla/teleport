@@ -10,6 +10,7 @@ import (
 	"github.com/pagarme/teleport/loader"
 	"github.com/pagarme/teleport/server"
 	"github.com/pagarme/teleport/transmitter"
+	"github.com/pagarme/teleport/vacuum"
 	"log"
 	"os"
 	"time"
@@ -77,6 +78,10 @@ func main() {
 		// Start applier on a separate goroutine
 		applier := applier.New(db)
 		go applier.Watch(time.Duration(config.ProcessingInterval) * time.Millisecond)
+
+		// Start vacuum on a separate goroutine
+		vacuum := vacuum.New(db)
+		go vacuum.Watch(time.Duration(config.ProcessingInterval) * time.Millisecond)
 
 		// Start HTTP server for receiving incoming requests
 		server := server.New(db, config.ServerHTTP)
