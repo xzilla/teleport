@@ -11,6 +11,7 @@ import (
 	"github.com/pagarme/teleport/server"
 	"github.com/pagarme/teleport/transmitter"
 	"github.com/pagarme/teleport/vacuum"
+	"github.com/pagarme/teleport/ddlwatcher"
 	"log"
 	"os"
 	"time"
@@ -84,6 +85,10 @@ func main() {
 		// Start vacuum on a separate goroutine
 		vacuum := vacuum.New(db)
 		go vacuum.Watch(processingInterval)
+
+		// Start vacuum on a separate goroutine
+		ddlwatcher := ddlwatcher.New(db)
+		go ddlwatcher.Watch(processingInterval)
 
 		// Start HTTP server for receiving incoming requests
 		server := server.New(db, config.ServerHTTP)
