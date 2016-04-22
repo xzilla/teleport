@@ -55,6 +55,24 @@ func (t *Transmitter) Transmit(batch *database.Batch) error {
 		return err
 	}
 
+	if batch.StorageType == "fs" {
+		file, err := batch.GetFile()
+
+		if err != nil {
+			return err
+		}
+
+		_, err = client.SendFile(
+			fmt.Sprintf("/batches/%s", batch.Id),
+			"data",
+			file,
+		)
+
+		if err != nil {
+			return err
+		}
+	}
+
 	return t.markBatchTransmitted(batch)
 }
 

@@ -242,10 +242,18 @@ func (b *Batch) AppendEvents(events Events) error {
 	return b.AppendData(&data)
 }
 
-func (b *Batch) GetFile() (*os.File, error) {
+func (b *Batch) CreateFile() (*os.File, error) {
 	if b.StorageType != "fs" {
 		return nil, fmt.Errorf("batch storage type is not fs")
 	}
 
 	return os.Create(*b.Data)
+}
+
+func (b *Batch) GetFile() (*os.File, error) {
+	if b.StorageType != "fs" {
+		return nil, fmt.Errorf("batch storage type is not fs")
+	}
+
+	return os.Open(*b.Data)
 }

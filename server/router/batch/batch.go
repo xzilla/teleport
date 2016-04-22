@@ -85,7 +85,7 @@ func (b *batchRouter) update(w http.ResponseWriter, r *http.Request) error {
 
  	defer file.Close()
 
-	out, err := batch.GetFile()
+	out, err := batch.CreateFile()
 
  	if err != nil {
  		return fmt.Errorf("unable to create the file for writing!")
@@ -124,6 +124,6 @@ func (b *batchRouter) Routes() []router.Route {
 func (b *batchRouter) initRoutes() {
 	b.routes = []router.Route{
 		router.NewPostRoute("/batches", b.create),
-		router.NewPutRoute("/batches/{id}", b.update),
+		router.NewPostRoute("/batches/{id}", b.update),
 	}
 }
