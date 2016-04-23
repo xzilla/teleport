@@ -32,12 +32,12 @@ func (b *batchRouter) create(w http.ResponseWriter, r *http.Request) error {
 	// Start transaction
 	tx := b.db.NewTransaction()
 
-	if newBatch.StorageType == "db" {
-		// Batches with db storage are ready to be applied
-		newBatch.Status = "waiting_apply"
-	} else if newBatch.StorageType == "fs" {
+	// Batches with db storage are ready to be applied
+	newBatch.Status = "waiting_apply"
+
+	if newBatch.StorageType == "fs" {
 		// Other batches need to wait for data from source
-		newBatch.Status = "waiting_data"
+		newBatch.DataStatus = "waiting_data"
 		newData := fmt.Sprintf("out_%s", *newBatch.Data)
 		newBatch.Data = &newData
 	}
@@ -72,7 +72,7 @@ func (b *batchRouter) update(w http.ResponseWriter, r *http.Request) error {
 		return fmt.Errorf("batch not found!")
 	}
 
-	if batch.Status != "waiting_data" {
+	if batch.DataStatus != "waiting_data" {
 		return fmt.Errorf("batch is not waiting for data!")
 	}
 
@@ -98,7 +98,7 @@ func (b *batchRouter) update(w http.ResponseWriter, r *http.Request) error {
 	// Start transaction
 	tx := b.db.NewTransaction()
 
-	batch.Status = "waiting_apply"
+	batch.DataStatus = "transmitted"
 	batch.UpdateQuery(tx)
 
 	// Commit transaction

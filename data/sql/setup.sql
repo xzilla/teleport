@@ -59,6 +59,7 @@ CREATE TABLE IF NOT EXISTS teleport.event (
 CREATE TABLE IF NOT EXISTS teleport.batch (
 	id serial primary key,
 	status teleport.batch_status,
+	data_status teleport.batch_status,
 	storage_type teleport.batch_storage_type,
 	data text,
 	source text,

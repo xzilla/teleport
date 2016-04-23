@@ -39,13 +39,13 @@ func (v *Vacuum) clean() error {
 }
 
 func (v *Vacuum) cleanBatches() error {
-	appliedBatches, err := v.db.GetBatches("applied")
+	appliedBatches, err := v.db.GetBatches("applied", "")
 
 	if err != nil {
 		return err
 	}
 
-	transmittedBatches, err := v.db.GetBatches("transmitted")
+	transmittedBatches, err := v.db.GetBatches("transmitted", "transmitted")
 
 	if err != nil {
 		return err

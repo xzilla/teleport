@@ -24,16 +24,19 @@ func New(db *database.Database, batchSize int) *Applier {
 // Transmit batches
 func (a *Applier) Watch(sleepTime time.Duration) {
 	for {
-		batches, err := a.db.GetBatches("waiting_apply")
+		batches, err := a.db.GetBatches("waiting_apply", "")
 
 		if err != nil {
 			log.Printf("Error fetching batches to apply! %v\n", err)
 		} else {
 			for _, batch := range batches {
-				err := a.applyBatch(batch)
+				shouldContinue, err := a.applyBatch(batch)
 
 				if err != nil {
 					log.Printf("Error applying batch %s: %v\n", batch.Id, err)
+				}
+
+				if !shouldContinue {
 					break
 				}
 			}
@@ -59,12 +62,16 @@ func (a *Applier) applyAction(act action.Action, tx *sqlx.Tx) error {
 }
 
 // Apply a batch
-func (a *Applier) applyBatch(batch *database.Batch) error {
+func (a *Applier) applyBatch(batch *database.Batch) (bool, error) {
+	if batch.DataStatus != "transmitted" {
+		return false, nil
+	}
+
 	// Start transaction
 	tx := a.db.NewTransaction()
 
 	// Update batch status based on a error
-	updateBatchStatus := func(previousErr error) error {
+	updateBatchStatus := func(previousErr error) (bool, error) {
 		if previousErr != nil {
 			// Create new transaction because the old one failed
 			tx.Rollback()
@@ -75,29 +82,30 @@ func (a *Applier) applyBatch(batch *database.Batch) error {
 		} else {
 			// Mark batch as applied (no error)
 			batch.Status = "applied"
+			batch.DataStatus = "applied"
 			batch.WaitingReexecution = false
 		}
 
 		err := batch.UpdateQuery(tx)
 
 		if err != nil {
-			return err
+			return false, err
 		}
 
 		err = tx.Commit()
 
 		if err != nil {
-			return err
+			return false, err
 		}
 
-		return previousErr
+		return true, previousErr
 	}
 
 	if batch.StorageType == "db" {
 		actions, err := batch.GetActions()
 
 		if err != nil {
-			return err
+			return false, err
 		}
 
 		for _, act := range actions {

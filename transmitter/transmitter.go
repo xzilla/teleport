@@ -23,13 +23,27 @@ func New(db *database.Database, clients map[string]*client.Client) *Transmitter 
 // Transmit batches
 func (t *Transmitter) Watch(sleepTime time.Duration) {
 	for {
-		batches, err := t.db.GetBatches("waiting_transmission")
+		batches, err := t.db.GetBatches("waiting_transmission", "")
 
 		if err != nil {
 			log.Printf("Error fetching batches for transmission! %v\n", err)
 		} else {
 			for _, batch := range batches {
-				err := t.Transmit(batch)
+				err := t.transmitBatch(batch)
+
+				if err != nil {
+					log.Printf("Error transmitting batch! %v\n", err)
+				}
+			}
+		}
+
+		batches, err = t.db.GetBatches("transmitted", "waiting_transmission")
+
+		if err != nil {
+			log.Printf("Error fetching batches data for transmission! %v\n", err)
+		} else {
+			for _, batch := range batches {
+				err := t.transmitBatchData(batch)
 
 				if err != nil {
 					log.Printf("Error transmitting batch! %v\n", err)
@@ -42,7 +56,7 @@ func (t *Transmitter) Watch(sleepTime time.Duration) {
 }
 
 // Transmit a batch to a target
-func (t *Transmitter) Transmit(batch *database.Batch) error {
+func (t *Transmitter) transmitBatch(batch *database.Batch) error {
 	client := t.clients[batch.Target]
 
 	if client == nil {
@@ -55,37 +69,52 @@ func (t *Transmitter) Transmit(batch *database.Batch) error {
 		return err
 	}
 
-	if batch.StorageType == "fs" {
-		file, err := batch.GetFile()
-
-		if err != nil {
-			return err
-		}
-
-		_, err = client.SendFile(
-			fmt.Sprintf("/batches/%s", batch.Id),
-			"data",
-			file,
-		)
-
-		defer file.Close()
-
-		if err != nil {
-			return err
-		}
-	}
-
 	log.Printf("Transmitted batch: %#v", batch)
 
-	return t.markBatchTransmitted(batch)
+	return t.markBatchTransmitted(batch, false)
 }
 
-func (t *Transmitter) markBatchTransmitted(batch *database.Batch) error {
+// Transmit a batch data to a target
+func (t *Transmitter) transmitBatchData(batch *database.Batch) error {
+	client := t.clients[batch.Target]
+
+	if client == nil {
+		return fmt.Errorf("could not find client for target '%s'", batch.Target)
+	}
+
+	file, err := batch.GetFile()
+
+	if err != nil {
+		return err
+	}
+
+	_, err = client.SendFile(
+		fmt.Sprintf("/batches/%s", batch.Id),
+		"data",
+		file,
+	)
+
+	defer file.Close()
+
+	if err != nil {
+		return err
+	}
+
+	log.Printf("Transmitted batch data: %#v", batch)
+
+	return t.markBatchTransmitted(batch, true)
+}
+
+func (t *Transmitter) markBatchTransmitted(batch *database.Batch, updateData bool) error {
 	// Start transaction
 	tx := t.db.NewTransaction()
 
 	// Update batch to transmitted
 	batch.Status = "transmitted"
+
+	if updateData {
+		batch.DataStatus = "transmitted"
+	}
 
 	// Insert
 	batch.UpdateQuery(tx)

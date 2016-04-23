@@ -159,6 +159,8 @@ func (b *Batcher) createBatchWithActions(actions []action.Action, targetName str
 	// Set actions
 	batch.SetActions(actions)
 
+	batch.DataStatus = "transmitted"
+
 	// Set source and target
 	batch.Source = b.db.Name
 	batch.Target = targetName

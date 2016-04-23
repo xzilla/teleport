@@ -18,6 +18,7 @@ import (
 type Batch struct {
 	Id          string  `db:"id" json:"id"`
 	Status      string  `db:"status" json:"status"`
+	DataStatus  string  `db:"data_status" json:"data_status"`
 	Source      string  `db:"source" json:"source"`
 	Target      string  `db:"target" json:"target"`
 	Data        *string `db:"data" json:"data"`
@@ -40,9 +41,16 @@ func NewBatch(storageType string) *Batch {
 	return batch
 }
 
-func (db *Database) GetBatches(status string) ([]*Batch, error) {
+func (db *Database) GetBatches(status, dataStatus string) ([]*Batch, error) {
 	var batches []*Batch
-	err := db.selectObjs(&batches, "SELECT * FROM teleport.batch WHERE status = $1 ORDER BY waiting_reexecution, id ASC;", status)
+	var err error
+	
+	if dataStatus == "" {
+		err = db.selectObjs(&batches, "SELECT * FROM teleport.batch WHERE status = $1 ORDER BY waiting_reexecution, id ASC;", status)
+	} else {
+		err = db.selectObjs(&batches, "SELECT * FROM teleport.batch WHERE status = $1 AND data_status = $2 ORDER BY waiting_reexecution, id ASC;", status, dataStatus)
+	}
+
 	return batches, err
 }
 
@@ -157,9 +165,9 @@ func (b *Batch) InsertQuery(tx *sqlx.Tx) error {
 
 	// If there's no id, insert without id
 	if b.Id == "" {
-		query = "INSERT INTO teleport.batch (status, data, source, target, storage_type) VALUES ($1, $2, $3, $4, $5) RETURNING id;"
+		query = "INSERT INTO teleport.batch (status, data, source, target, storage_type, data_status) VALUES ($1, $2, $3, $4, $5, $6) RETURNING id;"
 	} else {
-		query = "INSERT INTO teleport.batch (id, status, data, source, target, storage_type) VALUES ($1, $2, $3, $4, $5, $6) RETURNING id;"
+		query = "INSERT INTO teleport.batch (id, status, data, source, target, storage_type, data_status) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING id;"
 		args = append(args, b.Id)
 	}
 
@@ -169,6 +177,7 @@ func (b *Batch) InsertQuery(tx *sqlx.Tx) error {
 		b.Source,
 		b.Target,
 		b.StorageType,
+		b.DataStatus,
 	)
 
 	return tx.Get(&b.Id, query, args...)
@@ -176,10 +185,11 @@ func (b *Batch) InsertQuery(tx *sqlx.Tx) error {
 
 func (b *Batch) UpdateQuery(tx *sqlx.Tx) error {
 	_, err := tx.Exec(
-		"UPDATE teleport.batch SET status = $1, data = $2, waiting_reexecution = $3 WHERE id = $4",
+		"UPDATE teleport.batch SET status = $1, data = $2, waiting_reexecution = $3, data_status = $4 WHERE id = $5",
 		b.Status,
 		b.Data,
 		b.WaitingReexecution,
+		b.DataStatus,
 		b.Id,
 	)
 

@@ -132,12 +132,25 @@ func (l *Loader) resumeDMLEvent(event *database.Event) error {
 
 	// Create a new batch with initial data
 	batch := database.NewBatch("fs")
+	batch.DataStatus = "waiting_data"
 	batch.Source = l.db.Name
 	batch.Target = l.targetName
 	initialData := ""
 	batch.SetData(&initialData)
 
-	batch.InsertQuery(tx)
+	err = batch.InsertQuery(tx)
+
+	if err != nil {
+		return err
+	}
+
+	err = tx.Commit()
+
+	if err != nil {
+		return err
+	}
+
+	tx = l.db.NewTransaction()
 
 	// Generate OFFSET/LIMITs to iterate
 	for i := 0; i < tableCount; i += l.BatchSize {
@@ -174,6 +187,9 @@ func (l *Loader) resumeDMLEvent(event *database.Event) error {
 			return err
 		}
 	}
+
+	batch.DataStatus = "waiting_transmission"
+	batch.UpdateQuery(tx)
 
 	return tx.Commit()
 }
