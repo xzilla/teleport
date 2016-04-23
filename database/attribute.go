@@ -10,6 +10,7 @@ type Attribute struct {
 	Name         string `json:"attr_name"`
 	Num          int    `json:"attr_num"`
 	TypeName     string `json:"type_name"`
+	TypeSchema   string `json:"type_schema"`
 	TypeOid      string `json:"type_oid"`
 	IsPrimaryKey bool   `json:"is_primary_key"`
 	Class        *Class
@@ -23,11 +24,12 @@ func (post *Attribute) Diff(other ddldiff.Diffable, context ddldiff.Context) []a
 	if post.Class.RelationKind == "r" {
 		if other == nil {
 			actions = append(actions, &action.CreateColumn{
-				post.Class.Schema.Name,
+				context.Schema,
 				post.Class.RelationName,
 				action.Column{
 					post.Name,
 					post.TypeName,
+					post.TypeSchema,
 				},
 			})
 		} else {
@@ -35,15 +37,17 @@ func (post *Attribute) Diff(other ddldiff.Diffable, context ddldiff.Context) []a
 
 			if pre.Name != post.Name || pre.TypeOid != post.TypeOid {
 				actions = append(actions, &action.AlterColumn{
-					post.Class.Schema.Name,
+					context.Schema,
 					post.Class.RelationName,
 					action.Column{
 						pre.Name,
 						pre.TypeName,
+						pre.TypeSchema,
 					},
 					action.Column{
 						post.Name,
 						post.TypeName,
+						post.TypeSchema,
 					},
 				})
 			}
@@ -60,11 +64,12 @@ func (a *Attribute) Children() []ddldiff.Diffable {
 func (a *Attribute) Drop(context ddldiff.Context) []action.Action {
 	return []action.Action{
 		&action.DropColumn{
-			a.Class.Schema.Name,
+			context.Schema,
 			a.Class.RelationName,
 			action.Column{
 				a.Name,
 				a.TypeName,
+				a.TypeSchema,
 			},
 		},
 	}

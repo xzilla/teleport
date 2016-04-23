@@ -6,6 +6,7 @@ import (
 	"github.com/pagarme/teleport/database"
 	"github.com/jmoiron/sqlx"
 	"log"
+	"fmt"
 	"sort"
 	"time"
 )
@@ -181,12 +182,15 @@ func (b *Batcher) actionsForTargets(events database.Events, targets map[string]*
 	actionsForTarget := make(map[string][]action.Action)
 
 	for targetName, target := range targets {
+		schema, attributeExpression := database.ParseTargetExpression(target.TargetExpression)
+		actions := make([]action.Action, 0)
+
 		// Filter actions for the current target
 		filterActions := func(actions []action.Action) []action.Action {
 			filtered := make([]action.Action, 0)
 
 			for _, act := range actions {
-				if act.Filter(target.TargetExpression) {
+				if act.Filter(fmt.Sprintf("%s.%s", target.ApplySchema, attributeExpression)) {
 					filtered = append(filtered, act)
 				}
 			}
@@ -194,13 +198,10 @@ func (b *Batcher) actionsForTargets(events database.Events, targets map[string]*
 			return filtered
 		}
 
-		schema, _ := database.ParseTargetExpression(target.TargetExpression)
-		actions := make([]action.Action, 0)
-
 		// Build actions for each event
 		for _, event := range events {
 			if event.Kind == "ddl" {
-				ddl := database.NewDdl(b.db, []byte(*event.Data), schema)
+				ddl := database.NewDdl(b.db, []byte(*event.Data), schema, target.ApplySchema)
 
 				// Update database schema
 				for _, schema := range ddl.PostSchemas {
@@ -209,7 +210,7 @@ func (b *Batcher) actionsForTargets(events database.Events, targets map[string]*
 
 				actions = append(actions, filterActions(ddl.Diff())...)
 			} else if event.Kind == "dml" {
-				dml := database.NewDml(b.db, event, []byte(*event.Data))
+				dml := database.NewDml(b.db, event, []byte(*event.Data), target.ApplySchema)
 				actions = append(actions, filterActions(dml.Diff())...)
 			}
 		}

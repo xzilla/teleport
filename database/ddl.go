@@ -10,10 +10,11 @@ type Ddl struct {
 	PreSchemas   []*Schema `json:"pre"`
 	PostSchemas  []*Schema `json:"post"`
 	Db           *Database
+	SourceSchema string
 	TargetSchema string
 }
 
-func NewDdl(db *Database, data []byte, targetSchema string) *Ddl {
+func NewDdl(db *Database, data []byte, sourceSchema, targetSchema string) *Ddl {
 	var ddl Ddl
 	err := json.Unmarshal(data, &ddl)
 
@@ -26,6 +27,7 @@ func NewDdl(db *Database, data []byte, targetSchema string) *Ddl {
 		schema.Db = db
 	}
 
+	ddl.SourceSchema = sourceSchema
 	ddl.TargetSchema = targetSchema
 
 	return &ddl
@@ -43,7 +45,7 @@ func (d *Ddl) schemaToDiffable(schema []*Schema) []ddldiff.Diffable {
 
 func (d *Ddl) filterSchemas(schemas []*Schema) []*Schema {
 	for _, schema := range schemas {
-		if schema.Name == d.TargetSchema {
+		if schema.Name == d.SourceSchema {
 			return []*Schema{schema}
 		}
 	}

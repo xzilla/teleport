@@ -110,6 +110,11 @@ BEGIN
 										a.attname AS attr_name,
 										a.attnum AS attr_num,
 										t.typname AS type_name,
+										(
+											SELECT n.nspname 
+											FROM pg_namespace n
+											WHERE n.oid = t.typnamespace
+										) AS type_schema,
 										t.oid AS type_oid,
 										COALESCE((
 											SELECT (a.attnum = ANY(indkey))

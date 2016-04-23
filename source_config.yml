@@ -17,4 +17,4 @@ targets:
     endpoint:
       hostname: "target"
       port: 3001
-    apply_schema: "public"
+    apply_schema: "test"

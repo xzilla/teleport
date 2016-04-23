@@ -90,11 +90,12 @@ func (post *Class) Diff(other ddldiff.Diffable, context ddldiff.Context) []actio
 			primaryKeyAttr := post.GetPrimaryKey()
 
 			actions = append(actions, &action.CreateTable{
-				post.Schema.Name,
+				context.Schema,
 				post.RelationName,
 				action.Column{
 					primaryKeyAttr.Name,
 					primaryKeyAttr.TypeName,
+					primaryKeyAttr.TypeSchema,
 				},
 			})
 		} else {
@@ -102,7 +103,7 @@ func (post *Class) Diff(other ddldiff.Diffable, context ddldiff.Context) []actio
 
 			if pre.RelationName != post.RelationName {
 				actions = append(actions, &action.AlterTable{
-					post.Schema.Name,
+					context.Schema,
 					pre.RelationName,
 					post.RelationName,
 				})
@@ -130,7 +131,7 @@ func (c *Class) Drop(context ddldiff.Context) []action.Action {
 	if c.RelationKind == "r" {
 		return []action.Action{
 			&action.DropTable{
-				c.Schema.Name,
+				context.Schema,
 				c.RelationName,
 			},
 		}

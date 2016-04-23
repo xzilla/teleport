@@ -90,7 +90,7 @@ func main() {
 			// Start vacuum on a separate goroutine if there's
 			// any target that needs to know about DDL changes
 			ddlwatcher := ddlwatcher.New(db)
-			go ddlwatcher.Watch(processingInterval * 100)
+			go ddlwatcher.Watch(processingInterval)
 		}
 
 		// Start HTTP server for receiving incoming requests

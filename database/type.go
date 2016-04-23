@@ -17,7 +17,7 @@ func (post *Type) Diff(other ddldiff.Diffable, context ddldiff.Context) []action
 
 	if other == nil {
 		actions = append(actions, &action.CreateType{
-			post.Schema.Name,
+			context.Schema,
 			post.Name,
 		})
 	} else {
@@ -25,7 +25,7 @@ func (post *Type) Diff(other ddldiff.Diffable, context ddldiff.Context) []action
 
 		if pre.Name != post.Name {
 			actions = append(actions, &action.AlterType{
-				post.Schema.Name,
+				context.Schema,
 				pre.Name,
 				post.Name,
 			})
@@ -48,7 +48,7 @@ func (t *Type) Children() []ddldiff.Diffable {
 func (t *Type) Drop(context ddldiff.Context) []action.Action {
 	return []action.Action{
 		&action.DropType{
-			t.Schema.Name,
+			context.Schema,
 			t.Name,
 		},
 	}

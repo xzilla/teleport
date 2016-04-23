@@ -13,6 +13,7 @@ type Dml struct {
 	Post  *map[string]interface{} `json:"post"`
 	Event *Event
 	Db    *Database
+	TargetSchema string
 }
 
 func init() {
@@ -20,7 +21,7 @@ func init() {
 	gob.Register(&obj)
 }
 
-func NewDml(db *Database, e *Event, data []byte) *Dml {
+func NewDml(db *Database, e *Event, data []byte, targetSchema string) *Dml {
 	var dml Dml
 	err := json.Unmarshal(data, &dml)
 
@@ -30,6 +31,7 @@ func NewDml(db *Database, e *Event, data []byte) *Dml {
 
 	dml.Db = db
 	dml.Event = e
+	dml.TargetSchema = targetSchema
 
 	return &dml
 }
@@ -85,10 +87,11 @@ func (d *Dml) generateRows(obj *map[string]interface{}) []action.Row {
 		}
 
 		rows = append(rows, action.Row{
-			Value: value,
-			Column: action.Column{
-				Name: attribute.Name,
-				Type: attribute.TypeName,
+			value,
+			action.Column{
+				attribute.Name,
+				attribute.TypeName,
+				attribute.TypeSchema,
 			},
 		})
 	}
@@ -101,10 +104,11 @@ func (d *Dml) generatePrimaryKeyRow(obj *map[string]interface{}) action.Row {
 	pkey := class.GetPrimaryKey()
 
 	return action.Row{
-		Value: (*obj)[pkey.Name],
-		Column: action.Column{
-			Name: pkey.Name,
-			Type: pkey.TypeName,
+		(*obj)[pkey.Name],
+		action.Column{
+			pkey.Name,
+			pkey.TypeName,
+			pkey.TypeSchema,
 		},
 	}
 }
@@ -114,9 +118,9 @@ func (d *Dml) Diff() []action.Action {
 	if d.Pre == nil {
 		return []action.Action{
 			&action.InsertRow{
-				SchemaName: d.GetSchemaName(),
-				TableName:  d.GetTableName(),
-				Rows:       d.generateRows(d.Post),
+				d.TargetSchema,
+				d.GetTableName(),
+				d.generateRows(d.Post),
 			},
 		}
 	}
@@ -125,9 +129,9 @@ func (d *Dml) Diff() []action.Action {
 	if d.Post == nil {
 		return []action.Action{
 			&action.DeleteRow{
-				SchemaName: d.GetSchemaName(),
-				TableName:  d.GetTableName(),
-				PrimaryKey: d.generatePrimaryKeyRow(d.Pre),
+				d.TargetSchema,
+				d.GetTableName(),
+				d.generatePrimaryKeyRow(d.Pre),
 			},
 		}
 	}
@@ -135,10 +139,10 @@ func (d *Dml) Diff() []action.Action {
 	// Update row
 	return []action.Action{
 		&action.UpdateRow{
-			SchemaName: d.GetSchemaName(),
-			TableName:  d.GetTableName(),
-			PrimaryKey: d.generatePrimaryKeyRow(d.Post),
-			Rows:       d.generateRows(d.Post),
+			d.TargetSchema,
+			d.GetTableName(),
+			d.generatePrimaryKeyRow(d.Post),
+			d.generateRows(d.Post),
 		},
 	}
 }

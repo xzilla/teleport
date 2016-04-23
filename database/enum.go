@@ -16,7 +16,7 @@ func (post *Enum) Diff(other ddldiff.Diffable, context ddldiff.Context) []action
 
 	if other == nil {
 		actions = append(actions, &action.CreateEnum{
-			post.Type.Schema.Name,
+			context.Schema,
 			post.Type.Name,
 			post.Name,
 		})

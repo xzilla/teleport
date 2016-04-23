@@ -37,10 +37,11 @@ func (a *AlterColumn) Execute(c Context) error {
 	if a.Column.Type != a.NewColumn.Type {
 		_, err := c.Tx.Exec(
 			fmt.Sprintf(
-				"ALTER TABLE \"%s\".\"%s\" ALTER COLUMN \"%s\" TYPE \"%s\";",
+				"ALTER TABLE \"%s\".\"%s\" ALTER COLUMN \"%s\" TYPE \"%s\".\"%s\";",
 				a.SchemaName,
 				a.TableName,
 				a.NewColumn.Name,
+				a.NewColumn.TypeSchema,
 				a.NewColumn.Type,
 			),
 		)

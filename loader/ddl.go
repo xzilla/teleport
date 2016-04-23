@@ -1,7 +1,6 @@
 package loader
 
 import (
-	"log"
 	"github.com/pagarme/teleport/action"
 	"github.com/pagarme/teleport/database"
 )
@@ -22,11 +21,10 @@ func (l *Loader) createDDLBatch() ([]*database.Batch, error) {
 		schemas,
 		l.db,
 		schemaName,
+		l.target.TargetExpression,
 	}
 
 	actions := ddl.Diff()
-
-	log.Printf("actions: %#v\n", actions)
 
 	tx := l.db.NewTransaction()
 

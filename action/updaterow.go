@@ -26,7 +26,7 @@ func (a *UpdateRow) Execute(c Context) error {
 
 	for _, row := range a.Rows {
 		replacementsCount++
-		escapedRows = append(escapedRows, fmt.Sprintf("\"%s\" = $%d::\"%s\"", row.Column.Name, replacementsCount, row.Column.Type))
+		escapedRows = append(escapedRows, fmt.Sprintf("\"%s\" = $%d::\"%s\".\"%s\"", row.Column.Name, replacementsCount, row.Column.TypeSchema, row.Column.Type))
 
 		// Marshall JSON objects as pg driver does not support it
 		if obj, ok := row.Value.(*map[string]interface{}); ok {
