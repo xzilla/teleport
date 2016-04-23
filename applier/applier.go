@@ -6,6 +6,7 @@ import (
 	"github.com/pagarme/teleport/database"
 	"log"
 	"time"
+	"io"
 )
 
 type Applier struct {
@@ -107,32 +108,28 @@ func (a *Applier) applyBatch(batch *database.Batch) error {
 			}
 		}
 	} else if batch.StorageType == "fs" {
-		scanner, file, err := batch.GetFileScanner()
+		reader, file, err := batch.GetFileReader()
 		defer file.Close()
 
 		if err != nil {
 			return updateBatchStatus(err)
 		}
 
-		for scanner.Scan() {
-			act, err := batch.ActionFromData(scanner.Text())
+		var act action.Action
+		
+		act, err = batch.ReadAction(reader);
 
-			if err != nil {
-				return err
-			}
-
-			if act == nil {
-				continue
-			}
-
+		for err == nil {
 			err = a.applyAction(act, tx)
 
 			if err != nil {
 				return updateBatchStatus(err)
 			}
+
+			act, err = batch.ReadAction(reader);
 		}
 
-		if err := scanner.Err(); err != nil {
+		if err != io.EOF {
 			return updateBatchStatus(err)
 		}
 	}

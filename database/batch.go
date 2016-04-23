@@ -306,14 +306,43 @@ func (b *Batch) GetFile() (*os.File, error) {
 	return os.Open(*b.Data)
 }
 
-func (b *Batch) GetFileScanner() (*bufio.Scanner, *os.File, error) {
+func (b *Batch) GetFileReader() (*bufio.Reader, *os.File, error) {
 	file, err := b.GetFile()
 
 	if err != nil {
 		return nil, nil, err
 	}
 
-	scanner := bufio.NewScanner(file)
+	reader := bufio.NewReader(file)
 
-	return scanner, file, nil
+	return reader, file, nil
+}
+
+func (b *Batch) ReadAction(reader *bufio.Reader) (action.Action, error) {
+	var line string
+
+	lineFrag, isPrefix, err := reader.ReadLine()
+
+	for err == nil {
+		line += string(lineFrag)
+
+		// Read only the first line
+		if !isPrefix {
+			break
+		}
+
+		lineFrag, isPrefix, err = reader.ReadLine()
+	}
+
+	if err != nil {
+        return nil, err
+    }
+
+	act, err := b.ActionFromData(line)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return act, nil
 }
