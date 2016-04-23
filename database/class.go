@@ -72,7 +72,7 @@ func (c *Class) GetPrimaryKey() *Attribute {
 }
 
 // Implements Diffable
-func (post *Class) Diff(other ddldiff.Diffable) []action.Action {
+func (post *Class) Diff(other ddldiff.Diffable, context ddldiff.Context) []action.Action {
 	actions := make([]action.Action, 0)
 
 	// r = Tables
@@ -126,7 +126,7 @@ func (c *Class) Children() []ddldiff.Diffable {
 	return children
 }
 
-func (c *Class) Drop() []action.Action {
+func (c *Class) Drop(context ddldiff.Context) []action.Action {
 	if c.RelationKind == "r" {
 		return []action.Action{
 			&action.DropTable{

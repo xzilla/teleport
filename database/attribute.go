@@ -16,7 +16,7 @@ type Attribute struct {
 }
 
 // Implements Diffable
-func (post *Attribute) Diff(other ddldiff.Diffable) []action.Action {
+func (post *Attribute) Diff(other ddldiff.Diffable, context ddldiff.Context) []action.Action {
 	actions := make([]action.Action, 0)
 
 	// r = Tables
@@ -57,7 +57,7 @@ func (a *Attribute) Children() []ddldiff.Diffable {
 	return []ddldiff.Diffable{}
 }
 
-func (a *Attribute) Drop() []action.Action {
+func (a *Attribute) Drop(context ddldiff.Context) []action.Action {
 	return []action.Action{
 		&action.DropColumn{
 			a.Class.Schema.Name,

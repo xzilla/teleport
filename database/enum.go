@@ -11,7 +11,7 @@ type Enum struct {
 	Type *Type
 }
 
-func (post *Enum) Diff(other ddldiff.Diffable) []action.Action {
+func (post *Enum) Diff(other ddldiff.Diffable, context ddldiff.Context) []action.Action {
 	actions := make([]action.Action, 0)
 
 	if other == nil {
@@ -29,7 +29,7 @@ func (e *Enum) Children() []ddldiff.Diffable {
 	return []ddldiff.Diffable{}
 }
 
-func (e *Enum) Drop() []action.Action {
+func (e *Enum) Drop(context ddldiff.Context) []action.Action {
 	return []action.Action{}
 }
 

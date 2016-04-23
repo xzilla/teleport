@@ -42,21 +42,15 @@ func (a *Applier) Watch(sleepTime time.Duration) {
 	}
 }
 
-func (a *Applier) applyEvent(event *database.Event, tx *sqlx.Tx) error {
-	currentAction, err := event.GetActionFromData()
-
-	if err != nil {
-		return err
-	}
-
+func (a *Applier) applyAction(act action.Action, tx *sqlx.Tx) error {
 	// Execute action of the given event
-	err = currentAction.Execute(action.Context{
+	err := act.Execute(action.Context{
 		Tx: tx,
 		Db: a.db.Db,
 	})
 
 	if err != nil {
-		log.Printf("Error applying event %d: %v", event.Id, err)
+		log.Printf("Error applying action %#v: %v", act, err)
 		return err
 	}
 
@@ -67,12 +61,6 @@ func (a *Applier) applyEvent(event *database.Event, tx *sqlx.Tx) error {
 func (a *Applier) applyBatch(batch *database.Batch) error {
 	// Start transaction
 	tx := a.db.NewTransaction()
-
-	events, err := batch.GetEvents()
-
-	if err != nil {
-		return err
-	}
 
 	// Update batch status based on a error
 	updateBatchStatus := func(previousErr error) error {
@@ -105,8 +93,14 @@ func (a *Applier) applyBatch(batch *database.Batch) error {
 	}
 
 	if batch.StorageType == "db" {
-		for _, event := range events {
-			err := a.applyEvent(&event, tx)
+		actions, err := batch.GetActions()
+
+		if err != nil {
+			return err
+		}
+
+		for _, act := range actions {
+			err := a.applyAction(act, tx)
 
 			if err != nil {
 				return updateBatchStatus(err)
@@ -121,13 +115,17 @@ func (a *Applier) applyBatch(batch *database.Batch) error {
 		}
 
 		for scanner.Scan() {
-			event := batch.EventFromData(scanner.Text())
+			act, err := batch.ActionFromData(scanner.Text())
 
-			if event == nil {
+			if err != nil {
+				return err
+			}
+
+			if act == nil {
 				continue
 			}
 
-			err := a.applyEvent(event, tx)
+			err = a.applyAction(act, tx)
 
 			if err != nil {
 				return updateBatchStatus(err)

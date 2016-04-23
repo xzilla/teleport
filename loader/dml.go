@@ -2,6 +2,7 @@ package loader
 
 import (
 	"fmt"
+	"log"
 	"github.com/jmoiron/sqlx"
 	"github.com/pagarme/teleport/action"
 	"github.com/pagarme/teleport/database"
@@ -62,7 +63,7 @@ func (l *Loader) resumeDMLEvents(events []*database.Event) error {
 			return err
 		}
 
-		fmt.Printf("Ended processing event %#v\n", event)
+		log.Printf("Ended processing event %#v\n", event)
 	}
 
 	return nil
@@ -128,7 +129,7 @@ func (l *Loader) resumeDMLEvent(event *database.Event) error {
 			return err
 		}
 
-		events := make([]database.Event, 0)
+		actions := make([]action.Action, 0)
 
 		for _, row := range rows {
 			actionRows := make([]action.Row, 0)
@@ -146,12 +147,10 @@ func (l *Loader) resumeDMLEvent(event *database.Event) error {
 				Rows:       actionRows,
 			}
 
-			newEvent := *event
-			newEvent.SetDataFromAction(act)
-			events = append(events, newEvent)
+			actions = append(actions, act)
 		}
 
-		err = batch.AppendEvents(events)
+		err = batch.AppendActions(actions)
 
 		if err != nil {
 			return err

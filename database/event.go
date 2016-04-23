@@ -1,12 +1,7 @@
 package database
 
 import (
-	"bytes"
-	"encoding/base64"
-	"encoding/gob"
-	"fmt"
 	"github.com/jmoiron/sqlx"
-	"github.com/pagarme/teleport/action"
 	"strings"
 )
 
@@ -20,7 +15,7 @@ type Event struct {
 	Data          *string `db:"data"`
 }
 
-type Events []Event
+type Events []*Event
 
 func NewEvent(eventData string) *Event {
 	separator := strings.Split(eventData, ",")
@@ -82,87 +77,87 @@ func (e *Event) UpdateQuery(tx *sqlx.Tx) error {
 	return err
 }
 
-func (e *Event) BelongsToBatch(tx *sqlx.Tx, b *Batch) error {
-	var hasId string
-	tx.Get(&hasId, "SELECT event_id FROM teleport.batch_events WHERE batch_id = $1 AND event_id = $2;",
-		b.Id,
-		e.Id,
-	)
+// func (e *Event) BelongsToBatch(tx *sqlx.Tx, b *Batch) error {
+// 	var hasId string
+// 	tx.Get(&hasId, "SELECT event_id FROM teleport.batch_events WHERE batch_id = $1 AND event_id = $2;",
+// 		b.Id,
+// 		e.Id,
+// 	)
+//
+// 	if hasId == e.Id {
+// 		return nil
+// 	}
+//
+// 	_, err := tx.Exec(
+// 		"INSERT INTO teleport.batch_events (batch_id, event_id) VALUES ($1, $2);",
+// 		b.Id,
+// 		e.Id,
+// 	)
+//
+// 	return err
+// }
 
-	if hasId == e.Id {
-		return nil
-	}
+// func (e *Event) GetBatches(db *Database) ([]Batch, error) {
+// 	var batches []Batch
+//
+// 	err := db.selectObjs(&batches, `
+// 		SELECT
+// 			b.*
+// 		FROM teleport.batch b
+// 		INNER JOIN teleport.batch_events be
+// 			ON b.id = be.batch_id
+// 		WHERE be.event_id = $1 ORDER BY id ASC;
+// 	`, e.Id)
+//
+// 	return batches, err
+// }
 
-	_, err := tx.Exec(
-		"INSERT INTO teleport.batch_events (batch_id, event_id) VALUES ($1, $2);",
-		b.Id,
-		e.Id,
-	)
+// func (e *Event) SetDataFromAction(action action.Action) error {
+// 	// Encode action into event data using gob
+// 	var buf bytes.Buffer
+// 	encoder := gob.NewEncoder(&buf)
+// 	err := encoder.Encode(&action)
+//
+// 	if err != nil {
+// 		return err
+// 	}
+//
+// 	// Update event data
+// 	encodedData := base64.StdEncoding.EncodeToString(buf.Bytes())
+// 	e.Data = &encodedData
+//
+// 	return nil
+// }
+//
+// func (e *Event) GetActionFromData() (action.Action, error) {
+// 	decodedData, err := base64.StdEncoding.DecodeString(*e.Data)
+//
+// 	if err != nil {
+// 		return nil, err
+// 	}
+//
+// 	var buf bytes.Buffer
+// 	buf.Write(decodedData)
+//
+// 	decoder := gob.NewDecoder(&buf)
+// 	var action action.Action
+// 	err = decoder.Decode(&action)
+//
+// 	return action, err
+// }
 
-	return err
-}
-
-func (e *Event) GetBatches(db *Database) ([]Batch, error) {
-	var batches []Batch
-
-	err := db.selectObjs(&batches, `
-		SELECT
-			b.*
-		FROM teleport.batch b
-		INNER JOIN teleport.batch_events be
-			ON b.id = be.batch_id
-		WHERE be.event_id = $1 ORDER BY id ASC;
-	`, e.Id)
-
-	return batches, err
-}
-
-func (e *Event) SetDataFromAction(action action.Action) error {
-	// Encode action into event data using gob
-	var buf bytes.Buffer
-	encoder := gob.NewEncoder(&buf)
-	err := encoder.Encode(&action)
-
-	if err != nil {
-		return err
-	}
-
-	// Update event data
-	encodedData := base64.StdEncoding.EncodeToString(buf.Bytes())
-	e.Data = &encodedData
-
-	return nil
-}
-
-func (e *Event) GetActionFromData() (action.Action, error) {
-	decodedData, err := base64.StdEncoding.DecodeString(*e.Data)
-
-	if err != nil {
-		return nil, err
-	}
-
-	var buf bytes.Buffer
-	buf.Write(decodedData)
-
-	decoder := gob.NewDecoder(&buf)
-	var action action.Action
-	err = decoder.Decode(&action)
-
-	return action, err
-}
-
-// Implement ToString
-func (e *Event) ToString() string {
-	return fmt.Sprintf(
-		"%s,%s,%s,%s,%s,%s",
-		e.Id,
-		e.Kind,
-		e.TriggerTag,
-		e.TriggerEvent,
-		e.TransactionId,
-		*e.Data,
-	)
-}
+// // Implement ToString
+// func (e *Event) ToString() string {
+// 	return fmt.Sprintf(
+// 		"%s,%s,%s,%s,%s,%s",
+// 		e.Id,
+// 		e.Kind,
+// 		e.TriggerTag,
+// 		e.TriggerEvent,
+// 		e.TransactionId,
+// 		*e.Data,
+// 	)
+// }
 
 // Implement Interface
 func (slice Events) Len() int {

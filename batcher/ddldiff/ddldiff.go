@@ -5,7 +5,7 @@ import (
 )
 
 // Diff two arrays of Diffables
-func Diff(preObjs []Diffable, postObjs []Diffable) []action.Action {
+func Diff(preObjs []Diffable, postObjs []Diffable, context Context) []action.Action {
 	actions := make([]action.Action, 0)
 
 	// First check for new or updated objects (and their children)
@@ -19,12 +19,12 @@ func Diff(preObjs []Diffable, postObjs []Diffable) []action.Action {
 			}
 		}
 
-		actions = append(actions, post.Diff(preObj)...)
+		actions = append(actions, post.Diff(preObj, context)...)
 
 		if preObj != nil {
-			actions = append(actions, Diff(preObj.Children(), post.Children())...)
+			actions = append(actions, Diff(preObj.Children(), post.Children(), context)...)
 		} else {
-			actions = append(actions, Diff([]Diffable{}, post.Children())...)
+			actions = append(actions, Diff([]Diffable{}, post.Children(), context)...)
 		}
 	}
 
@@ -41,7 +41,7 @@ func Diff(preObjs []Diffable, postObjs []Diffable) []action.Action {
 		}
 
 		if postObj == nil {
-			actions = append(actions, pre.Drop()...)
+			actions = append(actions, pre.Drop(context)...)
 		}
 	}
 

@@ -85,7 +85,7 @@ func (db *Database) RefreshSchema() error {
 }
 
 // Implements Diffable
-func (post *Schema) Diff(other ddldiff.Diffable) []action.Action {
+func (post *Schema) Diff(other ddldiff.Diffable, context ddldiff.Context) []action.Action {
 	actions := make([]action.Action, 0)
 
 	if other == nil {
@@ -120,7 +120,7 @@ func (s *Schema) Children() []ddldiff.Diffable {
 	return children
 }
 
-func (s *Schema) Drop() []action.Action {
+func (s *Schema) Drop(context ddldiff.Context) []action.Action {
 	return []action.Action{
 		&action.DropSchema{
 			s.Name,

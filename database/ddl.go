@@ -7,12 +7,13 @@ import (
 )
 
 type Ddl struct {
-	PreSchemas  []*Schema `json:"pre"`
-	PostSchemas []*Schema `json:"post"`
-	Db          *Database
+	PreSchemas   []*Schema `json:"pre"`
+	PostSchemas  []*Schema `json:"post"`
+	Db           *Database
+	TargetSchema string
 }
 
-func NewDdl(db *Database, data []byte) *Ddl {
+func NewDdl(db *Database, data []byte, targetSchema string) *Ddl {
 	var ddl Ddl
 	err := json.Unmarshal(data, &ddl)
 
@@ -24,6 +25,8 @@ func NewDdl(db *Database, data []byte) *Ddl {
 		schema.fillParentReferences()
 		schema.Db = db
 	}
+
+	ddl.TargetSchema = targetSchema
 
 	return &ddl
 }
@@ -38,9 +41,22 @@ func (d *Ddl) schemaToDiffable(schema []*Schema) []ddldiff.Diffable {
 	return diff
 }
 
+func (d *Ddl) filterSchemas(schemas []*Schema) []*Schema {
+	for _, schema := range schemas {
+		if schema.Name == d.TargetSchema {
+			return []*Schema{schema}
+		}
+	}
+
+	return []*Schema{}
+}
+
 func (d *Ddl) Diff() []action.Action {
 	return ddldiff.Diff(
-		d.schemaToDiffable(d.PreSchemas),
-		d.schemaToDiffable(d.PostSchemas),
+		d.schemaToDiffable(d.filterSchemas(d.PreSchemas)),
+		d.schemaToDiffable(d.filterSchemas(d.PostSchemas)),
+		ddldiff.Context{
+			Schema: d.TargetSchema,
+		},
 	)
 }

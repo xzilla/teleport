@@ -5,10 +5,12 @@ import (
 	"bytes"
 	"fmt"
 	"github.com/jmoiron/sqlx"
+	"github.com/pagarme/teleport/action"
 	"io/ioutil"
+	"encoding/base64"
+	"encoding/gob"
 	"math/rand"
 	"os"
-	"sort"
 	"strings"
 	"time"
 )
@@ -184,74 +186,107 @@ func (b *Batch) UpdateQuery(tx *sqlx.Tx) error {
 	return err
 }
 
-func (b *Batch) generateDataForEvents(events Events) string {
+func (b *Batch) dataForActions(actions []action.Action) (string, error) {
 	// Store batch data
 	var batchBuffer bytes.Buffer
 
-	// Sort events by id first
-	sort.Sort(events)
+	// Encode each action into buffer
+	for i, act := range actions {
+		// Encode action using gob
+		var buf bytes.Buffer
+		encoder := gob.NewEncoder(&buf)
+		err := encoder.Encode(&act)
 
-	// Encode each event into buffer
-	for i, event := range events {
-		// Write event data to batch data
-		batchBuffer.WriteString(event.ToString())
+		if err != nil {
+			return "", err
+		}
 
-		// Don't write newline after the last event
-		if i < len(events)-1 {
+		encodedData := base64.StdEncoding.EncodeToString(buf.Bytes())
+
+		// Write action data to batch data
+		batchBuffer.WriteString(encodedData)
+
+		// Don't write newline after the last action
+		if i < len(actions)-1 {
 			batchBuffer.WriteString("\n")
 		}
 	}
 
 	// Return batch data
-	return string(batchBuffer.Bytes())
+	return string(batchBuffer.Bytes()), nil
 }
 
-func (b *Batch) SetEvents(events Events) error {
-	data := b.generateDataForEvents(events)
+func (b *Batch) SetActions(actions []action.Action) error {
+	data, err := b.dataForActions(actions)
+
+	if err != nil {
+		return err
+	}
+
 	return b.SetData(&data)
 }
 
-func (b *Batch) EventFromData(data string) *Event {
+func (b *Batch) ActionFromData(data string) (action.Action, error) {
 	if data == "" {
-		return nil
+		return nil, nil
 	}
 
-	return NewEvent(data)
+	decodedData, err := base64.StdEncoding.DecodeString(data)
+
+	if err != nil {
+		return nil, err
+	}
+
+	var buf bytes.Buffer
+	buf.Write(decodedData)
+
+	decoder := gob.NewDecoder(&buf)
+	var action action.Action
+	err = decoder.Decode(&action)
+	
+	return action, nil
 }
 
-func (b *Batch) GetEvents() (Events, error) {
-	// Split events data per line
-	events := make(Events, 0)
+func (b *Batch) GetActions() ([]action.Action, error) {
+	actions := make([]action.Action, 0)
 
 	data, err := b.GetData()
 
 	if err != nil {
-		return events, err
+		return actions, err
 	}
 
 	if *data == "" {
-		return events, nil
+		return actions, nil
 	}
 
-	eventsData := strings.Split(*data, "\n")
+	// Split action data per line
+	actionsData := strings.Split(*data, "\n")
 
-	// Initialize new event
-	for _, eventData := range eventsData {
-		event := b.EventFromData(eventData)
+	// Initialize new action
+	for _, actionData := range actionsData {
+		act, err := b.ActionFromData(actionData)
 
-		if event != nil {
-			events = append(events, *event)
+		if err != nil {
+			return actions, err
+		}
+
+		if act != nil {
+			actions = append(actions, act)
 		}
 	}
 
-	// Sort events by id before returning
-	sort.Sort(events)
-
-	return events, nil
+	return actions, nil
 }
 
-func (b *Batch) AppendEvents(events Events) error {
-	data := fmt.Sprintf("\n%s", b.generateDataForEvents(events))
+func (b *Batch) AppendActions(actions []action.Action) error {
+	data, err := b.dataForActions(actions)
+
+	if err != nil {
+		return err
+	}
+
+	data = fmt.Sprintf("\n%s", data)
 	return b.AppendData(&data)
 }
 

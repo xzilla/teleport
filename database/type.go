@@ -12,7 +12,7 @@ type Type struct {
 	Schema *Schema
 }
 
-func (post *Type) Diff(other ddldiff.Diffable) []action.Action {
+func (post *Type) Diff(other ddldiff.Diffable, context ddldiff.Context) []action.Action {
 	actions := make([]action.Action, 0)
 
 	if other == nil {
@@ -45,7 +45,7 @@ func (t *Type) Children() []ddldiff.Diffable {
 	return children
 }
 
-func (t *Type) Drop() []action.Action {
+func (t *Type) Drop(context ddldiff.Context) []action.Action {
 	return []action.Action{
 		&action.DropType{
 			t.Schema.Name,
