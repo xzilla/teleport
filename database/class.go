@@ -81,10 +81,9 @@ func (post *Class) Diff(other ddldiff.Diffable, context ddldiff.Context) []actio
 			// Install triggers on table after creation
 			err := post.InstallTriggers()
 
-			// Bail out on errors installing triggers
+			// Warn on errors installing triggers
 			if err != nil {
 				log.Printf("Error installing triggers on table %s: %v\n", post.RelationName, err)
-				return actions
 			}
 
 			primaryKeyAttr := post.GetPrimaryKey()

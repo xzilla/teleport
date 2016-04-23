@@ -49,7 +49,12 @@ func (l *Loader) createDMLEvents() ([]*database.Event, error) {
 				Data:          nil,
 			}
 
-			event.InsertQuery(tx)
+			err := event.InsertQuery(tx)
+
+			if err != nil {
+				return events, err
+			}
+
 			events = append(events, event)
 		}
 	}
