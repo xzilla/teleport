@@ -21,7 +21,7 @@ func (l *Loader) createDDLBatch() ([]*database.Batch, error) {
 		schemas,
 		l.db,
 		schemaName,
-		l.target.TargetExpression,
+		l.target.ApplySchema,
 	}
 
 	actions := ddl.Diff()

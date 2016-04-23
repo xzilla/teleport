@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"strings"
+	"time"
 )
 
 type InsertRow struct {
@@ -16,6 +17,7 @@ type InsertRow struct {
 // Register type for gob
 func init() {
 	gob.Register(&InsertRow{})
+	gob.Register(&time.Time{})
 }
 
 func (a *InsertRow) Execute(c Context) error {

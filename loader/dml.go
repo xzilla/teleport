@@ -137,15 +137,15 @@ func (l *Loader) resumeDMLEvent(event *database.Event) error {
 
 			for key, value := range *row {
 				actionRows = append(actionRows, action.Row{
-					Value:  value,
-					Column: colsForAttributes[key],
+					value,
+					colsForAttributes[key],
 				})
 			}
 
 			act := &action.InsertRow{
-				SchemaName: schema.Name,
-				TableName:  class.RelationName,
-				Rows:       actionRows,
+				l.target.ApplySchema,
+				class.RelationName,
+				actionRows,
 			}
 
 			actions = append(actions, act)
