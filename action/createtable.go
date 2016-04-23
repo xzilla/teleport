@@ -20,11 +20,11 @@ func init() {
 func (a *CreateTable) Execute(c Context) error {
 	_, err := c.Tx.Exec(
 		fmt.Sprintf(
-			"CREATE TABLE \"%s\".\"%s\" (\"%s\" \"%s\".\"%s\" PRIMARY KEY);",
+			"CREATE TABLE \"%s\".\"%s\" (\"%s\" %s\"%s\" PRIMARY KEY);",
 			a.SchemaName,
 			a.TableName,
 			a.PrimaryKey.Name,
-			a.PrimaryKey.TypeSchema,
+			a.PrimaryKey.GetTypeSchemaStr(a.SchemaName),
 			a.PrimaryKey.Type,
 		),
 	)

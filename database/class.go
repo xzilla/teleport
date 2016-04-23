@@ -95,7 +95,7 @@ func (post *Class) Diff(other ddldiff.Diffable, context ddldiff.Context) []actio
 				action.Column{
 					primaryKeyAttr.Name,
 					primaryKeyAttr.TypeName,
-					primaryKeyAttr.TypeSchema,
+					primaryKeyAttr.IsNativeType(),
 				},
 			})
 		} else {

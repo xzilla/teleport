@@ -16,6 +16,10 @@ type Attribute struct {
 	Class        *Class
 }
 
+func (a *Attribute) IsNativeType() bool {
+	return a.TypeSchema == "pg_catalog"
+}
+
 // Implements Diffable
 func (post *Attribute) Diff(other ddldiff.Diffable, context ddldiff.Context) []action.Action {
 	actions := make([]action.Action, 0)
@@ -29,7 +33,7 @@ func (post *Attribute) Diff(other ddldiff.Diffable, context ddldiff.Context) []a
 				action.Column{
 					post.Name,
 					post.TypeName,
-					post.TypeSchema,
+					post.IsNativeType(),
 				},
 			})
 		} else {
@@ -42,12 +46,12 @@ func (post *Attribute) Diff(other ddldiff.Diffable, context ddldiff.Context) []a
 					action.Column{
 						pre.Name,
 						pre.TypeName,
-						pre.TypeSchema,
+						pre.IsNativeType(),
 					},
 					action.Column{
 						post.Name,
 						post.TypeName,
-						post.TypeSchema,
+						post.IsNativeType(),
 					},
 				})
 			}
@@ -69,7 +73,7 @@ func (a *Attribute) Drop(context ddldiff.Context) []action.Action {
 			action.Column{
 				a.Name,
 				a.TypeName,
-				a.TypeSchema,
+				a.IsNativeType(),
 			},
 		},
 	}

@@ -89,8 +89,9 @@ func (l *Loader) generateColumnsForAttributes(attributes []*database.Attribute) 
 
 	for _, attr := range attributes {
 		attributeCol[attr.Name] = action.Column{
-			Name: attr.Name,
-			Type: attr.TypeName,
+			attr.Name,
+			attr.TypeName,
+			attr.IsNativeType(),
 		}
 	}
 

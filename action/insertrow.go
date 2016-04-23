@@ -25,7 +25,7 @@ func (a *InsertRow) Execute(c Context) error {
 
 	for i, row := range a.Rows {
 		escapedCols = append(escapedCols, fmt.Sprintf("\"%s\"", row.Column.Name))
-		escapedRows = append(escapedRows, fmt.Sprintf("$%d::\"%s\".\"%s\"", i+1, row.Column.TypeSchema, row.Column.Type))
+		escapedRows = append(escapedRows, fmt.Sprintf("$%d::%s\"%s\"", i+1, row.Column.GetTypeSchemaStr(a.SchemaName), row.Column.Type))
 
 		// Marshall JSON objects as pg driver does not support it
 		if obj, ok := row.Value.(*map[string]interface{}); ok {

@@ -91,7 +91,7 @@ func (d *Dml) generateRows(obj *map[string]interface{}) []action.Row {
 			action.Column{
 				attribute.Name,
 				attribute.TypeName,
-				attribute.TypeSchema,
+				attribute.IsNativeType(),
 			},
 		})
 	}
@@ -108,7 +108,7 @@ func (d *Dml) generatePrimaryKeyRow(obj *map[string]interface{}) action.Row {
 		action.Column{
 			pkey.Name,
 			pkey.TypeName,
-			pkey.TypeSchema,
+			pkey.IsNativeType(),
 		},
 	}
 }
