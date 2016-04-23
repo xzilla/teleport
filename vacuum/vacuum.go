@@ -35,7 +35,7 @@ func (v *Vacuum) clean() error {
 		return err
 	}
 
-	return v.cleanDatabase()
+	return v.cleanEvents()
 }
 
 func (v *Vacuum) cleanBatches() error {
@@ -58,15 +58,18 @@ func (v *Vacuum) cleanBatches() error {
 				return err
 			}
 		}
+
+		v.db.Db.Exec(`
+			DELETE FROM teleport.batch WHERE id = $1;
+		`, batch.Id)
 	}
 
 	return nil
 }
 
-func (v *Vacuum) cleanDatabase() error {
+func (v *Vacuum) cleanEvents() error {
 	_, err := v.db.Db.Exec(`
 		DELETE FROM teleport.event WHERE status IN ('batched', 'ignored');
-		DELETE FROM teleport.batch WHERE status IN ('transmitted', 'applied');
 	`)
 
 	return err
