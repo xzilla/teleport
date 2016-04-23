@@ -9,6 +9,18 @@ import (
 	"strings"
 )
 
+func (l *Loader) filterDMLBatchEvents(events []*database.Event) []*database.Event {
+	newEvents := make([]*database.Event, 0)
+
+	for _, event := range events {
+		if event.Kind == "dml_batch" {
+			newEvents = append(newEvents, event)
+		}
+	}
+
+	return newEvents
+}
+
 func (l *Loader) createDMLEvents() ([]*database.Event, error) {
 	tx := l.db.NewTransaction()
 	events := make([]*database.Event, 0)
@@ -29,7 +41,7 @@ func (l *Loader) createDMLEvents() ([]*database.Event, error) {
 			}
 
 			event := &database.Event{
-				Kind:          "dml",
+				Kind:          "dml_batch",
 				Status:        "building",
 				TriggerTag:    fmt.Sprintf("%s.%s", schema.Name, class.RelationName),
 				TriggerEvent:  "dml_initial_load",
@@ -53,7 +65,7 @@ func (l *Loader) createDMLEvents() ([]*database.Event, error) {
 
 func (l *Loader) resumeDMLEvents(events []*database.Event) error {
 	for _, event := range events {
-		if event.TriggerEvent != "dml_initial_load" {
+		if event.Kind != "dml_batch" {
 			continue
 		}
 

@@ -35,6 +35,8 @@ func (l *Loader) Load() error {
 		return err
 	}
 
+	events = l.filterDMLBatchEvents(events)
+
 	if len(events) == 0 {
 		// Start new initial load
 		_, err = l.createDDLBatch()

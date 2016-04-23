@@ -89,11 +89,11 @@ func (db *Database) InstallTriggers(targetExpression string) error {
 			}
 
 			if action.IsInTargetExpression(&targetExpression, &schema.Name, &class.RelationName) {
-				err := class.InstallTriggers()
-
-				if err != nil {
-					return err
-				}
+				class.InstallTriggers()
+                //
+				// if err != nil {
+				// 	return err
+				// }
 			}
 		}
 	}
