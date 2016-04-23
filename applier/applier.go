@@ -116,7 +116,7 @@ func (a *Applier) applyBatch(batch *database.Batch) error {
 		}
 
 		var act action.Action
-		
+
 		act, err = batch.ReadAction(reader);
 
 		for err == nil {

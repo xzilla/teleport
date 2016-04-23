@@ -327,7 +327,7 @@ func (b *Batch) ReadAction(reader *bufio.Reader) (action.Action, error) {
 		line += string(lineFrag)
 
 		// Read only the first line
-		if !isPrefix {
+		if !isPrefix && line != "" {
 			break
 		}
 
