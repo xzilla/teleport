@@ -151,6 +151,15 @@ func (l *Loader) resumeDMLEvent(event *database.Event) error {
 	}
 
 	tx = l.db.NewTransaction()
+	
+	// REPEATABLE READ is needed to avoid fetching rows that
+	// would be updated both by the trigger flow AND the initial
+	// load (all rows inserted before the initial load start)
+	_, err = tx.Exec("SET TRANSACTION ISOLATION LEVEL REPEATABLE READ;")
+
+	if err != nil {
+		return err
+	}
 
 	// Generate OFFSET/LIMITs to iterate
 	for i := 0; i < tableCount; i += l.BatchSize {
