@@ -32,7 +32,8 @@ func (t *Transmitter) Watch(sleepTime time.Duration) {
 				err := t.transmitBatch(batch)
 
 				if err != nil {
-					log.Printf("Error transmitting batch! %v\n", err)
+					log.Printf("Error transmitting batch %s! %v", batch.Id, err)
+					break
 				}
 			}
 		}
@@ -46,7 +47,8 @@ func (t *Transmitter) Watch(sleepTime time.Duration) {
 				err := t.transmitBatchData(batch)
 
 				if err != nil {
-					log.Printf("Error transmitting batch! %v\n", err)
+					log.Printf("Error transmitting batch %s data! %v", batch.Id, err)
+					break
 				}
 			}
 		}
@@ -62,6 +64,8 @@ func (t *Transmitter) transmitBatch(batch *database.Batch) error {
 	if client == nil {
 		return fmt.Errorf("could not find client for target '%s'", batch.Target)
 	}
+
+	log.Printf("Transmitting batch: %#v", batch)
 
 	err := client.SendRequest("/batches", batch)
 
@@ -88,6 +92,8 @@ func (t *Transmitter) transmitBatchData(batch *database.Batch) error {
 		return err
 	}
 
+	defer file.Close()
+
 	log.Printf("Transmitting batch data: %#v", batch)
 
 	err = client.SendFile(
@@ -95,8 +101,6 @@ func (t *Transmitter) transmitBatchData(batch *database.Batch) error {
 		"data",
 		file,
 	)
-
-	defer file.Close()
 
 	if err != nil {
 		return err
