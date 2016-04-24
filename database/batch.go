@@ -190,13 +190,17 @@ func (b *Batch) UpdateQuery(tx *sqlx.Tx) error {
 	// If there's no id, insert without id
 	if b.DataStatus == "" {
 		query = "UPDATE teleport.batch SET status = $1, data = $2, waiting_reexecution = $3 WHERE id = $4"
+		args = append(args, b.Status)
+	} else if b.Status == "" {
+		query = "UPDATE teleport.batch SET data_status = $1, data = $2, waiting_reexecution = $3 WHERE id = $4"
+		args = append(args, b.DataStatus)
 	} else {
 		query = "UPDATE teleport.batch SET data_status = $1, status = $2, data = $3, waiting_reexecution = $4 WHERE id = $5"
 		args = append(args, b.DataStatus)
+		args = append(args, b.Status)
 	}
 
 	args = append(args,
-		b.Status,
 		b.Data,
 		b.WaitingReexecution,
 		b.Id,

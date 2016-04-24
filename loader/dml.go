@@ -181,6 +181,7 @@ func (l *Loader) resumeDMLEvent(event *database.Event, batch *database.Batch) er
 	}
 
 	batch.DataStatus = "waiting_transmission"
+	batch.Status = ""
 	err = batch.UpdateQuery(tx)
 
 	if err != nil {
