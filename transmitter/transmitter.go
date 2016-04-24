@@ -73,7 +73,7 @@ func (t *Transmitter) transmitBatch(batch *database.Batch) error {
 		return err
 	}
 
-	log.Printf("Transmitted batch: %#v", batch)
+	defer log.Printf("Transmitted batch: %#v", batch)
 
 	return t.markBatchTransmitted(batch, false)
 }
@@ -106,7 +106,7 @@ func (t *Transmitter) transmitBatchData(batch *database.Batch) error {
 		return err
 	}
 
-	log.Printf("Transmitted batch data: %#v", batch)
+	defer log.Printf("Transmitted batch data: %#v", batch)
 
 	return t.markBatchTransmitted(batch, true)
 }

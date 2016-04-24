@@ -105,7 +105,11 @@ func (b *batchRouter) update(w http.ResponseWriter, r *http.Request) error {
 	tx := b.db.NewTransaction()
 
 	batch.DataStatus = "transmitted"
-	batch.UpdateQuery(tx)
+	err = batch.UpdateQuery(tx)
+
+	if err != nil {
+		return err
+	}
 
 	// Commit transaction
 	err = tx.Commit()
