@@ -88,6 +88,8 @@ func (t *Transmitter) transmitBatchData(batch *database.Batch) error {
 		return err
 	}
 
+	log.Printf("Transmitting batch data: %#v", batch)
+
 	_, err = client.SendFile(
 		fmt.Sprintf("/batches/%s", batch.Id),
 		"data",

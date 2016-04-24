@@ -150,6 +150,8 @@ func (l *Loader) resumeDMLEvent(event *database.Event) error {
 		return err
 	}
 
+	log.Printf("Generated new batch: %#v\n", batch)
+
 	tx = l.db.NewTransaction()
 	
 	// REPEATABLE READ is needed to avoid fetching rows that
@@ -203,6 +205,8 @@ func (l *Loader) resumeDMLEvent(event *database.Event) error {
 			return err
 		}
 	}
+
+	log.Printf("Updated data of batch: %#v\n", batch)
 
 	return tx.Commit()
 }

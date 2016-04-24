@@ -80,6 +80,8 @@ func (b *batchRouter) update(w http.ResponseWriter, r *http.Request) error {
 		return err
 	}
 
+	log.Printf("Receiving data for batch: %v\n", batch)
+
 	out, err := batch.CreateFile()
 
 	if err != nil {
@@ -107,6 +109,8 @@ func (b *batchRouter) update(w http.ResponseWriter, r *http.Request) error {
 	if err != nil {
 		return err
 	}
+
+	log.Printf("Received data for batch: %v\n", batch)
 
 	// Respond HTTP OK
 	return httputils.WriteJSON(w, http.StatusOK, nil)
