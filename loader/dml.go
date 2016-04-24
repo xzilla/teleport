@@ -9,21 +9,28 @@ import (
 	"strings"
 )
 
-func (l *Loader) filterDMLBatchEvents(events []*database.Event) []*database.Event {
-	newEvents := make([]*database.Event, 0)
+func (l *Loader) getDMLBatchEvents(events []*database.Event) (map[*database.Event]*database.Batch, error) {
+	eventBatches := make(map[*database.Event]*database.Batch)
 
 	for _, event := range events {
 		if event.Kind == "dml_batch" {
-			newEvents = append(newEvents, event)
+			// newEvents = append(newEvents, event)
+			batch, err := l.db.GetBatch(*event.Data)
+
+			if err != nil {
+				return eventBatches, err
+			}
+
+			eventBatches[event] = batch
 		}
 	}
 
-	return newEvents
+	return eventBatches, nil
 }
 
-func (l *Loader) createDMLEvents() ([]*database.Event, error) {
+func (l *Loader) createDMLEvents() (map[*database.Event]*database.Batch, error) {
 	tx := l.db.NewTransaction()
-	events := make([]*database.Event, 0)
+	eventBatches := make(map[*database.Event]*database.Batch)
 
 	for _, schema := range l.db.Schemas {
 		for _, class := range schema.Classes {
@@ -40,41 +47,55 @@ func (l *Loader) createDMLEvents() ([]*database.Event, error) {
 				continue
 			}
 
+			// Create a new batch with initial data
+			batch := database.NewBatch("fs")
+			batch.DataStatus = "waiting_data"
+			batch.Source = l.db.Name
+			batch.Target = l.targetName
+			initialData := ""
+			batch.SetData(&initialData)
+
+			err := batch.InsertQuery(tx)
+
+			if err != nil {
+				return eventBatches, err
+			}
+
 			event := &database.Event{
 				Kind:          "dml_batch",
 				Status:        "building",
 				TriggerTag:    fmt.Sprintf("%s.%s", schema.Name, class.RelationName),
 				TriggerEvent:  "dml_initial_load",
 				TransactionId: "0",
-				Data:          nil,
+				Data:          &batch.Id,
 			}
 
-			err := event.InsertQuery(tx)
+			err = event.InsertQuery(tx)
 
 			if err != nil {
-				return events, err
+				return eventBatches, err
 			}
 
-			events = append(events, event)
+			eventBatches[event] = batch
 		}
 	}
 
 	err := tx.Commit()
 
 	if err != nil {
-		return []*database.Event{}, err
+		return eventBatches, err
 	}
 
-	return events, nil
+	return eventBatches, nil
 }
 
-func (l *Loader) resumeDMLEvents(events []*database.Event) error {
-	for _, event := range events {
+func (l *Loader) resumeDMLEvents(eventBatches map[*database.Event]*database.Batch) error {
+	for event, batch := range eventBatches {
 		if event.Kind != "dml_batch" {
 			continue
 		}
 
-		err := l.resumeDMLEvent(event)
+		err := l.resumeDMLEvent(event, batch)
 
 		if err != nil {
 			return err
@@ -115,8 +136,17 @@ func (l *Loader) generateColumnsForAttributes(attributes []*database.Attribute) 
 	return attributeCol
 }
 
-func (l *Loader) resumeDMLEvent(event *database.Event) error {
+func (l *Loader) resumeDMLEvent(event *database.Event, batch *database.Batch) error {
 	tx := l.db.NewTransaction()
+
+	// REPEATABLE READ is needed to avoid fetching rows that
+	// would be updated both by the trigger flow AND the initial
+	// load (all rows inserted before the initial load start)
+	_, err := tx.Exec("SET TRANSACTION ISOLATION LEVEL REPEATABLE READ;")
+
+	if err != nil {
+		return err
+	}
 
 	schema, class := l.getDMLEventSchemaClass(event)
 	tableCount, err := l.getTableCount(tx, schema, class)
@@ -128,36 +158,13 @@ func (l *Loader) resumeDMLEvent(event *database.Event) error {
 	colsForAttributes := l.generateColumnsForAttributes(class.Attributes)
 
 	event.Status = "batched"
-	event.UpdateQuery(tx)
-
-	// Create a new batch with initial data
-	batch := database.NewBatch("fs")
-	batch.DataStatus = "waiting_data"
-	batch.Source = l.db.Name
-	batch.Target = l.targetName
-	initialData := ""
-	batch.SetData(&initialData)
-
-	err = batch.InsertQuery(tx)
-
-	if err != nil {
-		return err
-	}
-
-	err = tx.Commit()
+	err = event.UpdateQuery(tx)
 
 	if err != nil {
 		return err
 	}
 
 	log.Printf("Generated new batch: %#v\n", batch)
-
-	tx = l.db.NewTransaction()
-	
-	// REPEATABLE READ is needed to avoid fetching rows that
-	// would be updated both by the trigger flow AND the initial
-	// load (all rows inserted before the initial load start)
-	_, err = tx.Exec("SET TRANSACTION ISOLATION LEVEL REPEATABLE READ;")
 
 	if err != nil {
 		return err

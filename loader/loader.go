@@ -35,9 +35,13 @@ func (l *Loader) Load() error {
 		return err
 	}
 
-	events = l.filterDMLBatchEvents(events)
+	eventBatches, err := l.getDMLBatchEvents(events)
 
-	if len(events) == 0 {
+	if err != nil {
+		return err
+	}
+
+	if len(eventBatches) == 0 {
 		// Start new initial load
 		_, err = l.createDDLBatch()
 
@@ -46,7 +50,7 @@ func (l *Loader) Load() error {
 		}
 
 		// Create DML events
-		events, err = l.createDMLEvents()
+		eventBatches, err = l.createDMLEvents()
 
 		if err != nil {
 			return err
@@ -54,5 +58,5 @@ func (l *Loader) Load() error {
 	}
 
 	// Resume initial load (from existing events or new events)
-	return l.resumeDMLEvents(events)
+	return l.resumeDMLEvents(eventBatches)
 }
