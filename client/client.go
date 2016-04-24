@@ -31,11 +31,7 @@ func (c *Client) urlForRequest(path string) string {
 	)
 }
 
-func (c *Client) handleResponse(res *http.Response, err error) error {
-	if err != nil {
-		return err
-	}
-
+func (c *Client) handleResponse(res *http.Response) error {
 	if res.StatusCode != 200 {
 		body, _ := ioutil.ReadAll(res.Body)
 		return fmt.Errorf(string(body))
@@ -54,8 +50,12 @@ func (c *Client) SendRequest(path string, obj interface{}) error {
 		data,
 	)
 
+	if err != nil {
+		return err
+	}
+
 	defer res.Body.Close()
-	return c.handleResponse(res, err)
+	return c.handleResponse(res)
 }
 
 func (c *Client) SendFile(path, formField string, file *os.File) error {
@@ -65,6 +65,10 @@ func (c *Client) SendFile(path, formField string, file *os.File) error {
 		file,
 	)
 
+	if err != nil {
+		return err
+	}
+
 	defer res.Body.Close()
-	return c.handleResponse(res, err)
+	return c.handleResponse(res)
 }
