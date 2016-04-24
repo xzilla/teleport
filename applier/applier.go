@@ -78,6 +78,7 @@ func (a *Applier) applyBatch(batch *database.Batch) (bool, error) {
 			tx = a.db.NewTransaction()
 
 			batch.Status = "waiting_apply"
+			batch.DataStatus = ""
 			batch.WaitingReexecution = true
 		} else {
 			// Mark batch as applied (no error)

@@ -43,12 +43,16 @@ func (b *batchRouter) create(w http.ResponseWriter, r *http.Request) error {
 	}
 
 	// Insert
-	newBatch.InsertQuery(tx)
+	err := newBatch.InsertQuery(tx)
+
+	if err != nil {
+		return err
+	}
 
 	log.Printf("Received batch: %v\n", newBatch)
 
 	// Commit transaction
-	err := tx.Commit()
+	err = tx.Commit()
 
 	if err != nil {
 		return err

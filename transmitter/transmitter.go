@@ -63,7 +63,7 @@ func (t *Transmitter) transmitBatch(batch *database.Batch) error {
 		return fmt.Errorf("could not find client for target '%s'", batch.Target)
 	}
 
-	_, err := client.SendRequest("/batches", batch)
+	err := client.SendRequest("/batches", batch)
 
 	if err != nil {
 		return err
@@ -90,7 +90,7 @@ func (t *Transmitter) transmitBatchData(batch *database.Batch) error {
 
 	log.Printf("Transmitting batch data: %#v", batch)
 
-	_, err = client.SendFile(
+	err = client.SendFile(
 		fmt.Sprintf("/batches/%s", batch.Id),
 		"data",
 		file,

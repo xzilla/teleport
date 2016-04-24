@@ -103,7 +103,7 @@ func (db *Database) InstallTriggers(targetExpression string) error {
 
 // Install triggers in schema
 func (db *Database) installDDLTriggers() error {
-	_, err := db.runQueryFromFile("data/sql/source_trigger.sql")
+	rows, err := db.runQueryFromFile("data/sql/source_trigger.sql")
 
 	if err == nil {
 		log.Printf("Installed triggers on database")
@@ -111,13 +111,20 @@ func (db *Database) installDDLTriggers() error {
 		log.Printf("Failed to install triggers on database: %v", err)
 	}
 
+	rows.Close()
 	return err
 }
 
 // Setup internal tables using setup script
 func (db *Database) setupTables() error {
-	_, err := db.runQueryFromFile("data/sql/setup.sql")
-	return err
+	rows, err := db.runQueryFromFile("data/sql/setup.sql")
+
+	if err != nil {
+		return err
+	}
+
+	rows.Close()
+	return nil
 }
 
 // Run query on database

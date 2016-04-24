@@ -9,6 +9,7 @@ import (
 	"net/http"
 	// "io"
 	"os"
+	"io/ioutil"
 )
 
 type Client struct {
@@ -30,21 +31,40 @@ func (c *Client) urlForRequest(path string) string {
 	)
 }
 
-func (c *Client) SendRequest(path string, obj interface{}) (*http.Response, error) {
+func (c *Client) handleResponse(res *http.Response, err error) error {
+	if err != nil {
+		return err
+	}
+
+	if res.StatusCode != 200 {
+		body, _ := ioutil.ReadAll(res.Body)
+		return fmt.Errorf(string(body))
+	}
+
+	return nil
+}
+
+func (c *Client) SendRequest(path string, obj interface{}) error {
 	data := new(bytes.Buffer)
 	json.NewEncoder(data).Encode(obj)
 
-	return http.Post(
+	res, err := http.Post(
 		c.urlForRequest(path),
 		"application/json",
 		data,
 	)
+
+	defer res.Body.Close()
+	return c.handleResponse(res, err)
 }
 
-func (c *Client) SendFile(path, formField string, file *os.File) (*http.Response, error) {
-	return http.Post(
+func (c *Client) SendFile(path, formField string, file *os.File) error {
+	res, err := http.Post(
 		c.urlForRequest(path),
 		"application/json",
 		file,
 	)
+
+	defer res.Body.Close()
+	return c.handleResponse(res, err)
 }

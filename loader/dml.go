@@ -7,6 +7,7 @@ import (
 	"github.com/pagarme/teleport/action"
 	"github.com/pagarme/teleport/database"
 	"strings"
+	"sort"
 )
 
 func (l *Loader) getDMLBatchEvents(events []*database.Event) (map[*database.Event]*database.Batch, error) {
@@ -90,12 +91,21 @@ func (l *Loader) createDMLEvents() (map[*database.Event]*database.Batch, error) 
 }
 
 func (l *Loader) resumeDMLEvents(eventBatches map[*database.Event]*database.Batch) error {
-	for event, batch := range eventBatches {
+	events := make(database.Events, 0)
+
+	for event, _ := range eventBatches {
+		events = append(events, event)
+	}
+
+	// Sort events by key
+	sort.Sort(events)
+
+	for _, event := range events {
 		if event.Kind != "dml_batch" {
 			continue
 		}
 
-		err := l.resumeDMLEvent(event, batch)
+		err := l.resumeDMLEvent(event, eventBatches[event])
 
 		if err != nil {
 			return err
@@ -139,14 +149,14 @@ func (l *Loader) generateColumnsForAttributes(attributes []*database.Attribute) 
 func (l *Loader) resumeDMLEvent(event *database.Event, batch *database.Batch) error {
 	tx := l.db.NewTransaction()
 
-	// REPEATABLE READ is needed to avoid fetching rows that
-	// would be updated both by the trigger flow AND the initial
-	// load (all rows inserted before the initial load start)
-	_, err := tx.Exec("SET TRANSACTION ISOLATION LEVEL REPEATABLE READ;")
+	// // REPEATABLE READ is needed to avoid fetching rows that
+	// // would be updated both by the trigger flow AND the initial
+	// // load (all rows inserted before the initial load start)
+	// _, err := tx.Exec("SET TRANSACTION ISOLATION LEVEL REPEATABLE READ;")
 
-	if err != nil {
-		return err
-	}
+	// if err != nil {
+	// 	return err
+	// }
 
 	schema, class := l.getDMLEventSchemaClass(event)
 	tableCount, err := l.getTableCount(tx, schema, class)
@@ -249,6 +259,8 @@ func (l *Loader) fetchRows(tx *sqlx.Tx, schema *database.Schema, table *database
 	if err != nil {
 		return []*map[string]interface{}{}, err
 	}
+
+	defer rows.Close()
 
 	for rows.Next() {
 		results := make(map[string]interface{})
