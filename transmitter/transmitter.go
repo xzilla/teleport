@@ -113,13 +113,17 @@ func (t *Transmitter) markBatchTransmitted(batch *database.Batch, updateData boo
 
 	// Update batch to transmitted
 	batch.Status = "transmitted"
+	batch.DataStatus = ""
 
 	if updateData {
 		batch.DataStatus = "transmitted"
 	}
 
-	// Insert
-	batch.UpdateQuery(tx)
+	err := batch.UpdateQuery(tx)
+
+	if err != nil {
+		return err
+	}
 
 	// Commit transaction
 	return tx.Commit()

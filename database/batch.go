@@ -184,15 +184,25 @@ func (b *Batch) InsertQuery(tx *sqlx.Tx) error {
 }
 
 func (b *Batch) UpdateQuery(tx *sqlx.Tx) error {
-	_, err := tx.Exec(
-		"UPDATE teleport.batch SET status = $1, data = $2, waiting_reexecution = $3, data_status = $4 WHERE id = $5",
+	args := make([]interface{}, 0)
+	var query string
+
+	// If there's no id, insert without id
+	if b.DataStatus == "" {
+		query = "UPDATE teleport.batch SET status = $1, data = $2, waiting_reexecution = $3 WHERE id = $4"
+	} else {
+		query = "UPDATE teleport.batch SET data_status = $1, status = $2, data = $3, waiting_reexecution = $4 WHERE id = $5"
+		args = append(args, b.DataStatus)
+	}
+
+	args = append(args,
 		b.Status,
 		b.Data,
 		b.WaitingReexecution,
-		b.DataStatus,
 		b.Id,
 	)
 
+	_, err := tx.Exec(query, args...)
 	return err
 }
 
