@@ -161,6 +161,13 @@ func (l *Loader) resumeDMLEvent(event *database.Event) error {
 		return err
 	}
 
+	batch.DataStatus = "waiting_transmission"
+	err = batch.UpdateQuery(tx)
+
+	if err != nil {
+		return err
+	}
+
 	// Generate OFFSET/LIMITs to iterate
 	for i := 0; i < tableCount; i += l.BatchSize {
 		rows, err := l.fetchRows(tx, schema, class, l.BatchSize, i)
@@ -196,9 +203,6 @@ func (l *Loader) resumeDMLEvent(event *database.Event) error {
 			return err
 		}
 	}
-
-	batch.DataStatus = "waiting_transmission"
-	batch.UpdateQuery(tx)
 
 	return tx.Commit()
 }
