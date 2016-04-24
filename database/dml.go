@@ -120,6 +120,7 @@ func (d *Dml) Diff() []action.Action {
 			&action.InsertRow{
 				d.TargetSchema,
 				d.GetTableName(),
+				d.GetClass().GetPrimaryKey().Name,
 				d.generateRows(d.Post),
 			},
 		}

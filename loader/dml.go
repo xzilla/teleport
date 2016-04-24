@@ -210,6 +210,7 @@ func (l *Loader) resumeDMLEvent(event *database.Event, batch *database.Batch) er
 			act := &action.InsertRow{
 				l.target.ApplySchema,
 				class.RelationName,
+				class.GetPrimaryKey().Name,
 				actionRows,
 			}
 
