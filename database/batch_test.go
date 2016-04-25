@@ -3,13 +3,14 @@ package database
 import (
 	"fmt"
 	"github.com/pagarme/teleport/config"
+	"github.com/pagarme/teleport/action"
 	"io/ioutil"
 	"os"
 	"reflect"
 	"testing"
 )
 
-var stubEvent *Event
+var createSchemaAction *action.CreateSchema
 var stubBatchData string
 
 func init() {
@@ -30,19 +31,11 @@ func init() {
 		config.Database.Port,
 	)
 
-	data := "f1"
-
-	stubEvent = &Event{
-		Id:            "a1",
-		Kind:          "b1",
-		Status:        "",
-		TriggerTag:    "c1",
-		TriggerEvent:  "d1",
-		TransactionId: "e1",
-		Data:          &data,
+	createSchemaAction = &action.CreateSchema{
+		SchemaName: "test_schema",
 	}
 
-	stubBatchData = "a1,b1,c1,d1,e1,f1"
+	stubBatchData = "QBAAFCphY3Rpb24uQ3JlYXRlU2NoZW1h/4EDAQEMQ3JlYXRlU2NoZW1hAf+CAAEBAQpTY2hlbWFOYW1lAQwAAAAR/4IOAQt0ZXN0X3NjaGVtYQA="
 
 	// Start db
 	if err = db.Start(); err != nil {
@@ -72,27 +65,29 @@ func TestGetBatches(t *testing.T) {
 	db.Db.Exec(`
 		TRUNCATE teleport.batch;
 		INSERT INTO teleport.batch
-			(id, status, data, source, target, storage_type)
+			(id, status, data_status, data, source, target, storage_type, waiting_reexecution)
 			VALUES
-			(1, 'waiting_transmission', 'data', 'source', 'target', 'db');
+			(1, 'waiting_transmission', 'waiting_transmission', 'data', 'source', 'target', 'db', false);
 		INSERT INTO teleport.batch
-			(id, status, data, source, target)
+			(id, status, data_status, data, source, target, storage_type, waiting_reexecution)
 			VALUES
-			(2, 'applied', 'data 2', 'source', 'target');
+			(2, 'applied', 'applied', 'data', 'source', 'target', 'db', false);
 	`)
 
 	testData := "data"
 
 	testBatch := &Batch{
-		Id:          "1",
-		Status:      "waiting_transmission",
-		Source:      "source",
-		Target:      "target",
-		Data:        &testData,
-		StorageType: "db",
+		"1",
+		"waiting_transmission",
+		"waiting_transmission",
+		"source",
+		"target",
+		&testData,
+		"db",
+		false,
 	}
 
-	batches, err := db.GetBatches("waiting_transmission")
+	batches, err := db.GetBatches("waiting_transmission", "")
 
 	if err != nil {
 		t.Errorf("get batches returned error: %v\n", err)
@@ -119,19 +114,21 @@ func TestBatchInsertQuery(t *testing.T) {
 	testData := "data"
 
 	testBatch := &Batch{
-		Id:          "1",
-		Status:      "waiting_transmission",
-		Source:      "source",
-		Target:      "target",
-		Data:        &testData,
-		StorageType: "db",
+		"1",
+		"waiting_transmission",
+		"waiting_transmission",
+		"source",
+		"target",
+		&testData,
+		"db",
+		false,
 	}
 
 	tx := db.NewTransaction()
 	testBatch.InsertQuery(tx)
 	tx.Commit()
 
-	batches, _ := db.GetBatches("waiting_transmission")
+	batches, _ := db.GetBatches("waiting_transmission", "")
 
 	if !reflect.DeepEqual(batches[0], testBatch) {
 		t.Errorf(
@@ -150,12 +147,14 @@ func TestBatchUpdateQuery(t *testing.T) {
 	testData := "data"
 
 	testBatch := &Batch{
-		Id:          "1",
-		Status:      "waiting_transmission",
-		Source:      "source",
-		Target:      "target",
-		Data:        &testData,
-		StorageType: "db",
+		"1",
+		"waiting_transmission",
+		"waiting_transmission",
+		"source",
+		"target",
+		&testData,
+		"db",
+		false,
 	}
 
 	tx := db.NewTransaction()
@@ -167,7 +166,7 @@ func TestBatchUpdateQuery(t *testing.T) {
 	testBatch.UpdateQuery(tx)
 	tx.Commit()
 
-	batches, _ := db.GetBatches("applied")
+	batches, _ := db.GetBatches("applied", "")
 
 	if !reflect.DeepEqual(batches[0], testBatch) {
 		t.Errorf(
@@ -188,73 +187,77 @@ func TestBatchUpdateQuery(t *testing.T) {
 	}
 }
 
-func TestBatchSetEvents(t *testing.T) {
+func TestBatchSetActions(t *testing.T) {
 	testBatch := &Batch{
-		Id:          "1",
-		Status:      "waiting_transmission",
-		Source:      "source",
-		Target:      "target",
-		Data:        nil,
-		StorageType: "db",
+		"1",
+		"waiting_transmission",
+		"waiting_transmission",
+		"source",
+		"target",
+		nil,
+		"db",
+		false,
 	}
 
-	testBatch.SetEvents([]Event{*stubEvent})
+	testBatch.SetActions([]action.Action{createSchemaAction})
 
 	if *testBatch.Data != stubBatchData {
 		t.Errorf("batch data => %#v, want %#v", testBatch.Data, stubBatchData)
 	}
 }
 
-func TestBatchGetEvents(t *testing.T) {
+func TestBatchGetActions(t *testing.T) {
 	testBatch := &Batch{
-		Id:          "1",
-		Status:      "waiting_transmission",
-		Source:      "source",
-		Target:      "target",
-		Data:        &stubBatchData,
-		StorageType: "db",
+		"1",
+		"waiting_transmission",
+		"waiting_transmission",
+		"source",
+		"target",
+		&stubBatchData,
+		"db",
+		false,
 	}
 
-	events, _ := testBatch.GetEvents()
+	actions, _ := testBatch.GetActions()
 
-	if !reflect.DeepEqual(events[0], *stubEvent) {
+	if !reflect.DeepEqual(actions[0], createSchemaAction) {
 		t.Errorf(
-			"get events => %#v, want %#v",
-			events[0],
-			testBatch,
+			"get actions => %#v, want %#v",
+			actions[0],
+			createSchemaAction,
 		)
 	}
 }
 
-func TestBatchAppendEvents(t *testing.T) {
+func TestBatchAppendActions(t *testing.T) {
 	testBatch := NewBatch("db")
 
-	err := testBatch.AppendEvents([]Event{*stubEvent})
+	err := testBatch.AppendActions([]action.Action{createSchemaAction})
 
 	if err == nil {
-		t.Errorf("append event for db storage did not return error!")
+		t.Errorf("append action for db storage did not return error!")
 	}
 
 	testBatch = NewBatch("fs")
 
-	err = testBatch.AppendEvents([]Event{*stubEvent})
-	err = testBatch.AppendEvents([]Event{*stubEvent})
+	err = testBatch.AppendActions([]action.Action{createSchemaAction})
+	err = testBatch.AppendActions([]action.Action{createSchemaAction})
 
 	if err != nil {
-		t.Errorf("append event returned error: %#v\n", err)
+		t.Errorf("append action returned error: %#v\n", err)
 	}
 
-	events, _ := testBatch.GetEvents()
-	output := Events{*stubEvent, *stubEvent}
+	actions, _ := testBatch.GetActions()
+	output := []action.Action{createSchemaAction, createSchemaAction}
 
-	if len(events) != 2 {
-		t.Errorf("get events => %d, want %d", len(events), 2)
+	if len(actions) != 2 {
+		t.Errorf("get actions => %d, want %d", len(actions), 2)
 	}
 
-	if !reflect.DeepEqual(events, output) {
+	if !reflect.DeepEqual(actions, output) {
 		t.Errorf(
-			"get events after append => %#v, want %#v",
-			events,
+			"get actions after append => %#v, want %#v",
+			actions,
 			output,
 		)
 	}

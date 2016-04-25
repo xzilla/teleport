@@ -6,6 +6,12 @@ import (
 	"testing"
 )
 
+func init() {
+	defaultContext = ddldiff.Context{
+		Schema: "default_context",
+	}
+}
+
 func TestParseSchema(t *testing.T) {
 	schemaStr := `[
 		{"oid":"2200","schema_name":"public","owner_id":"10","classes":
@@ -69,7 +75,7 @@ func TestDiffCreateSchema(t *testing.T) {
 		nil,
 	}
 
-	actions := post.Diff(pre)
+	actions := post.Diff(pre, defaultContext)
 
 	if len(actions) != 1 {
 		t.Errorf("actions => %d, want %d", len(actions), 1)
@@ -106,7 +112,7 @@ func TestDiffRenameSchema(t *testing.T) {
 		nil,
 	}
 
-	actions := post.Diff(pre)
+	actions := post.Diff(pre, defaultContext)
 
 	if len(actions) != 1 {
 		t.Errorf("actions => %d, want %d", len(actions), 1)
@@ -181,7 +187,7 @@ func TestSchemaDrop(t *testing.T) {
 		nil,
 	}
 
-	actions := schema.Drop()
+	actions := schema.Drop(defaultContext)
 
 	if len(actions) != 1 {
 		t.Errorf("actions => %d, want %d", len(actions), 1)

@@ -15,6 +15,10 @@ func init() {
 		nil,
 		nil,
 	}
+
+	defaultContext = ddldiff.Context{
+		Schema: "default_context",
+	}
 }
 
 func TestTypeDiff(t *testing.T) {
@@ -45,7 +49,7 @@ func TestTypeDiff(t *testing.T) {
 			},
 			[]action.Action{
 				&action.CreateType{
-					"test_schema",
+					"default_context",
 					"test_type",
 				},
 			},
@@ -88,7 +92,7 @@ func TestTypeDiff(t *testing.T) {
 			},
 			[]action.Action{
 				&action.AlterType{
-					"test_schema",
+					"default_context",
 					"test_type",
 					"test_type_renamed",
 				},
@@ -106,7 +110,7 @@ func TestTypeDiff(t *testing.T) {
 			preObj = test.pre
 		}
 
-		actions := test.post.Diff(preObj)
+		actions := test.post.Diff(preObj, defaultContext)
 
 		if !reflect.DeepEqual(actions, test.output) {
 			t.Errorf(
@@ -163,7 +167,7 @@ func TestTypeDrop(t *testing.T) {
 		schema,
 	}
 
-	actions := typ.Drop()
+	actions := typ.Drop(defaultContext)
 
 	if len(actions) != 1 {
 		t.Errorf("actions => %d, want %d", len(actions), 1)
@@ -175,8 +179,8 @@ func TestTypeDrop(t *testing.T) {
 		t.Errorf("action is not DropType")
 	}
 
-	if dropAction.SchemaName != schema.Name {
-		t.Errorf("drop action schema name => %s, want %s", dropAction.SchemaName, schema.Name)
+	if dropAction.SchemaName != defaultContext.Schema {
+		t.Errorf("drop action schema name => %s, want %s", dropAction.SchemaName, defaultContext.Schema)
 	}
 
 	if dropAction.TypeName != typ.Name {
@@ -230,6 +234,7 @@ func TestTypeIsEqual(t *testing.T) {
 				"test_col",
 				1,
 				"int4",
+				"pg_catalog",
 				"0",
 				false,
 				nil,

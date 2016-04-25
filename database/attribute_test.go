@@ -9,6 +9,8 @@ import (
 
 var class *Class
 
+var defaultContext ddldiff.Context
+
 func init() {
 	schema = &Schema{
 		"123",
@@ -25,6 +27,10 @@ func init() {
 		[]*Attribute{},
 		schema,
 	}
+
+	defaultContext = ddldiff.Context{
+		Schema: "default_context",
+	}
 }
 
 func TestAttributeDiff(t *testing.T) {
@@ -40,17 +46,19 @@ func TestAttributeDiff(t *testing.T) {
 				"test_col",
 				1,
 				"text",
+				"pg_catalog",
 				"0",
 				false,
 				class,
 			},
 			[]action.Action{
 				&action.CreateColumn{
-					"test_schema",
+					"default_context",
 					"test_table",
 					action.Column{
 						"test_col",
 						"text",
+						true,
 					},
 				},
 			},
@@ -61,6 +69,7 @@ func TestAttributeDiff(t *testing.T) {
 				"test_col",
 				1,
 				"text",
+				"pg_catalog",
 				"0",
 				false,
 				class,
@@ -69,21 +78,24 @@ func TestAttributeDiff(t *testing.T) {
 				"test_col_2",
 				1,
 				"int4",
+				"pg_catalog",
 				"0",
 				false,
 				class,
 			},
 			[]action.Action{
 				&action.AlterColumn{
-					"test_schema",
+					"default_context",
 					"test_table",
 					action.Column{
 						"test_col",
 						"text",
+						true,
 					},
 					action.Column{
 						"test_col_2",
 						"int4",
+						true,
 					},
 				},
 			},
@@ -100,7 +112,7 @@ func TestAttributeDiff(t *testing.T) {
 			preObj = test.pre
 		}
 
-		actions := test.post.Diff(preObj)
+		actions := test.post.Diff(preObj, defaultContext)
 
 		if !reflect.DeepEqual(actions, test.output) {
 			t.Errorf(
@@ -119,6 +131,7 @@ func TestAttributeChildren(t *testing.T) {
 		"test_col",
 		1,
 		"text",
+		"pg_catalog",
 		"0",
 		false,
 		class,
@@ -136,12 +149,13 @@ func TestAttributeDrop(t *testing.T) {
 		"test_col",
 		1,
 		"text",
+		"pg_catalog",
 		"0",
 		false,
 		class,
 	}
 
-	actions := attr.Drop()
+	actions := attr.Drop(defaultContext)
 
 	if len(actions) != 1 {
 		t.Errorf("actions => %d, want %d", len(actions), 1)
@@ -153,8 +167,8 @@ func TestAttributeDrop(t *testing.T) {
 		t.Errorf("action is not DropColumn")
 	}
 
-	if dropAction.SchemaName != schema.Name {
-		t.Errorf("drop action schema name => %s, want %s", dropAction.SchemaName, schema.Name)
+	if dropAction.SchemaName != defaultContext.Schema {
+		t.Errorf("drop action schema name => %s, want %s", dropAction.SchemaName, defaultContext.Schema)
 	}
 
 	if dropAction.TableName != class.RelationName {
@@ -175,6 +189,7 @@ func TestAttributeIsEqual(t *testing.T) {
 		"test_col",
 		1,
 		"text",
+		"pg_catalog",
 		"0",
 		false,
 		class,
@@ -184,6 +199,7 @@ func TestAttributeIsEqual(t *testing.T) {
 		"test_col_2",
 		1,
 		"int4",
+		"pg_catalog",
 		"0",
 		false,
 		class,

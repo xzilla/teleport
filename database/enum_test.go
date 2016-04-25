@@ -24,6 +24,10 @@ func init() {
 		[]*Enum{},
 		schema,
 	}
+
+	defaultContext = ddldiff.Context{
+		Schema: "default_context",
+	}
 }
 
 func TestEnumDiff(t *testing.T) {
@@ -42,7 +46,7 @@ func TestEnumDiff(t *testing.T) {
 			},
 			[]action.Action{
 				&action.CreateEnum{
-					"test_schema",
+					"default_context",
 					"test_type",
 					"test_enum3",
 				},
@@ -74,7 +78,7 @@ func TestEnumDiff(t *testing.T) {
 			preObj = test.pre
 		}
 
-		actions := test.post.Diff(preObj)
+		actions := test.post.Diff(preObj, defaultContext)
 
 		if !reflect.DeepEqual(actions, test.output) {
 			t.Errorf(
@@ -109,7 +113,7 @@ func TestEnumDrop(t *testing.T) {
 		typ,
 	}
 
-	actions := enum.Drop()
+	actions := enum.Drop(defaultContext)
 
 	if len(actions) != 0 {
 		t.Errorf("actions => %d, want %d", len(actions), 0)

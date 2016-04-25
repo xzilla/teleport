@@ -16,6 +16,7 @@ func setupDml() {
 			"id",
 			1,
 			"int4",
+			"pg_catalog",
 			"0",
 			true,
 			nil,
@@ -24,6 +25,7 @@ func setupDml() {
 			"content",
 			1,
 			"text",
+			"pg_catalog",
 			"0",
 			false,
 			nil,
@@ -78,17 +80,20 @@ func TestDmlDiff(t *testing.T) {
 				},
 				event,
 				db,
+				"target_schema",
 			},
 			[]action.Action{
 				&action.InsertRow{
-					"public",
+					"target_schema",
 					"test_table",
+					"id",
 					[]action.Row{
 						action.Row{
 							"test",
 							action.Column{
 								"content",
 								"text",
+								true,
 							},
 						},
 						action.Row{
@@ -96,6 +101,7 @@ func TestDmlDiff(t *testing.T) {
 							action.Column{
 								"id",
 								"int4",
+								true,
 							},
 						},
 					},
@@ -112,16 +118,18 @@ func TestDmlDiff(t *testing.T) {
 				nil,
 				event,
 				db,
+				"target_schema",
 			},
 			[]action.Action{
 				&action.DeleteRow{
-					"public",
+					"target_schema",
 					"test_table",
 					action.Row{
 						5,
 						action.Column{
 							"id",
 							"int4",
+							true,
 						},
 					},
 				},
@@ -140,16 +148,18 @@ func TestDmlDiff(t *testing.T) {
 				},
 				event,
 				db,
+				"target_schema",
 			},
 			[]action.Action{
 				&action.UpdateRow{
-					"public",
+					"target_schema",
 					"test_table",
 					action.Row{
 						5,
 						action.Column{
 							"id",
 							"int4",
+							true,
 						},
 					},
 					[]action.Row{
@@ -158,6 +168,7 @@ func TestDmlDiff(t *testing.T) {
 							action.Column{
 								"content",
 								"text",
+								true,
 							},
 						},
 						action.Row{
@@ -165,6 +176,7 @@ func TestDmlDiff(t *testing.T) {
 							action.Column{
 								"id",
 								"int4",
+								true,
 							},
 						},
 					},

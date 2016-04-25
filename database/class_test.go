@@ -17,6 +17,10 @@ func init() {
 		nil,
 		nil,
 	}
+
+	defaultContext = ddldiff.Context{
+		Schema: "default_context",
+	}
 }
 
 func TestClassDiff(t *testing.T) {
@@ -56,6 +60,7 @@ func TestClassDiff(t *testing.T) {
 						"test_col",
 						1,
 						"int4",
+						"pg_catalog",
 						"0",
 						true,
 						nil,
@@ -65,11 +70,12 @@ func TestClassDiff(t *testing.T) {
 			},
 			[]action.Action{
 				&action.CreateTable{
-					"test_schema",
+					"default_context",
 					"test_table",
 					action.Column{
 						"test_col",
 						"int4",
+						true,
 					},
 				},
 			},
@@ -85,6 +91,7 @@ func TestClassDiff(t *testing.T) {
 						"test_col",
 						1,
 						"int4",
+						"pg_catalog",
 						"0",
 						false,
 						nil,
@@ -101,6 +108,7 @@ func TestClassDiff(t *testing.T) {
 						"test_col",
 						1,
 						"int4",
+						"pg_catalog",
 						"0",
 						false,
 						nil,
@@ -110,7 +118,7 @@ func TestClassDiff(t *testing.T) {
 			},
 			[]action.Action{
 				&action.AlterTable{
-					"test_schema",
+					"default_context",
 					"test_table",
 					"test_table_renamed",
 				},
@@ -128,7 +136,7 @@ func TestClassDiff(t *testing.T) {
 			preObj = test.pre
 		}
 
-		actions := test.post.Diff(preObj)
+		actions := test.post.Diff(preObj, defaultContext)
 
 		if !reflect.DeepEqual(actions, test.output) {
 			t.Errorf(
@@ -148,6 +156,7 @@ func TestClassChildren(t *testing.T) {
 			"test_col",
 			1,
 			"int4",
+			"pg_catalog",
 			"0",
 			true,
 			nil,
@@ -174,6 +183,7 @@ func TestClassChildren(t *testing.T) {
 			"test_col",
 			1,
 			"int4",
+			"pg_catalog",
 			"0",
 			true,
 			nil,
@@ -182,6 +192,7 @@ func TestClassChildren(t *testing.T) {
 			"other_col",
 			1,
 			"text",
+			"pg_catalog",
 			"0",
 			false,
 			nil,
@@ -211,7 +222,7 @@ func TestClassDrop(t *testing.T) {
 		schema,
 	}
 
-	actions := class.Drop()
+	actions := class.Drop(defaultContext)
 
 	if len(actions) != 0 {
 		t.Errorf("actions => %d, want %d", len(actions), 0)
@@ -226,6 +237,7 @@ func TestClassDrop(t *testing.T) {
 				"test_col",
 				1,
 				"int4",
+				"pg_catalog",
 				"0",
 				false,
 				nil,
@@ -234,7 +246,7 @@ func TestClassDrop(t *testing.T) {
 		schema,
 	}
 
-	actions = class.Drop()
+	actions = class.Drop(defaultContext)
 
 	if len(actions) != 1 {
 		t.Errorf("actions => %d, want %d", len(actions), 1)
@@ -246,8 +258,8 @@ func TestClassDrop(t *testing.T) {
 		t.Errorf("action is not DropTable")
 	}
 
-	if dropAction.SchemaName != schema.Name {
-		t.Errorf("drop action schema name => %s, want %s", dropAction.SchemaName, schema.Name)
+	if dropAction.SchemaName != defaultContext.Schema {
+		t.Errorf("drop action schema name => %s, want %s", dropAction.SchemaName, defaultContext.Schema)
 	}
 
 	if dropAction.TableName != class.RelationName {
@@ -265,6 +277,7 @@ func TestClassIsEqual(t *testing.T) {
 				"test_col",
 				1,
 				"int4",
+				"pg_catalog",
 				"0",
 				false,
 				nil,
@@ -282,6 +295,7 @@ func TestClassIsEqual(t *testing.T) {
 				"test_col",
 				1,
 				"int4",
+				"pg_catalog",
 				"0",
 				false,
 				nil,
