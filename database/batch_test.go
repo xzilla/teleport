@@ -85,6 +85,7 @@ func TestGetBatches(t *testing.T) {
 		&testData,
 		"db",
 		false,
+		0,
 	}
 
 	batches, err := db.GetBatches("waiting_transmission", "")
@@ -122,6 +123,7 @@ func TestBatchInsertQuery(t *testing.T) {
 		&testData,
 		"db",
 		false,
+		0,
 	}
 
 	tx := db.NewTransaction()
@@ -155,6 +157,7 @@ func TestBatchUpdateQuery(t *testing.T) {
 		&testData,
 		"db",
 		false,
+		0,
 	}
 
 	tx := db.NewTransaction()
@@ -197,6 +200,7 @@ func TestBatchSetActions(t *testing.T) {
 		nil,
 		"db",
 		false,
+		0,
 	}
 
 	testBatch.SetActions([]action.Action{createSchemaAction})
@@ -216,6 +220,7 @@ func TestBatchGetActions(t *testing.T) {
 		&stubBatchData,
 		"db",
 		false,
+		0,
 	}
 
 	actions, _ := testBatch.GetActions()

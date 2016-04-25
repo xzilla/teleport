@@ -22,7 +22,7 @@ type FooAction struct {
 	Kind string
 }
 
-func (a *FooAction) Execute(c action.Context) error {
+func (a *FooAction) Execute(c *action.Context) error {
 	return nil
 }
 
@@ -38,7 +38,7 @@ type BarAction struct {
 	Kind string
 }
 
-func (a *BarAction) Execute(c action.Context) error {
+func (a *BarAction) Execute(c *action.Context) error {
 	return nil
 }
 
@@ -58,10 +58,10 @@ func NewBar(name string, id int) *Bar {
 	return &Bar{name, id}
 }
 
-var defaultContext Context
+var defaultContext *Context
 
 func init() {
-	defaultContext = Context{
+	defaultContext = &Context{
 		Schema: "default_context",
 	}
 }
