@@ -3,6 +3,7 @@ package ddldiff
 import (
 	"github.com/pagarme/teleport/action"
 	"testing"
+	"fmt"
 )
 
 // Foo implements Diffable
@@ -57,11 +58,19 @@ func NewBar(name string, id int) *Bar {
 	return &Bar{name, id}
 }
 
-func (post *Foo) Diff(other Diffable) []action.Action {
+var defaultContext Context
+
+func init() {
+	defaultContext = Context{
+		Schema: "default_context",
+	}
+}
+
+func (post *Foo) Diff(other Diffable, context Context) []action.Action {
 	if other == nil {
 		return []action.Action{
 			&FooAction{
-				"CREATE FOO",
+				fmt.Sprintf("CREATE FOO %s", context.Schema),
 			},
 		}
 	} else {
@@ -79,7 +88,7 @@ func (post *Foo) Diff(other Diffable) []action.Action {
 	return []action.Action{}
 }
 
-func (post *Bar) Diff(other Diffable) []action.Action {
+func (post *Bar) Diff(other Diffable, context Context) []action.Action {
 	if other == nil {
 		return []action.Action{
 			&BarAction{
@@ -115,7 +124,7 @@ func (b *Bar) Children() []Diffable {
 	return []Diffable{}
 }
 
-func (f *Foo) Drop() []action.Action {
+func (f *Foo) Drop(context Context) []action.Action {
 	return []action.Action{
 		&FooAction{
 			"DROP FOO",
@@ -123,7 +132,7 @@ func (f *Foo) Drop() []action.Action {
 	}
 }
 
-func (b *Bar) Drop() []action.Action {
+func (b *Bar) Drop(context Context) []action.Action {
 	return []action.Action{
 		&BarAction{
 			"DROP BAR",
@@ -157,7 +166,7 @@ func TestDiffCreate(t *testing.T) {
 		Diffable(NewFoo("test", 1, []*Bar{})),
 	}
 
-	actions := Diff(pre, post)
+	actions := Diff(pre, post, defaultContext)
 
 	if len(actions) != 1 {
 		t.Errorf("len actions => %d, want %d", len(actions), 1)
@@ -165,8 +174,8 @@ func TestDiffCreate(t *testing.T) {
 
 	fooAction := actions[0].(*FooAction)
 
-	if fooAction.Kind != "CREATE FOO" {
-		t.Errorf("action kind => %s, want %s", fooAction.Kind, "CREATE FOO")
+	if fooAction.Kind != "CREATE FOO default_context" {
+		t.Errorf("action kind => %s, want %s", fooAction.Kind, "CREATE FOO default_context")
 	}
 }
 
@@ -180,7 +189,7 @@ func TestDiffRename(t *testing.T) {
 		Diffable(NewFoo("testing this", 1, []*Bar{})),
 	}
 
-	actions := Diff(pre, post)
+	actions := Diff(pre, post, defaultContext)
 
 	if len(actions) != 1 {
 		t.Errorf("len actions => %d, want %d", len(actions), 1)
@@ -201,7 +210,7 @@ func TestDiffDrop(t *testing.T) {
 
 	post := []Diffable{}
 
-	actions := Diff(pre, post)
+	actions := Diff(pre, post, defaultContext)
 
 	if len(actions) != 1 {
 		t.Errorf("len actions => %d, want %d", len(actions), 1)
@@ -222,7 +231,7 @@ func TestDiffCreateTree(t *testing.T) {
 		Diffable(NewFoo("test", 1, []*Bar{NewBar("sub test", 1)})),
 	}
 
-	actions := Diff(pre, post)
+	actions := Diff(pre, post, defaultContext)
 
 	if len(actions) != 2 {
 		t.Errorf("len actions => %d, want %d", len(actions), 2)
@@ -231,8 +240,8 @@ func TestDiffCreateTree(t *testing.T) {
 	fooAction := actions[0].(*FooAction)
 	barAction := actions[1].(*BarAction)
 
-	if fooAction.Kind != "CREATE FOO" {
-		t.Errorf("action kind => %s, want %s", fooAction.Kind, "CREATE FOO")
+	if fooAction.Kind != "CREATE FOO default_context" {
+		t.Errorf("action kind => %s, want %s", fooAction.Kind, "CREATE FOO default_context")
 	}
 
 	if barAction.Kind != "CREATE BAR" {
@@ -250,7 +259,7 @@ func TestDiffCreateRecursively(t *testing.T) {
 		Diffable(NewFoo("test", 1, []*Bar{NewBar("sub test", 1)})),
 	}
 
-	actions := Diff(pre, post)
+	actions := Diff(pre, post, defaultContext)
 
 	if len(actions) != 1 {
 		t.Errorf("len actions => %d, want %d", len(actions), 1)
@@ -273,7 +282,7 @@ func TestDiffRenameRecursively(t *testing.T) {
 		Diffable(NewFoo("test edited", 1, []*Bar{NewBar("sub test edited", 1)})),
 	}
 
-	actions := Diff(pre, post)
+	actions := Diff(pre, post, defaultContext)
 
 	if len(actions) != 2 {
 		t.Errorf("len actions => %d, want %d", len(actions), 2)
@@ -301,7 +310,7 @@ func TestDiffDropRecursively(t *testing.T) {
 		Diffable(NewFoo("test", 1, []*Bar{})),
 	}
 
-	actions := Diff(pre, post)
+	actions := Diff(pre, post, defaultContext)
 
 	if len(actions) != 1 {
 		t.Errorf("len actions => %d, want %d", len(actions), 1)
