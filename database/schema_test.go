@@ -140,6 +140,7 @@ func TestSchemaChildren(t *testing.T) {
 			"t",
 			"test_table",
 			[]*Attribute{},
+			[]*Index{},
 			nil,
 		},
 	}

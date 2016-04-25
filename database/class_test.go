@@ -37,6 +37,7 @@ func TestClassDiff(t *testing.T) {
 				"s",
 				"test_special_table",
 				[]*Attribute{},
+				[]*Index{},
 				schema,
 			},
 			&Class{
@@ -44,6 +45,7 @@ func TestClassDiff(t *testing.T) {
 				"s",
 				"test_special_table_renamed",
 				[]*Attribute{},
+				[]*Index{},
 				schema,
 			},
 			[]action.Action{},
@@ -66,6 +68,7 @@ func TestClassDiff(t *testing.T) {
 						nil,
 					},
 				},
+				[]*Index{},
 				schema,
 			},
 			[]action.Action{
@@ -97,6 +100,7 @@ func TestClassDiff(t *testing.T) {
 						nil,
 					},
 				},
+				[]*Index{},
 				schema,
 			},
 			&Class{
@@ -114,6 +118,7 @@ func TestClassDiff(t *testing.T) {
 						nil,
 					},
 				},
+				[]*Index{},
 				schema,
 			},
 			[]action.Action{
@@ -168,6 +173,7 @@ func TestClassChildren(t *testing.T) {
 		"r",
 		"test_table",
 		attrs,
+		[]*Index{},
 		schema,
 	}
 
@@ -211,6 +217,44 @@ func TestClassChildren(t *testing.T) {
 	if children[0] != attrs[1] {
 		t.Errorf("child => %v, want %v", children[0], attrs[1])
 	}
+
+	attrs = []*Attribute{
+		&Attribute{
+			"other_col",
+			1,
+			"text",
+			"pg_catalog",
+			"0",
+			false,
+			nil,
+		},
+	}
+
+	indexes := []*Index{
+		&Index{
+			"123",
+			"test_index",
+			"create index;",
+			nil,
+		},
+	}
+
+	class.Attributes = attrs
+	class.Indexes = indexes
+
+	children = class.Children()
+
+	if len(children) != 2 {
+		t.Errorf("children => %d, want %d", len(children), 2)
+	}
+
+	if children[0] != attrs[0] {
+		t.Errorf("child => %v, want %v", children[0], attrs[0])
+	}
+
+	if children[1] != indexes[0] {
+		t.Errorf("child => %v, want %v", children[1], indexes[0])
+	}
 }
 
 func TestClassDrop(t *testing.T) {
@@ -219,6 +263,7 @@ func TestClassDrop(t *testing.T) {
 		"s",
 		"test_special_table",
 		[]*Attribute{},
+		[]*Index{},
 		schema,
 	}
 
@@ -243,6 +288,7 @@ func TestClassDrop(t *testing.T) {
 				nil,
 			},
 		},
+		[]*Index{},
 		schema,
 	}
 
@@ -283,6 +329,7 @@ func TestClassIsEqual(t *testing.T) {
 				nil,
 			},
 		},
+		[]*Index{},
 		schema,
 	}
 
@@ -301,6 +348,7 @@ func TestClassIsEqual(t *testing.T) {
 				nil,
 			},
 		},
+		[]*Index{},
 		schema,
 	}
 

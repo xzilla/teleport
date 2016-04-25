@@ -13,6 +13,7 @@ type Class struct {
 	RelationKind string       `json:"relation_kind"`
 	RelationName string       `json:"relation_name"`
 	Attributes   []*Attribute `json:"attributes"`
+	Indexes      []*Index     `json:"indexes"`
 	Schema       *Schema
 }
 
@@ -118,6 +119,10 @@ func (c *Class) Children() []ddldiff.Diffable {
 		if primaryKey == nil || attr.Name != primaryKey.Name {
 			children = append(children, attr)
 		}
+	}
+
+	for _, index := range c.Indexes {
+		children = append(children, index)
 	}
 
 	return children

@@ -240,6 +240,7 @@ func TestTypeIsEqual(t *testing.T) {
 				nil,
 			},
 		},
+		[]*Index{},
 		schema,
 	}
 

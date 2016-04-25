@@ -32,7 +32,7 @@ func (a *CreateColumn) Execute(c *Context) error {
 }
 
 func (a *CreateColumn) Filter(targetExpression string) bool {
-	return IsInTargetExpression(&targetExpression, &a.SchemaName, &a.TableName)
+	return true
 }
 
 func (a *CreateColumn) NeedsSeparatedBatch() bool {

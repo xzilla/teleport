@@ -25,6 +25,7 @@ func init() {
 		"r",
 		"test_table",
 		[]*Attribute{},
+		[]*Index{},
 		schema,
 	}
 
@@ -214,5 +215,16 @@ func TestAttributeIsEqual(t *testing.T) {
 
 	if post.IsEqual(pre) {
 		t.Errorf("expect classes not to be equal")
+	}
+
+	preOtherType := &Index{
+		"123",
+		"test_index_2",
+		"create index",
+		class,
+	}
+
+	if post.IsEqual(preOtherType) {
+		t.Errorf("expect two different types not to be equal")
 	}
 }

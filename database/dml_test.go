@@ -38,6 +38,7 @@ func setupDml() {
 			"r",
 			"test_table",
 			attributes,
+			[]*Index{},
 			nil,
 		},
 	}

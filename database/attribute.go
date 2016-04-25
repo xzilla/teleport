@@ -84,6 +84,9 @@ func (a *Attribute) IsEqual(other ddldiff.Diffable) bool {
 		return false
 	}
 
-	otherAttr := other.(*Attribute)
-	return (a.Num == otherAttr.Num)
+	if otherAttr, ok := other.(*Attribute); ok {
+		return (a.Num == otherAttr.Num)
+	}
+
+	return false
 }

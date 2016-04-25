@@ -132,7 +132,32 @@ BEGIN
 									-- Ordinary columns are numbered from 1 up.
 									-- System columns have negative numbers.
 									attr.attr_num > 0
-							) AS attributes
+							) AS attributes,
+							(
+								-- The view pg_indexes provides access to useful information about each index
+								-- in the database.
+								SELECT array_to_json(array_agg(row_to_json(ind)))
+								FROM (
+									SELECT
+										i.indexrelid AS index_oid,
+										i.indrelid AS class_oid,
+										ic.relname AS index_name,
+										(
+											SELECT indexdef
+											FROM pg_indexes
+											WHERE
+												indexname = ic.relname AND
+												tablename = class.relname AND
+												schemaname = namespace.nspname
+										) AS index_def
+									FROM pg_index i
+									INNER JOIN pg_class ic
+										ON ic.oid = i.indexrelid
+									WHERE i.indisprimary = false
+								) ind
+								WHERE
+									ind.class_oid = class.oid
+							) AS indexes
 						FROM pg_class class
 						-- r = ordinary table,
 						-- i = index,
