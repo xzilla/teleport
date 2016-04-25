@@ -64,7 +64,8 @@ CREATE TABLE IF NOT EXISTS teleport.batch (
 	data text,
 	source text,
 	target text,
-	waiting_reexecution boolean not null default false
+	waiting_reexecution boolean not null default false,
+	last_executed_statement int default 0
 );
 
 -- Create table to store events of a given batch

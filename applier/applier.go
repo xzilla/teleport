@@ -118,23 +118,59 @@ func (a *Applier) applyBatch(batch *database.Batch) (bool, error) {
 		}
 	} else if batch.StorageType == "fs" {
 		reader, file, err := batch.GetFileReader()
-		defer file.Close()
 
 		if err != nil {
 			return updateBatchStatus(err)
 		}
 
+		defer file.Close()
+
 		var act action.Action
+		currentStatement := 0
+		currentBatchSize := 0
+		previousStatement := batch.LastExecutedStatement
 
 		act, err = batch.ReadAction(reader);
 
 		for err == nil {
-			err = a.applyAction(act, tx)
+			// Increment current statement
+			currentStatement += 1
 
-			if err != nil {
-				return updateBatchStatus(err)
+			// Start applying from previous stop point
+			if currentStatement > previousStatement {
+				err = a.applyAction(act, tx)
+
+				if err != nil {
+					return updateBatchStatus(err)
+				}
+
+				batch.LastExecutedStatement += 1
+				currentBatchSize += 1
+
+				if currentBatchSize >= a.batchSize {
+					// Current batch reached the maximum size.
+					// Commit batch to database.
+					err = batch.UpdateQuery(tx)
+
+					if err != nil {
+						return false, err
+					}
+
+					err = tx.Commit()
+
+					if err != nil {
+						return false, err
+					}
+
+					// Restart transaction
+					tx = a.db.NewTransaction()
+
+					// Reset batch size
+					currentBatchSize = 0
+				}
 			}
 
+			// Read next action
 			act, err = batch.ReadAction(reader);
 		}
 

@@ -24,6 +24,7 @@ type Batch struct {
 	Data        *string `db:"data" json:"data"`
 	StorageType string  `db:"storage_type" json:"storage_type"`
 	WaitingReexecution bool  `db:"waiting_reexecution" json:"waiting_reexecution"`
+	LastExecutedStatement int  `db:"last_executed_statement" json:"last_executed_statement"`
 }
 
 func NewBatch(storageType string) *Batch {
@@ -189,13 +190,13 @@ func (b *Batch) UpdateQuery(tx *sqlx.Tx) error {
 
 	// If there's no id, insert without id
 	if b.DataStatus == "" {
-		query = "UPDATE teleport.batch SET status = $1, data = $2, waiting_reexecution = $3 WHERE id = $4"
+		query = "UPDATE teleport.batch SET status = $1, data = $2, waiting_reexecution = $3, last_executed_statement = $4 WHERE id = $5"
 		args = append(args, b.Status)
 	} else if b.Status == "" {
-		query = "UPDATE teleport.batch SET data_status = $1, data = $2, waiting_reexecution = $3 WHERE id = $4"
+		query = "UPDATE teleport.batch SET data_status = $1, data = $2, waiting_reexecution = $3, last_executed_statement = $4 WHERE id = $5"
 		args = append(args, b.DataStatus)
 	} else {
-		query = "UPDATE teleport.batch SET data_status = $1, status = $2, data = $3, waiting_reexecution = $4 WHERE id = $5"
+		query = "UPDATE teleport.batch SET data_status = $1, status = $2, data = $3, waiting_reexecution = $4, last_executed_statement = $5 WHERE id = $6"
 		args = append(args, b.DataStatus)
 		args = append(args, b.Status)
 	}
@@ -203,6 +204,7 @@ func (b *Batch) UpdateQuery(tx *sqlx.Tx) error {
 	args = append(args,
 		b.Data,
 		b.WaitingReexecution,
+		b.LastExecutedStatement,
 		b.Id,
 	)
 
