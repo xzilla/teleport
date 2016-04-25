@@ -17,7 +17,7 @@ func init() {
 	gob.Register(&CreateTable{})
 }
 
-func (a *CreateTable) Execute(c Context) error {
+func (a *CreateTable) Execute(c *Context) error {
 	_, err := c.Tx.Exec(
 		fmt.Sprintf(
 			"CREATE TABLE \"%s\".\"%s\" (\"%s\" %s\"%s\" PRIMARY KEY);",

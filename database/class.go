@@ -48,10 +48,7 @@ func (c *Class) InstallTriggers() error {
 	tx := c.Schema.Db.NewTransaction()
 
 	for _, currentAction := range actions {
-		err := currentAction.Execute(action.Context{
-			Tx: tx,
-			Db: c.Schema.Db.Db,
-		})
+		err := currentAction.Execute(action.NewContext(tx, c.Schema.Db.Db,))
 
 		if err != nil {
 			log.Printf("Error creating triggers on %s: %v", c.RelationName, err)

@@ -19,7 +19,7 @@ func init() {
 	gob.Register(&UpdateRow{})
 }
 
-func (a *UpdateRow) Execute(c Context) error {
+func (a *UpdateRow) Execute(c *Context) error {
 	escapedRows := make([]string, 0)
 	replacementsCount := 0
 	values := make([]interface{}, 0)

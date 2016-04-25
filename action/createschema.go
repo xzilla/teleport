@@ -14,7 +14,7 @@ func init() {
 	gob.Register(&CreateSchema{})
 }
 
-func (a *CreateSchema) Execute(c Context) error {
+func (a *CreateSchema) Execute(c *Context) error {
 	_, err := c.Tx.Exec(
 		fmt.Sprintf("CREATE SCHEMA IF NOT EXISTS \"%s\";", a.SchemaName),
 	)

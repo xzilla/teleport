@@ -16,7 +16,7 @@ func init() {
 	gob.Register(&CreateEnum{})
 }
 
-func (a *CreateEnum) Execute(c Context) error {
+func (a *CreateEnum) Execute(c *Context) error {
 	// ALTER TYPE... ADD VALUE cannot run inside a transaction
 	_, err := c.Db.Exec(
 		fmt.Sprintf(

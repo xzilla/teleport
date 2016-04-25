@@ -16,7 +16,7 @@ func init() {
 	gob.Register(&DropColumn{})
 }
 
-func (a *DropColumn) Execute(c Context) error {
+func (a *DropColumn) Execute(c *Context) error {
 	_, err := c.Tx.Exec(
 		fmt.Sprintf("ALTER TABLE \"%s\".\"%s\" DROP COLUMN \"%s\";", a.SchemaName, a.TableName, a.Column.Name),
 	)

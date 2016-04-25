@@ -15,7 +15,7 @@ func init() {
 	gob.Register(&DropType{})
 }
 
-func (a *DropType) Execute(c Context) error {
+func (a *DropType) Execute(c *Context) error {
 	_, err := c.Tx.Exec(
 		fmt.Sprintf("DROP TYPE \"%s\".\"%s\";", a.SchemaName, a.TypeName),
 	)

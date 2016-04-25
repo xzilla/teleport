@@ -15,7 +15,7 @@ func init() {
 	gob.Register(&DropTable{})
 }
 
-func (a *DropTable) Execute(c Context) error {
+func (a *DropTable) Execute(c *Context) error {
 	_, err := c.Tx.Exec(
 		fmt.Sprintf("DROP TABLE \"%s\".\"%s\";", a.SchemaName, a.TableName),
 	)

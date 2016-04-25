@@ -17,7 +17,7 @@ func init() {
 	gob.Register(&AlterColumn{})
 }
 
-func (a *AlterColumn) Execute(c Context) error {
+func (a *AlterColumn) Execute(c *Context) error {
 	if a.Column.Name != a.NewColumn.Name {
 		_, err := c.Tx.Exec(
 			fmt.Sprintf(

@@ -16,7 +16,7 @@ func init() {
 	gob.Register(&DropTrigger{})
 }
 
-func (a *DropTrigger) Execute(c Context) error {
+func (a *DropTrigger) Execute(c *Context) error {
 	_, err := c.Tx.Exec(
 		fmt.Sprintf(
 			`DROP TRIGGER IF EXISTS "%s" ON "%s"."%s";`,

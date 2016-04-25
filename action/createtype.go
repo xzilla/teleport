@@ -15,7 +15,7 @@ func init() {
 	gob.Register(&CreateType{})
 }
 
-func (a *CreateType) Execute(c Context) error {
+func (a *CreateType) Execute(c *Context) error {
 	_, err := c.Tx.Exec(
 		fmt.Sprintf(
 			"CREATE TYPE \"%s\".\"%s\" AS ENUM ();",

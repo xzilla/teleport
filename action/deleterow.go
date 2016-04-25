@@ -16,7 +16,7 @@ func init() {
 	gob.Register(&DeleteRow{})
 }
 
-func (a *DeleteRow) Execute(c Context) error {
+func (a *DeleteRow) Execute(c *Context) error {
 	_, err := c.Tx.Exec(
 		fmt.Sprintf(
 			`DELETE FROM "%s"."%s" WHERE "%s" = $1;`,

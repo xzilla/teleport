@@ -16,7 +16,7 @@ func init() {
 	gob.Register(&CreateColumn{})
 }
 
-func (a *CreateColumn) Execute(c Context) error {
+func (a *CreateColumn) Execute(c *Context) error {
 	_, err := c.Tx.Exec(
 		fmt.Sprintf(
 			"ALTER TABLE \"%s\".\"%s\" ADD COLUMN \"%s\" %s\"%s\";",

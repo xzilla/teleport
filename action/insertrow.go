@@ -21,7 +21,7 @@ func init() {
 	gob.Register(&time.Time{})
 }
 
-func (a *InsertRow) Execute(c Context) error {
+func (a *InsertRow) Execute(c *Context) error {
 	escapedCols := make([]string, 0)
 	escapedRows := make([]string, 0)
 	values := make([]interface{}, 0)
@@ -62,7 +62,7 @@ func (a *InsertRow) Execute(c Context) error {
 		return err
 	}
 
-	_, err = c.Tx.Exec(
+	stmt, err := c.GetPreparedStatement(
 		fmt.Sprintf(
 			`
 				INSERT INTO "%s"."%s" (%s) VALUES (%s);
@@ -72,8 +72,13 @@ func (a *InsertRow) Execute(c Context) error {
 			strings.Join(escapedCols, ","),
 			strings.Join(escapedRows, ","),
 		),
-		values...,
 	)
+
+	if err != nil {
+		return err
+	}
+
+	_, err = stmt.Exec(values...)
 
 	// Try to UPDATE (upsert) if INSERT fails...
 	if err != nil {

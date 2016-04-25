@@ -2,7 +2,7 @@ package action
 
 type Action interface {
 	// Execute the given action
-	Execute(c Context) error
+	Execute(c *Context) error
 	// Returns whether current action should be executed
 	// for a targetExpression
 	Filter(targetExpression string) bool

@@ -1,7 +1,6 @@
 package applier
 
 import (
-	"github.com/jmoiron/sqlx"
 	"github.com/pagarme/teleport/action"
 	"github.com/pagarme/teleport/database"
 	"log"
@@ -46,12 +45,9 @@ func (a *Applier) Watch(sleepTime time.Duration) {
 	}
 }
 
-func (a *Applier) applyAction(act action.Action, tx *sqlx.Tx) error {
+func (a *Applier) applyAction(act action.Action, context *action.Context) error {
 	// Execute action of the given event
-	err := act.Execute(action.Context{
-		Tx: tx,
-		Db: a.db.Db,
-	})
+	err := act.Execute(context)
 
 	if err != nil {
 		log.Printf("Error applying action %#v: %v", act, err)
@@ -109,8 +105,10 @@ func (a *Applier) applyBatch(batch *database.Batch) (bool, error) {
 			return false, err
 		}
 
+		context := action.NewContext(tx, a.db.Db)
+
 		for _, act := range actions {
-			err := a.applyAction(act, tx)
+			err := a.applyAction(act, context)
 
 			if err != nil {
 				return updateBatchStatus(err)
@@ -130,6 +128,7 @@ func (a *Applier) applyBatch(batch *database.Batch) (bool, error) {
 		currentBatchSize := 0
 		previousStatement := batch.LastExecutedStatement
 
+		currentContext := action.NewContext(tx, a.db.Db)
 		act, err = batch.ReadAction(reader);
 
 		for err == nil {
@@ -138,7 +137,7 @@ func (a *Applier) applyBatch(batch *database.Batch) (bool, error) {
 
 			// Start applying from previous stop point
 			if currentStatement > previousStatement {
-				err = a.applyAction(act, tx)
+				err = a.applyAction(act, currentContext)
 
 				if err != nil {
 					return updateBatchStatus(err)
@@ -164,6 +163,8 @@ func (a *Applier) applyBatch(batch *database.Batch) (bool, error) {
 
 					// Restart transaction
 					tx = a.db.NewTransaction()
+
+					currentContext = action.NewContext(tx, a.db.Db)
 
 					// Reset batch size
 					currentBatchSize = 0

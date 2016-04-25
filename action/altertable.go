@@ -16,7 +16,7 @@ func init() {
 	gob.Register(&AlterTable{})
 }
 
-func (a *AlterTable) Execute(c Context) error {
+func (a *AlterTable) Execute(c *Context) error {
 	_, err := c.Tx.Exec(
 		fmt.Sprintf("ALTER TABLE \"%s\".\"%s\" RENAME TO \"%s\";", a.SchemaName, a.SourceName, a.TargetName),
 	)

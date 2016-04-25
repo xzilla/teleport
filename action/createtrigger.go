@@ -22,7 +22,7 @@ func init() {
 	gob.Register(&CreateTrigger{})
 }
 
-func (a *CreateTrigger) Execute(c Context) error {
+func (a *CreateTrigger) Execute(c *Context) error {
 	_, err := c.Tx.Exec(
 		fmt.Sprintf(
 			`
