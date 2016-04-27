@@ -10,7 +10,7 @@ type Index struct {
 	Oid          string `json:"index_oid"`
 	Name         string `json:"index_name"`
 	Def          string `json:"index_def"`
-	Class        *Class
+	Table        *Table
 }
 
 // Implements Diffable

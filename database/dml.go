@@ -46,12 +46,12 @@ func (d *Dml) GetTableName() string {
 	return separator[1]
 }
 
-func (d *Dml) GetClass() *Class {
+func (d *Dml) GetTable() *Table {
 	schemaName, tableName := d.GetSchemaName(), d.GetTableName()
 
 	for _, schema := range d.Db.Schemas {
 		if schema.Name == schemaName {
-			for _, class := range schema.Classes {
+			for _, class := range schema.Tables {
 				if class.RelationName == tableName {
 					return class
 				}
@@ -75,7 +75,7 @@ func (d *Dml) generateRows(obj *map[string]interface{}) []action.Row {
 	// Generate row for each key, value of DML
 	for _, key := range keys {
 		value := (*obj)[key]
-		class := d.GetClass()
+		class := d.GetTable()
 
 		var attribute *Attribute
 
@@ -100,7 +100,7 @@ func (d *Dml) generateRows(obj *map[string]interface{}) []action.Row {
 }
 
 func (d *Dml) generatePrimaryKeyRow(obj *map[string]interface{}) action.Row {
-	class := d.GetClass()
+	class := d.GetTable()
 	pkey := class.GetPrimaryKey()
 
 	return action.Row{
@@ -120,7 +120,7 @@ func (d *Dml) Diff() []action.Action {
 			&action.InsertRow{
 				d.TargetSchema,
 				d.GetTableName(),
-				d.GetClass().GetPrimaryKey().Name,
+				d.GetTable().GetPrimaryKey().Name,
 				d.generateRows(d.Post),
 			},
 		}

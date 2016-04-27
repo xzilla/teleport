@@ -10,7 +10,7 @@ import (
 type Schema struct {
 	Oid       string      `json:"oid"`
 	Name      string      `json:"schema_name"`
-	Classes   []*Class    `json:"classes"`
+	Tables   []*Table    `json:"classes"`
 	Types     []*Type     `json:"types"`
 	Functions []*Function `json:"functions"`
 	Db        *Database
@@ -35,10 +35,10 @@ func ParseSchema(schemaContent string) (Schemas, error) {
 
 // Fill pointers to parent struct in children of schema
 func (s *Schema) fillParentReferences() {
-	for _, class := range s.Classes {
+	for _, class := range s.Tables {
 		class.Schema = s
 		for _, attr := range class.Attributes {
-			attr.Class = class
+			attr.Table = class
 		}
 	}
 
@@ -119,8 +119,8 @@ func (s *Schema) Children() []ddldiff.Diffable {
 		children = append(children, s.Functions[i])
 	}
 
-	for i, _ := range s.Classes {
-		children = append(children, s.Classes[i])
+	for i, _ := range s.Tables {
+		children = append(children, s.Tables[i])
 	}
 
 	return children

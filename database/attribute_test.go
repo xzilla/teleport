@@ -7,7 +7,7 @@ import (
 	"testing"
 )
 
-var class *Class
+var class *Table
 
 var defaultContext ddldiff.Context
 
@@ -15,13 +15,13 @@ func init() {
 	schema = &Schema{
 		"123",
 		"test_schema",
-		[]*Class{},
+		[]*Table{},
 		nil,
 		nil,
 		nil,
 	}
 
-	class = &Class{
+	class = &Table{
 		"123",
 		"r",
 		"test_table",

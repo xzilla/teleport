@@ -13,7 +13,7 @@ type Attribute struct {
 	TypeSchema   string `json:"type_schema"`
 	TypeOid      string `json:"type_oid"`
 	IsPrimaryKey bool   `json:"is_primary_key"`
-	Class        *Class
+	Table        *Table
 }
 
 func (a *Attribute) IsNativeType() bool {
@@ -25,11 +25,11 @@ func (post *Attribute) Diff(other ddldiff.Diffable, context ddldiff.Context) []a
 	actions := make([]action.Action, 0)
 
 	// r = Tables
-	if post.Class.RelationKind == "r" {
+	if post.Table.RelationKind == "r" {
 		if other == nil {
 			actions = append(actions, &action.CreateColumn{
 				context.Schema,
-				post.Class.RelationName,
+				post.Table.RelationName,
 				action.Column{
 					post.Name,
 					post.TypeName,
@@ -42,7 +42,7 @@ func (post *Attribute) Diff(other ddldiff.Diffable, context ddldiff.Context) []a
 			if pre.Name != post.Name || pre.TypeOid != post.TypeOid {
 				actions = append(actions, &action.AlterColumn{
 					context.Schema,
-					post.Class.RelationName,
+					post.Table.RelationName,
 					action.Column{
 						pre.Name,
 						pre.TypeName,
@@ -69,7 +69,7 @@ func (a *Attribute) Drop(context ddldiff.Context) []action.Action {
 	return []action.Action{
 		&action.DropColumn{
 			context.Schema,
-			a.Class.RelationName,
+			a.Table.RelationName,
 			action.Column{
 				a.Name,
 				a.TypeName,

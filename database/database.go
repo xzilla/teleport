@@ -82,7 +82,7 @@ func (db *Database) InstallTriggers(targetExpression string) error {
 
 	// Install triggers for each table
 	for _, schema := range db.Schemas {
-		for _, class := range schema.Classes {
+		for _, class := range schema.Tables {
 			// If class is not a table, continue...
 			if class.RelationKind != "r" {
 				continue

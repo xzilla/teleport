@@ -13,7 +13,7 @@ func init() {
 	schema = &Schema{
 		"123",
 		"test_schema",
-		[]*Class{},
+		[]*Table{},
 		nil,
 		nil,
 		nil,
@@ -24,16 +24,16 @@ func init() {
 	}
 }
 
-func TestClassDiff(t *testing.T) {
+func TestTableDiff(t *testing.T) {
 	var tests = []struct {
-		pre    *Class
-		post   *Class
+		pre    *Table
+		post   *Table
 		output []action.Action
 	}{
 		{
 			// Diff a special table (not ordinary)
 			// No output is expected since diff only diffs tables
-			&Class{
+			&Table{
 				"123",
 				"s",
 				"test_special_table",
@@ -41,7 +41,7 @@ func TestClassDiff(t *testing.T) {
 				[]*Index{},
 				schema,
 			},
-			&Class{
+			&Table{
 				"123",
 				"s",
 				"test_special_table_renamed",
@@ -54,7 +54,7 @@ func TestClassDiff(t *testing.T) {
 		{
 			// Diff a table creation
 			nil,
-			&Class{
+			&Table{
 				"123",
 				"r",
 				"test_table",
@@ -86,7 +86,7 @@ func TestClassDiff(t *testing.T) {
 		},
 		{
 			// Diff a table rename
-			&Class{
+			&Table{
 				"123",
 				"r",
 				"test_table",
@@ -104,7 +104,7 @@ func TestClassDiff(t *testing.T) {
 				[]*Index{},
 				schema,
 			},
-			&Class{
+			&Table{
 				"123",
 				"r",
 				"test_table_renamed",
@@ -156,7 +156,7 @@ func TestClassDiff(t *testing.T) {
 	}
 }
 
-func TestClassChildren(t *testing.T) {
+func TestTableChildren(t *testing.T) {
 	attrs := []*Attribute{
 		&Attribute{
 			"test_col",
@@ -169,7 +169,7 @@ func TestClassChildren(t *testing.T) {
 		},
 	}
 
-	class := &Class{
+	class := &Table{
 		"123",
 		"r",
 		"test_table",
@@ -258,8 +258,8 @@ func TestClassChildren(t *testing.T) {
 	}
 }
 
-func TestClassDrop(t *testing.T) {
-	class := &Class{
+func TestTableDrop(t *testing.T) {
+	class := &Table{
 		"123",
 		"s",
 		"test_special_table",
@@ -274,7 +274,7 @@ func TestClassDrop(t *testing.T) {
 		t.Errorf("actions => %d, want %d", len(actions), 0)
 	}
 
-	class = &Class{
+	class = &Table{
 		"123",
 		"r",
 		"test_table_renamed",
@@ -314,8 +314,8 @@ func TestClassDrop(t *testing.T) {
 	}
 }
 
-func TestClassIsEqual(t *testing.T) {
-	pre := &Class{
+func TestTableIsEqual(t *testing.T) {
+	pre := &Table{
 		"123",
 		"r",
 		"test_table",
@@ -334,7 +334,7 @@ func TestClassIsEqual(t *testing.T) {
 		schema,
 	}
 
-	post := &Class{
+	post := &Table{
 		"123",
 		"r",
 		"test_table_renamed",

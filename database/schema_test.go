@@ -37,23 +37,23 @@ func TestParseSchema(t *testing.T) {
 		t.Errorf("schema name => %s, want %s", schemas[0].Name, "public")
 	}
 
-	if len(schemas[0].Classes) != 1 {
-		t.Errorf("schema classes => %d, want %d", len(schemas[0].Classes), 1)
+	if len(schemas[0].Tables) != 1 {
+		t.Errorf("schema classes => %d, want %d", len(schemas[0].Tables), 1)
 	}
 
-	if len(schemas[0].Classes[0].Attributes) != 1 {
-		t.Errorf("schema class attributes => %d, want %d", len(schemas[0].Classes[0].Attributes), 1)
+	if len(schemas[0].Tables[0].Attributes) != 1 {
+		t.Errorf("schema class attributes => %d, want %d", len(schemas[0].Tables[0].Attributes), 1)
 	}
 
 	// Validate parent references
 	for _, schema := range schemas {
-		for _, class := range schema.Classes {
+		for _, class := range schema.Tables {
 			if class.Schema != schema {
 				t.Errorf("class doesn't point to parent schema!")
 			}
 
 			for _, attr := range class.Attributes {
-				if attr.Class != class {
+				if attr.Table != class {
 					t.Errorf("attr doesn't point to parent class!")
 				}
 			}
@@ -70,7 +70,7 @@ func TestDiffCreateSchema(t *testing.T) {
 	post = &Schema{
 		"1234",
 		"test_schema",
-		[]*Class{},
+		[]*Table{},
 		nil,
 		nil,
 		nil,
@@ -101,7 +101,7 @@ func TestDiffRenameSchema(t *testing.T) {
 	pre = &Schema{
 		"1234",
 		"test_schema",
-		[]*Class{},
+		[]*Table{},
 		nil,
 		nil,
 		nil,
@@ -109,7 +109,7 @@ func TestDiffRenameSchema(t *testing.T) {
 	post = &Schema{
 		"1234",
 		"test_schema_renamed",
-		[]*Class{},
+		[]*Table{},
 		nil,
 		nil,
 		nil,
@@ -137,8 +137,8 @@ func TestDiffRenameSchema(t *testing.T) {
 }
 
 func TestSchemaChildren(t *testing.T) {
-	classes := []*Class{
-		&Class{
+	classes := []*Table{
+		&Table{
 			"567",
 			"t",
 			"test_table",
@@ -201,7 +201,7 @@ func TestSchemaDrop(t *testing.T) {
 	schema = &Schema{
 		"1234",
 		"test_schema",
-		[]*Class{},
+		[]*Table{},
 		nil,
 		nil,
 		nil,
@@ -231,7 +231,7 @@ func TestSchemaIsEqual(t *testing.T) {
 	pre = &Schema{
 		"1234",
 		"test_schema",
-		[]*Class{},
+		[]*Table{},
 		nil,
 		nil,
 		nil,
@@ -239,7 +239,7 @@ func TestSchemaIsEqual(t *testing.T) {
 	post = &Schema{
 		"1234",
 		"test_schema_renamed",
-		[]*Class{},
+		[]*Table{},
 		nil,
 		nil,
 		nil,

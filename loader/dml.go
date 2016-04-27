@@ -34,7 +34,7 @@ func (l *Loader) createDMLEvents() (map[*database.Event]*database.Batch, error) 
 	eventBatches := make(map[*database.Event]*database.Batch)
 
 	for _, schema := range l.db.Schemas {
-		for _, class := range schema.Classes {
+		for _, class := range schema.Tables {
 			if !action.IsInTargetExpression(&l.target.TargetExpression, &schema.Name, &class.RelationName) {
 				continue
 			}
@@ -117,12 +117,12 @@ func (l *Loader) resumeDMLEvents(eventBatches map[*database.Event]*database.Batc
 	return nil
 }
 
-func (l *Loader) getDMLEventSchemaClass(event *database.Event) (*database.Schema, *database.Class) {
+func (l *Loader) getDMLEventSchemaTable(event *database.Event) (*database.Schema, *database.Table) {
 	separator := strings.Split(event.TriggerTag, ".")
 	schema := l.db.Schemas[separator[0]]
-	var class *database.Class
+	var class *database.Table
 
-	for _, c := range schema.Classes {
+	for _, c := range schema.Tables {
 		if c.RelationName == separator[1] {
 			class = c
 			break
@@ -158,7 +158,7 @@ func (l *Loader) resumeDMLEvent(event *database.Event, batch *database.Batch) er
 	// 	return err
 	// }
 
-	schema, class := l.getDMLEventSchemaClass(event)
+	schema, class := l.getDMLEventSchemaTable(event)
 	tableCount, err := l.getTableCount(tx, schema, class)
 
 	if err != nil {
@@ -230,7 +230,7 @@ func (l *Loader) resumeDMLEvent(event *database.Event, batch *database.Batch) er
 	return tx.Commit()
 }
 
-func (l *Loader) getTableCount(tx *sqlx.Tx, schema *database.Schema, table *database.Class) (int, error) {
+func (l *Loader) getTableCount(tx *sqlx.Tx, schema *database.Schema, table *database.Table) (int, error) {
 	var count int
 
 	err := tx.Get(&count,
@@ -244,7 +244,7 @@ func (l *Loader) getTableCount(tx *sqlx.Tx, schema *database.Schema, table *data
 	return count, err
 }
 
-func (l *Loader) fetchRows(tx *sqlx.Tx, schema *database.Schema, table *database.Class, limit, offset int) ([]*map[string]interface{}, error) {
+func (l *Loader) fetchRows(tx *sqlx.Tx, schema *database.Schema, table *database.Table, limit, offset int) ([]*map[string]interface{}, error) {
 	result := make([]*map[string]interface{}, 0)
 
 	rows, err := tx.Queryx(

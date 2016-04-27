@@ -11,7 +11,7 @@ func init() {
 	schema = &Schema{
 		"123",
 		"test_schema",
-		[]*Class{},
+		[]*Table{},
 		nil,
 		nil,
 		nil,
@@ -226,7 +226,7 @@ func TestTypeIsEqual(t *testing.T) {
 		schema,
 	}
 
-	preOtherType := &Class{
+	preOtherType := &Table{
 		"123",
 		"r",
 		"test_table",

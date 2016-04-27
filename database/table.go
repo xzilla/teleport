@@ -8,7 +8,7 @@ import (
 )
 
 // Define a database table
-type Class struct {
+type Table struct {
 	Oid          string       `json:"oid"`
 	RelationKind string       `json:"relation_kind"`
 	RelationName string       `json:"relation_name"`
@@ -17,7 +17,7 @@ type Class struct {
 	Schema       *Schema
 }
 
-func (c *Class) InstallTriggers() error {
+func (c *Table) InstallTriggers() error {
 	// Bail out if there's no schema/db
 	if c.Schema == nil || c.Schema.Db == nil {
 		return nil
@@ -59,7 +59,7 @@ func (c *Class) InstallTriggers() error {
 	return tx.Commit()
 }
 
-func (c *Class) GetPrimaryKey() *Attribute {
+func (c *Table) GetPrimaryKey() *Attribute {
 	for _, attr := range c.Attributes {
 		if attr.IsPrimaryKey {
 			return attr
@@ -70,7 +70,7 @@ func (c *Class) GetPrimaryKey() *Attribute {
 }
 
 // Implements Diffable
-func (post *Class) Diff(other ddldiff.Diffable, context ddldiff.Context) []action.Action {
+func (post *Table) Diff(other ddldiff.Diffable, context ddldiff.Context) []action.Action {
 	actions := make([]action.Action, 0)
 
 	// r = Tables
@@ -96,7 +96,7 @@ func (post *Class) Diff(other ddldiff.Diffable, context ddldiff.Context) []actio
 				},
 			})
 		} else {
-			pre := other.(*Class)
+			pre := other.(*Table)
 
 			if pre.RelationName != post.RelationName {
 				actions = append(actions, &action.AlterTable{
@@ -111,7 +111,7 @@ func (post *Class) Diff(other ddldiff.Diffable, context ddldiff.Context) []actio
 	return actions
 }
 
-func (c *Class) Children() []ddldiff.Diffable {
+func (c *Table) Children() []ddldiff.Diffable {
 	children := make([]ddldiff.Diffable, 0)
 	primaryKey := c.GetPrimaryKey()
 
@@ -128,7 +128,7 @@ func (c *Class) Children() []ddldiff.Diffable {
 	return children
 }
 
-func (c *Class) Drop(context ddldiff.Context) []action.Action {
+func (c *Table) Drop(context ddldiff.Context) []action.Action {
 	if c.RelationKind == "r" {
 		return []action.Action{
 			&action.DropTable{
@@ -141,13 +141,13 @@ func (c *Class) Drop(context ddldiff.Context) []action.Action {
 	}
 }
 
-func (c *Class) IsEqual(other ddldiff.Diffable) bool {
+func (c *Table) IsEqual(other ddldiff.Diffable) bool {
 	if other == nil {
 		return false
 	}
 
-	if otherClass, ok := other.(*Class); ok {
-		return (c.Oid == otherClass.Oid)
+	if otherTable, ok := other.(*Table); ok {
+		return (c.Oid == otherTable.Oid)
 	}
 
 	return false

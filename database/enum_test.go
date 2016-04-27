@@ -13,7 +13,7 @@ func init() {
 	schema = &Schema{
 		"123",
 		"test_schema",
-		[]*Class{},
+		[]*Table{},
 		nil,
 		nil,
 		nil,

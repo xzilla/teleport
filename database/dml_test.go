@@ -32,8 +32,8 @@ func setupDml() {
 		},
 	}
 
-	classes := []*Class{
-		&Class{
+	classes := []*Table{
+		&Table{
 			"123",
 			"r",
 			"test_table",
