@@ -9,11 +9,11 @@ import (
 
 // Define a database table
 type Table struct {
-	Oid          string       `json:"oid"`
-	RelationKind string       `json:"relation_kind"`
-	RelationName string       `json:"relation_name"`
-	Columns   []*Column `json:"columns"`
-	Indexes      []*Index     `json:"indexes"`
+	Oid          string    `json:"oid"`
+	RelationKind string    `json:"relation_kind"`
+	RelationName string    `json:"relation_name"`
+	Columns      []*Column `json:"columns"`
+	Indexes      []*Index  `json:"indexes"`
 	Schema       *Schema
 }
 
@@ -49,7 +49,7 @@ func (c *Table) InstallTriggers() error {
 	tx := c.Schema.Db.NewTransaction()
 
 	for _, currentAction := range actions {
-		err := currentAction.Execute(action.NewContext(tx, c.Schema.Db.Db,))
+		err := currentAction.Execute(action.NewContext(tx, c.Schema.Db.Db))
 
 		if err != nil {
 			log.Printf("Error creating triggers on %s: %v", c.RelationName, err)

@@ -1,9 +1,9 @@
 package ddldiff
 
 import (
+	"fmt"
 	"github.com/pagarme/teleport/action"
 	"testing"
-	"fmt"
 )
 
 // Foo implements Diffable

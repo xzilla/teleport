@@ -10,7 +10,7 @@ import (
 type Schema struct {
 	Oid       string      `json:"oid"`
 	Name      string      `json:"schema_name"`
-	Tables   []*Table    `json:"classes"`
+	Tables    []*Table    `json:"classes"`
 	Types     []*Type     `json:"types"`
 	Functions []*Function `json:"functions"`
 	Db        *Database

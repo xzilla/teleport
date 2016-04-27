@@ -5,8 +5,8 @@ import (
 )
 
 type Column struct {
-	Name string
-	Type string
+	Name         string
+	Type         string
 	IsNativeType bool
 }
 

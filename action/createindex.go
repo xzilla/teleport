@@ -7,8 +7,8 @@ import (
 
 type CreateIndex struct {
 	SchemaName string
-	IndexName string
-	IndexDef string
+	IndexName  string
+	IndexDef   string
 }
 
 // Register type for gob

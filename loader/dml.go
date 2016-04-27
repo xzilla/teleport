@@ -2,12 +2,12 @@ package loader
 
 import (
 	"fmt"
-	"log"
 	"github.com/jmoiron/sqlx"
 	"github.com/pagarme/teleport/action"
 	"github.com/pagarme/teleport/database"
-	"strings"
+	"log"
 	"sort"
+	"strings"
 )
 
 func (l *Loader) getDMLBatchEvents(events []*database.Event) (map[*database.Event]*database.Batch, error) {

@@ -2,8 +2,8 @@ package database
 
 import (
 	"fmt"
-	"github.com/pagarme/teleport/config"
 	"github.com/pagarme/teleport/action"
+	"github.com/pagarme/teleport/config"
 	"io/ioutil"
 	"os"
 	"reflect"

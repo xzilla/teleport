@@ -6,8 +6,8 @@ import (
 	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq"
 	"github.com/pagarme/teleport/action"
-	"log"
 	"github.com/pagarme/teleport/asset"
+	"log"
 )
 
 // Database definition
@@ -90,7 +90,7 @@ func (db *Database) InstallTriggers(targetExpression string) error {
 
 			if action.IsInTargetExpression(&targetExpression, &schema.Name, &class.RelationName) {
 				class.InstallTriggers()
-                //
+				//
 				// if err != nil {
 				// 	return err
 				// }

@@ -8,8 +8,8 @@ import (
 	// "mime/multipart"
 	"net/http"
 	// "io"
-	"os"
 	"io/ioutil"
+	"os"
 )
 
 type Client struct {

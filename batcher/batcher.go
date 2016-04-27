@@ -1,12 +1,12 @@
 package batcher
 
 import (
+	"fmt"
+	"github.com/jmoiron/sqlx"
 	"github.com/pagarme/teleport/action"
 	"github.com/pagarme/teleport/client"
 	"github.com/pagarme/teleport/database"
-	"github.com/jmoiron/sqlx"
 	"log"
-	"fmt"
 	"sort"
 	"time"
 )
@@ -45,7 +45,7 @@ func (b *Batcher) createBatches() error {
 		return err
 	}
 
-	err =  b.db.RefreshSchema()
+	err = b.db.RefreshSchema()
 
 	if err != nil {
 		return err

@@ -1,14 +1,14 @@
 package action
 
 import (
-	"github.com/jmoiron/sqlx"
 	"crypto/md5"
+	"github.com/jmoiron/sqlx"
 )
 
 // Defines the execution context of actions
 type Context struct {
-	Tx *sqlx.Tx
-	Db *sqlx.DB
+	Tx        *sqlx.Tx
+	Db        *sqlx.DB
 	stmtCache map[string]*sqlx.Stmt
 }
 

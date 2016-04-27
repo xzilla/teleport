@@ -2,14 +2,14 @@ package action
 
 import (
 	"encoding/gob"
-	"regexp"
 	"fmt"
+	"regexp"
 )
 
 type CreateFunction struct {
-	SchemaName string
+	SchemaName   string
 	FunctionName string
-	FunctionDef string
+	FunctionDef  string
 }
 
 var schemaDefParser *regexp.Regexp

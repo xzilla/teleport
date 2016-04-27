@@ -3,12 +3,12 @@ package database
 import (
 	"bufio"
 	"bytes"
+	"encoding/base64"
+	"encoding/gob"
 	"fmt"
 	"github.com/jmoiron/sqlx"
 	"github.com/pagarme/teleport/action"
 	"io/ioutil"
-	"encoding/base64"
-	"encoding/gob"
 	"math/rand"
 	"os"
 	"strings"
@@ -16,15 +16,15 @@ import (
 )
 
 type Batch struct {
-	Id          string  `db:"id" json:"id"`
-	Status      string  `db:"status" json:"status"`
-	DataStatus  string  `db:"data_status" json:"data_status"`
-	Source      string  `db:"source" json:"source"`
-	Target      string  `db:"target" json:"target"`
-	Data        *string `db:"data" json:"data"`
-	StorageType string  `db:"storage_type" json:"storage_type"`
-	WaitingReexecution bool  `db:"waiting_reexecution" json:"waiting_reexecution"`
-	LastExecutedStatement int  `db:"last_executed_statement" json:"last_executed_statement"`
+	Id                    string  `db:"id" json:"id"`
+	Status                string  `db:"status" json:"status"`
+	DataStatus            string  `db:"data_status" json:"data_status"`
+	Source                string  `db:"source" json:"source"`
+	Target                string  `db:"target" json:"target"`
+	Data                  *string `db:"data" json:"data"`
+	StorageType           string  `db:"storage_type" json:"storage_type"`
+	WaitingReexecution    bool    `db:"waiting_reexecution" json:"waiting_reexecution"`
+	LastExecutedStatement int     `db:"last_executed_statement" json:"last_executed_statement"`
 }
 
 func NewBatch(storageType string) *Batch {
@@ -45,7 +45,7 @@ func NewBatch(storageType string) *Batch {
 func (db *Database) GetBatches(status, dataStatus string) ([]*Batch, error) {
 	var batches []*Batch
 	var err error
-	
+
 	if dataStatus == "" {
 		err = db.selectObjs(&batches, "SELECT * FROM teleport.batch WHERE status = $1 ORDER BY waiting_reexecution, id ASC;", status)
 	} else {
@@ -269,7 +269,7 @@ func (b *Batch) ActionFromData(data string) (action.Action, error) {
 	decoder := gob.NewDecoder(&buf)
 	var action action.Action
 	err = decoder.Decode(&action)
-	
+
 	return action, nil
 }
 
@@ -361,8 +361,8 @@ func (b *Batch) ReadAction(reader *bufio.Reader) (action.Action, error) {
 	}
 
 	if err != nil {
-        return nil, err
-    }
+		return nil, err
+	}
 
 	act, err := b.ActionFromData(line)
 

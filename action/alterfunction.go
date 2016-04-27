@@ -7,7 +7,7 @@ import (
 
 type AlterFunction struct {
 	SchemaName string
-	Arguments  string 
+	Arguments  string
 	SourceName string
 	TargetName string
 }

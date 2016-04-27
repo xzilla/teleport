@@ -9,10 +9,10 @@ import (
 )
 
 type Dml struct {
-	Pre   *map[string]interface{} `json:"pre"`
-	Post  *map[string]interface{} `json:"post"`
-	Event *Event
-	Db    *Database
+	Pre          *map[string]interface{} `json:"pre"`
+	Post         *map[string]interface{} `json:"post"`
+	Event        *Event
+	Db           *Database
 	TargetSchema string
 }
 

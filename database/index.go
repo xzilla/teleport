@@ -7,10 +7,10 @@ import (
 
 // Define a class column
 type Index struct {
-	Oid          string `json:"index_oid"`
-	Name         string `json:"index_name"`
-	Def          string `json:"index_def"`
-	Table        *Table
+	Oid   string `json:"index_oid"`
+	Name  string `json:"index_name"`
+	Def   string `json:"index_def"`
+	Table *Table
 }
 
 // Implements Diffable

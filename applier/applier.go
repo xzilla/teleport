@@ -3,19 +3,19 @@ package applier
 import (
 	"github.com/pagarme/teleport/action"
 	"github.com/pagarme/teleport/database"
+	"io"
 	"log"
 	"time"
-	"io"
 )
 
 type Applier struct {
-	db *database.Database
+	db        *database.Database
 	batchSize int
 }
 
 func New(db *database.Database, batchSize int) *Applier {
 	return &Applier{
-		db: db,
+		db:        db,
 		batchSize: batchSize,
 	}
 }
@@ -129,7 +129,7 @@ func (a *Applier) applyBatch(batch *database.Batch) (bool, error) {
 		previousStatement := batch.LastExecutedStatement
 
 		currentContext := action.NewContext(tx, a.db.Db)
-		act, err = batch.ReadAction(reader);
+		act, err = batch.ReadAction(reader)
 
 		for err == nil {
 			// Increment current statement
@@ -172,7 +172,7 @@ func (a *Applier) applyBatch(batch *database.Batch) (bool, error) {
 			}
 
 			// Read next action
-			act, err = batch.ReadAction(reader);
+			act, err = batch.ReadAction(reader)
 		}
 
 		if err != io.EOF {

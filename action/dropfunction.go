@@ -6,9 +6,9 @@ import (
 )
 
 type DropFunction struct {
-	SchemaName string
+	SchemaName   string
 	FunctionName string
-	Arguments string
+	Arguments    string
 }
 
 // Register type for gob

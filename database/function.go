@@ -6,10 +6,10 @@ import (
 )
 
 type Function struct {
-	Oid       string  `json:"oid"`
-	Name      string  `json:"function_name"`
-	Def       string  `json:"function_def"`
-	Arguments string  `json:"function_arguments"`
+	Oid       string `json:"oid"`
+	Name      string `json:"function_name"`
+	Def       string `json:"function_def"`
+	Arguments string `json:"function_arguments"`
 	Schema    *Schema
 }
 

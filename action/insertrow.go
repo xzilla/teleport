@@ -9,10 +9,10 @@ import (
 )
 
 type InsertRow struct {
-	SchemaName string
-	TableName  string
+	SchemaName     string
+	TableName      string
 	PrimaryKeyName string
-	Rows       []Row
+	Rows           []Row
 }
 
 // Register type for gob
