@@ -37,7 +37,7 @@ func TestTableDiff(t *testing.T) {
 				"123",
 				"s",
 				"test_special_table",
-				[]*Attribute{},
+				[]*Column{},
 				[]*Index{},
 				schema,
 			},
@@ -45,7 +45,7 @@ func TestTableDiff(t *testing.T) {
 				"123",
 				"s",
 				"test_special_table_renamed",
-				[]*Attribute{},
+				[]*Column{},
 				[]*Index{},
 				schema,
 			},
@@ -58,8 +58,8 @@ func TestTableDiff(t *testing.T) {
 				"123",
 				"r",
 				"test_table",
-				[]*Attribute{
-					&Attribute{
+				[]*Column{
+					&Column{
 						"test_col",
 						1,
 						"int4",
@@ -90,8 +90,8 @@ func TestTableDiff(t *testing.T) {
 				"123",
 				"r",
 				"test_table",
-				[]*Attribute{
-					&Attribute{
+				[]*Column{
+					&Column{
 						"test_col",
 						1,
 						"int4",
@@ -108,8 +108,8 @@ func TestTableDiff(t *testing.T) {
 				"123",
 				"r",
 				"test_table_renamed",
-				[]*Attribute{
-					&Attribute{
+				[]*Column{
+					&Column{
 						"test_col",
 						1,
 						"int4",
@@ -157,8 +157,8 @@ func TestTableDiff(t *testing.T) {
 }
 
 func TestTableChildren(t *testing.T) {
-	attrs := []*Attribute{
-		&Attribute{
+	attrs := []*Column{
+		&Column{
 			"test_col",
 			1,
 			"int4",
@@ -185,8 +185,8 @@ func TestTableChildren(t *testing.T) {
 		t.Errorf("children => %d, want %d", len(children), 0)
 	}
 
-	attrs = []*Attribute{
-		&Attribute{
+	attrs = []*Column{
+		&Column{
 			"test_col",
 			1,
 			"int4",
@@ -195,7 +195,7 @@ func TestTableChildren(t *testing.T) {
 			true,
 			nil,
 		},
-		&Attribute{
+		&Column{
 			"other_col",
 			1,
 			"text",
@@ -219,8 +219,8 @@ func TestTableChildren(t *testing.T) {
 		t.Errorf("child => %v, want %v", children[0], attrs[1])
 	}
 
-	attrs = []*Attribute{
-		&Attribute{
+	attrs = []*Column{
+		&Column{
 			"other_col",
 			1,
 			"text",
@@ -263,7 +263,7 @@ func TestTableDrop(t *testing.T) {
 		"123",
 		"s",
 		"test_special_table",
-		[]*Attribute{},
+		[]*Column{},
 		[]*Index{},
 		schema,
 	}
@@ -278,8 +278,8 @@ func TestTableDrop(t *testing.T) {
 		"123",
 		"r",
 		"test_table_renamed",
-		[]*Attribute{
-			&Attribute{
+		[]*Column{
+			&Column{
 				"test_col",
 				1,
 				"int4",
@@ -319,8 +319,8 @@ func TestTableIsEqual(t *testing.T) {
 		"123",
 		"r",
 		"test_table",
-		[]*Attribute{
-			&Attribute{
+		[]*Column{
+			&Column{
 				"test_col",
 				1,
 				"int4",
@@ -338,8 +338,8 @@ func TestTableIsEqual(t *testing.T) {
 		"123",
 		"r",
 		"test_table_renamed",
-		[]*Attribute{
-			&Attribute{
+		[]*Column{
+			&Column{
 				"test_col",
 				1,
 				"int4",

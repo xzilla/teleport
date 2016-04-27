@@ -21,7 +21,7 @@ func init() {
 		"123",
 		"r",
 		"test_table",
-		[]*Attribute{},
+		[]*Column{},
 		[]*Index{},
 		schema,
 	}
@@ -172,7 +172,7 @@ func TestIndexIsEqual(t *testing.T) {
 		t.Errorf("expect classes not to be equal")
 	}
 
-	preOtherType := &Attribute{
+	preOtherType := &Column{
 		"test_col",
 		1,
 		"text",

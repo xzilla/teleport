@@ -230,8 +230,8 @@ func TestTypeIsEqual(t *testing.T) {
 		"123",
 		"r",
 		"test_table",
-		[]*Attribute{
-			&Attribute{
+		[]*Column{
+			&Column{
 				"test_col",
 				1,
 				"int4",

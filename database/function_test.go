@@ -175,7 +175,7 @@ func TestFunctionIsEqual(t *testing.T) {
 		t.Errorf("expect classes not to be equal")
 	}
 
-	preOtherType := &Attribute{
+	preOtherType := &Column{
 		"test_col",
 		1,
 		"text",
