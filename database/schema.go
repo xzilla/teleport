@@ -53,11 +53,12 @@ func (s *Schema) fillParentReferences() {
 func (db *Database) RefreshSchema() error {
 	// Get schema from query
 	rows, err := db.runQuery("SELECT get_schema();")
-	defer rows.Close()
 
 	if err != nil {
 		return err
 	}
+
+	defer rows.Close()
 
 	// Read schema content from sql.Row
 	var schemaContent []byte
