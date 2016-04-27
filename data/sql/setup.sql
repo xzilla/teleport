@@ -209,7 +209,23 @@ BEGIN
 						WHERE typtype = 'e'
 					) pgtype
 					WHERE pgtype.namespace_oid = namespace.oid
-				) AS types
+				) AS types,
+				(
+					-- The catalog pg_proc stores information about functions (or procedures).
+					SELECT array_to_json(array_agg(row_to_json(proc)))
+					FROM (
+						SELECT
+							proc.oid AS oid,
+							proc.pronamespace AS namespace_oid,
+							proc.proname AS function_name,
+							pg_get_function_arguments(proc.oid) AS function_arguments,
+							pg_get_functiondef(proc.oid) AS function_def
+						FROM pg_proc proc
+						WHERE proc.proisagg = false
+						AND proc.proname NOT LIKE 'teleport%'
+					) proc
+					WHERE proc.namespace_oid = namespace.oid
+				) AS functions
 			FROM pg_namespace namespace
 			WHERE
 				namespace.nspname NOT IN ('pg_catalog', 'information_schema', 'pg_toast', 'teleport')

@@ -17,62 +17,57 @@ func init() {
 		nil,
 	}
 
-	class = &Class{
-		"123",
-		"r",
-		"test_table",
-		[]*Attribute{},
-		[]*Index{},
-		schema,
-	}
-
 	defaultContext = ddldiff.Context{
 		Schema: "default_context",
 	}
 }
 
-func TestIndexDiff(t *testing.T) {
+func TestFunctionDiff(t *testing.T) {
 	var tests = []struct {
-		pre    *Index
-		post   *Index
+		pre    *Function
+		post   *Function
 		output []action.Action
 	}{
 		{
 			// Diff a index creation
 			nil,
-			&Index{
+			&Function{
 				"123",
-				"test_index",
-				"create index",
-				class,
+				"test_fn",
+				"create function test_fn()",
+				"",
+				schema,
 			},
 			[]action.Action{
-				&action.CreateIndex{
+				&action.CreateFunction{
 					"default_context",
-					"test_index",
-					"create index",
+					"test_fn",
+					"create function test_fn()",
 				},
 			},
 		},
 		{
 			// Diff a index rename
-			&Index{
+			&Function{
 				"123",
-				"test_index",
-				"create index",
-				class,
+				"test_fn",
+				"create function test_fn()",
+				"args1",
+				schema,
 			},
-			&Index{
+			&Function{
 				"123",
-				"test_index_2",
-				"create index",
-				class,
+				"test_fn_2",
+				"create function test_fn_2()",
+				"args2",
+				schema,
 			},
 			[]action.Action{
-				&action.AlterIndex{
+				&action.AlterFunction{
 					"default_context",
-					"test_index",
-					"test_index_2",
+					"args1",
+					"test_fn",
+					"test_fn_2",
 				},
 			},
 		},
@@ -102,63 +97,71 @@ func TestIndexDiff(t *testing.T) {
 	}
 }
 
-func TestIndexChildren(t *testing.T) {
-	index := &Index{
+func TestFunctionChildren(t *testing.T) {
+	function := &Function{
 		"123",
-		"test_index_2",
-		"create index",
-		class,
+		"test_fn_2",
+		"create function test_fn_2()",
+		"args2",
+		schema,
 	}
 
-	children := index.Children()
+	children := function.Children()
 
 	if len(children) != 0 {
-		t.Errorf("index children => %d, want %d", len(children), 0)
+		t.Errorf("function children => %d, want %d", len(children), 0)
 	}
 }
 
-func TestIndexDrop(t *testing.T) {
-	index := &Index{
+func TestFunctionDrop(t *testing.T) {
+	function := &Function{
 		"123",
-		"test_index_2",
-		"create index",
-		class,
+		"test_fn_2",
+		"create function test_fn_2()",
+		"args2",
+		schema,
 	}
 
-	actions := index.Drop(defaultContext)
+	actions := function.Drop(defaultContext)
 
 	if len(actions) != 1 {
 		t.Errorf("actions => %d, want %d", len(actions), 1)
 	}
 
-	dropAction, ok := actions[0].(*action.DropIndex)
+	dropAction, ok := actions[0].(*action.DropFunction)
 
 	if !ok {
-		t.Errorf("action is not DropIndex")
+		t.Errorf("action is not DropFunction")
 	}
 
 	if dropAction.SchemaName != defaultContext.Schema {
 		t.Errorf("drop action schema name => %s, want %s", dropAction.SchemaName, defaultContext.Schema)
 	}
 
-	if dropAction.IndexName != index.Name {
-		t.Errorf("drop action table name => %s, want %s", dropAction.IndexName, index.Name)
+	if dropAction.FunctionName != function.Name {
+		t.Errorf("drop action function name => %s, want %s", dropAction.FunctionName, function.Name)
+	}
+
+	if dropAction.Arguments != function.Arguments {
+		t.Errorf("drop action arguments => %s, want %s", dropAction.Arguments, function.Arguments)
 	}
 }
 
-func TestIndexIsEqual(t *testing.T) {
-	pre := &Index{
+func TestFunctionIsEqual(t *testing.T) {
+	pre := &Function{
 		"123",
-		"test_index_2",
-		"create index",
-		class,
+		"test_fn",
+		"create function test_fn_2()",
+		"args2",
+		schema,
 	}
 
-	post := &Index{
+	post := &Function{
 		"123",
-		"test_index",
-		"create index",
-		class,
+		"test_fn_2",
+		"create function test_fn_2()",
+		"args2",
+		schema,
 	}
 
 	if !post.IsEqual(pre) {

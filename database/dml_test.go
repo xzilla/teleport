@@ -49,6 +49,7 @@ func setupDml() {
 			"public",
 			classes,
 			nil,
+			nil,
 			db,
 		},
 	}

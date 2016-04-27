@@ -8,11 +8,12 @@ import (
 
 // Define a database schema
 type Schema struct {
-	Oid     string   `json:"oid"`
-	Name    string   `json:"schema_name"`
-	Classes []*Class `json:"classes"`
-	Types   []*Type  `json:"types"`
-	Db      *Database
+	Oid       string      `json:"oid"`
+	Name      string      `json:"schema_name"`
+	Classes   []*Class    `json:"classes"`
+	Types     []*Type     `json:"types"`
+	Functions []*Function `json:"functions"`
+	Db        *Database
 }
 
 type Schemas []*Schema
@@ -112,6 +113,10 @@ func (s *Schema) Children() []ddldiff.Diffable {
 
 	for i, _ := range s.Types {
 		children = append(children, s.Types[i])
+	}
+
+	for i, _ := range s.Functions {
+		children = append(children, s.Functions[i])
 	}
 
 	for i, _ := range s.Classes {

@@ -16,6 +16,7 @@ func init() {
 		[]*Class{},
 		nil,
 		nil,
+		nil,
 	}
 
 	defaultContext = ddldiff.Context{

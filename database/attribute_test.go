@@ -18,6 +18,7 @@ func init() {
 		[]*Class{},
 		nil,
 		nil,
+		nil,
 	}
 
 	class = &Class{
