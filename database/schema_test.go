@@ -15,7 +15,7 @@ func init() {
 func TestParseSchema(t *testing.T) {
 	schemaStr := `[
 		{"oid":"2200","schema_name":"public","owner_id":"10","classes":
-			[{"oid":"16443","namespace_oid":"2200","relation_kind":"r","relation_name":"test_table","attributes":
+			[{"oid":"16443","namespace_oid":"2200","relation_kind":"r","relation_name":"test_table","columns":
 				[{"class_oid":"16443","attr_name":"id","attr_num":1,"type_name":"int4","type_oid":"23"}]
 			}]
 		},
@@ -41,8 +41,8 @@ func TestParseSchema(t *testing.T) {
 		t.Errorf("schema classes => %d, want %d", len(schemas[0].Tables), 1)
 	}
 
-	if len(schemas[0].Tables[0].Attributes) != 1 {
-		t.Errorf("schema class attributes => %d, want %d", len(schemas[0].Tables[0].Attributes), 1)
+	if len(schemas[0].Tables[0].Columns) != 1 {
+		t.Errorf("schema class columns => %d, want %d", len(schemas[0].Tables[0].Columns), 1)
 	}
 
 	// Validate parent references
@@ -52,7 +52,7 @@ func TestParseSchema(t *testing.T) {
 				t.Errorf("class doesn't point to parent schema!")
 			}
 
-			for _, attr := range class.Attributes {
+			for _, attr := range class.Columns {
 				if attr.Table != class {
 					t.Errorf("attr doesn't point to parent class!")
 				}

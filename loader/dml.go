@@ -132,18 +132,18 @@ func (l *Loader) getDMLEventSchemaTable(event *database.Event) (*database.Schema
 	return schema, class
 }
 
-func (l *Loader) generateColumnsForAttributes(attributes []*database.Attribute) map[string]action.Column {
-	attributeCol := make(map[string]action.Column)
+func (l *Loader) generateActionColumnsFromColumns(columns []*database.Column) map[string]action.Column {
+	columnCol := make(map[string]action.Column)
 
-	for _, attr := range attributes {
-		attributeCol[attr.Name] = action.Column{
+	for _, attr := range columns {
+		columnCol[attr.Name] = action.Column{
 			attr.Name,
 			attr.TypeName,
 			attr.IsNativeType(),
 		}
 	}
 
-	return attributeCol
+	return columnCol
 }
 
 func (l *Loader) resumeDMLEvent(event *database.Event, batch *database.Batch) error {
@@ -165,7 +165,7 @@ func (l *Loader) resumeDMLEvent(event *database.Event, batch *database.Batch) er
 		return err
 	}
 
-	colsForAttributes := l.generateColumnsForAttributes(class.Attributes)
+	colsForColumns := l.generateActionColumnsFromColumns(class.Columns)
 
 	event.Status = "batched"
 	err = event.UpdateQuery(tx)
@@ -204,7 +204,7 @@ func (l *Loader) resumeDMLEvent(event *database.Event, batch *database.Batch) er
 			for key, value := range *row {
 				actionRows = append(actionRows, action.Row{
 					value,
-					colsForAttributes[key],
+					colsForColumns[key],
 				})
 			}
 

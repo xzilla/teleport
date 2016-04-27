@@ -5,8 +5,8 @@ import (
 	"github.com/pagarme/teleport/batcher/ddldiff"
 )
 
-// Define a class attribute
-type Attribute struct {
+// Define a class column
+type Column struct {
 	Name         string `json:"attr_name"`
 	Num          int    `json:"attr_num"`
 	TypeName     string `json:"type_name"`
@@ -16,12 +16,12 @@ type Attribute struct {
 	Table        *Table
 }
 
-func (a *Attribute) IsNativeType() bool {
+func (a *Column) IsNativeType() bool {
 	return a.TypeSchema == "pg_catalog"
 }
 
 // Implements Diffable
-func (post *Attribute) Diff(other ddldiff.Diffable, context ddldiff.Context) []action.Action {
+func (post *Column) Diff(other ddldiff.Diffable, context ddldiff.Context) []action.Action {
 	actions := make([]action.Action, 0)
 
 	// r = Tables
@@ -37,7 +37,7 @@ func (post *Attribute) Diff(other ddldiff.Diffable, context ddldiff.Context) []a
 				},
 			})
 		} else {
-			pre := other.(*Attribute)
+			pre := other.(*Column)
 
 			if pre.Name != post.Name || pre.TypeOid != post.TypeOid {
 				actions = append(actions, &action.AlterColumn{
@@ -61,11 +61,11 @@ func (post *Attribute) Diff(other ddldiff.Diffable, context ddldiff.Context) []a
 	return actions
 }
 
-func (a *Attribute) Children() []ddldiff.Diffable {
+func (a *Column) Children() []ddldiff.Diffable {
 	return []ddldiff.Diffable{}
 }
 
-func (a *Attribute) Drop(context ddldiff.Context) []action.Action {
+func (a *Column) Drop(context ddldiff.Context) []action.Action {
 	return []action.Action{
 		&action.DropColumn{
 			context.Schema,
@@ -79,12 +79,12 @@ func (a *Attribute) Drop(context ddldiff.Context) []action.Action {
 	}
 }
 
-func (a *Attribute) IsEqual(other ddldiff.Diffable) bool {
+func (a *Column) IsEqual(other ddldiff.Diffable) bool {
 	if other == nil {
 		return false
 	}
 
-	if otherAttr, ok := other.(*Attribute); ok {
+	if otherAttr, ok := other.(*Column); ok {
 		return (a.Num == otherAttr.Num)
 	}
 

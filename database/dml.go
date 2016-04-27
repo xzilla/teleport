@@ -77,11 +77,11 @@ func (d *Dml) generateRows(obj *map[string]interface{}) []action.Row {
 		value := (*obj)[key]
 		class := d.GetTable()
 
-		var attribute *Attribute
+		var column *Column
 
-		for _, att := range class.Attributes {
+		for _, att := range class.Columns {
 			if att.Name == key {
-				attribute = att
+				column = att
 				break
 			}
 		}
@@ -89,9 +89,9 @@ func (d *Dml) generateRows(obj *map[string]interface{}) []action.Row {
 		rows = append(rows, action.Row{
 			value,
 			action.Column{
-				attribute.Name,
-				attribute.TypeName,
-				attribute.IsNativeType(),
+				column.Name,
+				column.TypeName,
+				column.IsNativeType(),
 			},
 		})
 	}

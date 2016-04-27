@@ -37,7 +37,7 @@ func ParseSchema(schemaContent string) (Schemas, error) {
 func (s *Schema) fillParentReferences() {
 	for _, class := range s.Tables {
 		class.Schema = s
-		for _, attr := range class.Attributes {
+		for _, attr := range class.Columns {
 			attr.Table = class
 		}
 	}

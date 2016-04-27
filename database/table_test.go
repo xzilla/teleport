@@ -206,7 +206,7 @@ func TestTableChildren(t *testing.T) {
 		},
 	}
 
-	class.Attributes = attrs
+	class.Columns = attrs
 
 	children = class.Children()
 
@@ -240,7 +240,7 @@ func TestTableChildren(t *testing.T) {
 		},
 	}
 
-	class.Attributes = attrs
+	class.Columns = attrs
 	class.Indexes = indexes
 
 	children = class.Children()

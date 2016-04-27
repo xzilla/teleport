@@ -12,7 +12,7 @@ type Table struct {
 	Oid          string       `json:"oid"`
 	RelationKind string       `json:"relation_kind"`
 	RelationName string       `json:"relation_name"`
-	Attributes   []*Attribute `json:"attributes"`
+	Columns   []*Column `json:"columns"`
 	Indexes      []*Index     `json:"indexes"`
 	Schema       *Schema
 }
@@ -59,8 +59,8 @@ func (c *Table) InstallTriggers() error {
 	return tx.Commit()
 }
 
-func (c *Table) GetPrimaryKey() *Attribute {
-	for _, attr := range c.Attributes {
+func (c *Table) GetPrimaryKey() *Column {
+	for _, attr := range c.Columns {
 		if attr.IsPrimaryKey {
 			return attr
 		}
@@ -115,7 +115,7 @@ func (c *Table) Children() []ddldiff.Diffable {
 	children := make([]ddldiff.Diffable, 0)
 	primaryKey := c.GetPrimaryKey()
 
-	for _, attr := range c.Attributes {
+	for _, attr := range c.Columns {
 		if primaryKey == nil || attr.Name != primaryKey.Name {
 			children = append(children, attr)
 		}

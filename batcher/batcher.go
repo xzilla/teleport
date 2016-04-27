@@ -184,7 +184,7 @@ func (b *Batcher) actionsForTargets(events database.Events, targets map[string]*
 	actionsForTarget := make(map[string][]action.Action)
 
 	for targetName, target := range targets {
-		schema, attributeExpression := database.ParseTargetExpression(target.TargetExpression)
+		schema, columnExpression := database.ParseTargetExpression(target.TargetExpression)
 		actions := make([]action.Action, 0)
 
 		// Filter actions for the current target
@@ -192,7 +192,7 @@ func (b *Batcher) actionsForTargets(events database.Events, targets map[string]*
 			filtered := make([]action.Action, 0)
 
 			for _, act := range actions {
-				if act.Filter(fmt.Sprintf("%s.%s", target.ApplySchema, attributeExpression)) {
+				if act.Filter(fmt.Sprintf("%s.%s", target.ApplySchema, columnExpression)) {
 					filtered = append(filtered, act)
 				}
 			}

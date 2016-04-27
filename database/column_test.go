@@ -25,7 +25,7 @@ func init() {
 		"123",
 		"r",
 		"test_table",
-		[]*Attribute{},
+		[]*Column{},
 		[]*Index{},
 		schema,
 	}
@@ -35,16 +35,16 @@ func init() {
 	}
 }
 
-func TestAttributeDiff(t *testing.T) {
+func TestColumnDiff(t *testing.T) {
 	var tests = []struct {
-		pre    *Attribute
-		post   *Attribute
+		pre    *Column
+		post   *Column
 		output []action.Action
 	}{
 		{
-			// Diff a attribute creation
+			// Diff a column creation
 			nil,
-			&Attribute{
+			&Column{
 				"test_col",
 				1,
 				"text",
@@ -66,8 +66,8 @@ func TestAttributeDiff(t *testing.T) {
 			},
 		},
 		{
-			// Diff a attribute update
-			&Attribute{
+			// Diff a column update
+			&Column{
 				"test_col",
 				1,
 				"text",
@@ -76,7 +76,7 @@ func TestAttributeDiff(t *testing.T) {
 				false,
 				class,
 			},
-			&Attribute{
+			&Column{
 				"test_col_2",
 				1,
 				"int4",
@@ -128,8 +128,8 @@ func TestAttributeDiff(t *testing.T) {
 	}
 }
 
-func TestAttributeChildren(t *testing.T) {
-	attr := &Attribute{
+func TestColumnChildren(t *testing.T) {
+	attr := &Column{
 		"test_col",
 		1,
 		"text",
@@ -146,8 +146,8 @@ func TestAttributeChildren(t *testing.T) {
 	}
 }
 
-func TestAttributeDrop(t *testing.T) {
-	attr := &Attribute{
+func TestColumnDrop(t *testing.T) {
+	attr := &Column{
 		"test_col",
 		1,
 		"text",
@@ -186,8 +186,8 @@ func TestAttributeDrop(t *testing.T) {
 	}
 }
 
-func TestAttributeIsEqual(t *testing.T) {
-	pre := &Attribute{
+func TestColumnIsEqual(t *testing.T) {
+	pre := &Column{
 		"test_col",
 		1,
 		"text",
@@ -197,7 +197,7 @@ func TestAttributeIsEqual(t *testing.T) {
 		class,
 	}
 
-	post := &Attribute{
+	post := &Column{
 		"test_col_2",
 		1,
 		"int4",

@@ -5,7 +5,7 @@ import (
 	"github.com/pagarme/teleport/batcher/ddldiff"
 )
 
-// Define a class attribute
+// Define a class column
 type Index struct {
 	Oid          string `json:"index_oid"`
 	Name         string `json:"index_name"`

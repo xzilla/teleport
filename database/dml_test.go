@@ -11,7 +11,7 @@ var event *Event
 func setupDml() {
 	db = New("", "", "", "", "", 0)
 
-	attributes := []*Attribute{
+	columns := []*Attribute{
 		&Attribute{
 			"id",
 			1,
@@ -37,7 +37,7 @@ func setupDml() {
 			"123",
 			"r",
 			"test_table",
-			attributes,
+			columns,
 			[]*Index{},
 			nil,
 		},
