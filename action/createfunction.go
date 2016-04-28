@@ -17,16 +17,14 @@ var schemaDefParser *regexp.Regexp
 // Register type for gob
 func init() {
 	gob.Register(&CreateFunction{})
-	schemaDefParser = regexp.MustCompile(`([a-z_]+\.|"[^"]+"\.)`)
+	schemaDefParser = regexp.MustCompile(`CREATE OR REPLACE FUNCTION ([a-z_]+\.|"[^"]+"\.)`)
 }
 
 func (a *CreateFunction) getFunctionDefForTargetSchema() string {
-	return schemaDefParser.ReplaceAllString(a.FunctionDef, fmt.Sprintf("%s.", a.SchemaName))
+	return schemaDefParser.ReplaceAllString(a.FunctionDef, fmt.Sprintf("CREATE OR REPLACE FUNCTION %s.", a.SchemaName))
 }
 
 func (a *CreateFunction) Execute(c *Context) error {
-	// _, err := c.Tx.Exec(a.replaceSchemaForDef())
-	// return err
 	var originalSearchPath string
 
 	err := c.Tx.Get(&originalSearchPath, "SHOW search_path;")
