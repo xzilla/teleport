@@ -22,7 +22,9 @@ func init() {
 	typ = &Type{
 		"789",
 		"test_type",
+		"c",
 		[]*Enum{},
+		[]*Attribute{},
 		schema,
 	}
 
@@ -143,5 +145,18 @@ func TestEnumIsEqual(t *testing.T) {
 
 	if post.IsEqual(pre) {
 		t.Errorf("expect enums not to be equal")
+	}
+
+	preOtherType := &Attribute{
+		"test_col_2",
+		1,
+		"int4",
+		"pg_catalog",
+		"0",
+		nil,
+	}
+
+	if post.IsEqual(preOtherType) {
+		t.Errorf("expect two different types not to be equal")
 	}
 }

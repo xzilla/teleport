@@ -8,6 +8,7 @@ import (
 type CreateType struct {
 	SchemaName string
 	TypeName   string
+	TypeType   string
 }
 
 // Register type for gob
@@ -16,15 +17,31 @@ func init() {
 }
 
 func (a *CreateType) Execute(c *Context) error {
-	_, err := c.Tx.Exec(
-		fmt.Sprintf(
-			"CREATE TYPE \"%s\".\"%s\" AS ENUM ();",
-			a.SchemaName,
-			a.TypeName,
-		),
-	)
+	if a.TypeType == "c" {
+		// Composite type
+		_, err := c.Tx.Exec(
+			fmt.Sprintf(
+				"CREATE TYPE \"%s\".\"%s\" AS ();",
+				a.SchemaName,
+				a.TypeName,
+			),
+		)
 
-	return err
+		return err
+	} else if a.TypeType == "e" {
+		// Enum
+		_, err := c.Tx.Exec(
+			fmt.Sprintf(
+				"CREATE TYPE \"%s\".\"%s\" AS ENUM ();",
+				a.SchemaName,
+				a.TypeName,
+			),
+		)
+
+		return err
+	}
+
+	return nil
 }
 
 func (a *CreateType) Filter(targetExpression string) bool {

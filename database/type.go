@@ -8,7 +8,9 @@ import (
 type Type struct {
 	Oid    string  `json:"oid"`
 	Name   string  `json:"type_name"`
+	Type   string  `json:"type_type"`
 	Enums  []*Enum `json:"enums"`
+	Attributes  []*Attribute `json:"attributes"`
 	Schema *Schema
 }
 
@@ -19,6 +21,7 @@ func (post *Type) Diff(other ddldiff.Diffable, context ddldiff.Context) []action
 		actions = append(actions, &action.CreateType{
 			context.Schema,
 			post.Name,
+			post.Type,
 		})
 	} else {
 		pre := other.(*Type)
@@ -40,6 +43,10 @@ func (t *Type) Children() []ddldiff.Diffable {
 
 	for _, enum := range t.Enums {
 		children = append(children, enum)
+	}
+
+	for _, attr := range t.Attributes {
+		children = append(children, attr)
 	}
 
 	return children

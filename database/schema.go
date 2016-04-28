@@ -47,13 +47,16 @@ func (s *Schema) fillParentReferences() {
 		for _, enum := range typ.Enums {
 			enum.Type = typ
 		}
+		for _, attr := range typ.Attributes {
+			attr.Type = typ
+		}
 	}
 }
 
 // Fetches the schema from the database and update Schema
 func (db *Database) RefreshSchema() error {
 	// Get schema from query
-	rows, err := db.runQuery("SELECT get_schema();")
+	rows, err := db.runQuery("SELECT teleport_get_schema();")
 
 	if err != nil {
 		return err
@@ -111,8 +114,18 @@ func (post *Schema) Diff(other ddldiff.Diffable, context ddldiff.Context) []acti
 func (s *Schema) Children() []ddldiff.Diffable {
 	children := make([]ddldiff.Diffable, 0)
 
-	for i, _ := range s.Types {
-		children = append(children, s.Types[i])
+	// Add enums first
+	for i, typ := range s.Types {
+		if typ.Type == "e" {
+			children = append(children, s.Types[i])
+		}
+	}
+
+	// ... then composite types...
+	for i, typ := range s.Types {
+		if typ.Type == "c" {
+			children = append(children, s.Types[i])
+		}
 	}
 
 	for i, _ := range s.Functions {

@@ -28,7 +28,7 @@ BEGIN
 		WITH all_json_key_value AS (
 			SELECT 'pre' AS key, data::json AS value FROM teleport.event WHERE id = event_row.id
 			UNION ALL
-			SELECT 'post' AS key, get_schema()::json AS value
+			SELECT 'post' AS key, teleport_get_schema()::json AS value
 		)
 		UPDATE teleport.event
 			SET status = 'waiting_batch',
@@ -40,7 +40,7 @@ BEGIN
 
 	INSERT INTO teleport.event (data, kind, trigger_tag, trigger_event, transaction_id, status) VALUES
 	(
-		get_schema()::text,
+		teleport_get_schema()::text,
 		'ddl',
 		'ddl_command_start',
 		'',

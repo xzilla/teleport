@@ -34,6 +34,7 @@ func TestTypeDiff(t *testing.T) {
 			&Type{
 				"789",
 				"test_type",
+				"e",
 				[]*Enum{
 					&Enum{
 						"123",
@@ -46,12 +47,14 @@ func TestTypeDiff(t *testing.T) {
 						nil,
 					},
 				},
+				[]*Attribute{},
 				schema,
 			},
 			[]action.Action{
 				&action.CreateType{
 					"default_context",
 					"test_type",
+					"e",
 				},
 			},
 		},
@@ -60,6 +63,7 @@ func TestTypeDiff(t *testing.T) {
 			&Type{
 				"789",
 				"test_type",
+				"e",
 				[]*Enum{
 					&Enum{
 						"123",
@@ -72,11 +76,13 @@ func TestTypeDiff(t *testing.T) {
 						nil,
 					},
 				},
+				[]*Attribute{},
 				schema,
 			},
 			&Type{
 				"789",
 				"test_type_renamed",
+				"e",
 				[]*Enum{
 					&Enum{
 						"123",
@@ -89,6 +95,7 @@ func TestTypeDiff(t *testing.T) {
 						nil,
 					},
 				},
+				[]*Attribute{},
 				schema,
 			},
 			[]action.Action{
@@ -134,23 +141,38 @@ func TestTypeChildren(t *testing.T) {
 		},
 	}
 
+	attrs := []*Attribute{
+		&Attribute{
+			"test_col",
+			1,
+			"text",
+			"pg_catalog",
+			"0",
+			nil,
+		},
+	}
+
 	typ := &Type{
 		"789",
 		"test_type",
+		"c",
 		enums,
+		attrs,
 		nil,
 	}
 
 	children := typ.Children()
 
-	if len(children) != 1 {
+	if len(children) != 2 {
 		t.Errorf("children => %d, want %d", len(children), 1)
 	}
 
-	for i, child := range children {
-		if child != enums[i] {
-			t.Errorf("child %i => %v, want %v", i, child, enums[i])
-		}
+	if children[0] != enums[0] {
+		t.Errorf("child 0 => %v, want %v", children[0], enums[0])
+	}
+
+	if children[1] != attrs[0] {
+		t.Errorf("child 1 => %v, want %v", children[1], attrs[0])
 	}
 }
 
@@ -158,6 +180,7 @@ func TestTypeDrop(t *testing.T) {
 	typ := &Type{
 		"789",
 		"test_type",
+		"c",
 		[]*Enum{
 			&Enum{
 				"123",
@@ -165,6 +188,7 @@ func TestTypeDrop(t *testing.T) {
 				nil,
 			},
 		},
+		[]*Attribute{},
 		schema,
 	}
 
@@ -193,6 +217,7 @@ func TestTypeIsEqual(t *testing.T) {
 	pre := &Type{
 		"789",
 		"test_type",
+		"c",
 		[]*Enum{
 			&Enum{
 				"123",
@@ -205,12 +230,14 @@ func TestTypeIsEqual(t *testing.T) {
 				nil,
 			},
 		},
+		[]*Attribute{},
 		schema,
 	}
 
 	post := &Type{
 		"789",
 		"test_type_renamed",
+		"c",
 		[]*Enum{
 			&Enum{
 				"123",
@@ -223,6 +250,7 @@ func TestTypeIsEqual(t *testing.T) {
 				nil,
 			},
 		},
+		[]*Attribute{},
 		schema,
 	}
 

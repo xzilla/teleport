@@ -356,7 +356,9 @@ func TestTableIsEqual(t *testing.T) {
 	preOtherType := &Type{
 		"789",
 		"test_type",
+		"c",
 		[]*Enum{},
+		[]*Attribute{},
 		nil,
 	}
 

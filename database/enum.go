@@ -38,6 +38,9 @@ func (e *Enum) IsEqual(other ddldiff.Diffable) bool {
 		return false
 	}
 
-	otherEnum := other.(*Enum)
-	return (e.Oid == otherEnum.Oid)
+	if otherEnum, ok := other.(*Enum); ok {
+		return (e.Oid == otherEnum.Oid)
+	}
+
+	return false
 }

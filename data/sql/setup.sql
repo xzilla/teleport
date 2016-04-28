@@ -76,7 +76,7 @@ CREATE TABLE IF NOT EXISTS teleport.batch_events (
 
 -- Returns current schema of all tables in all schemas as a JSON
 -- JSON array containing each column's definition.
-CREATE OR REPLACE FUNCTION get_schema() RETURNS text AS $$
+CREATE OR REPLACE FUNCTION teleport_get_schema() RETURNS text AS $$
 BEGIN
 	RETURN (
 		SELECT json_agg(row_to_json(data)) FROM (
@@ -132,7 +132,7 @@ BEGIN
 									-- Ordinary columns are numbered from 1 up.
 									-- System columns have negative numbers.
 									attr.attr_num > 0
-							) AS attributes,
+							) AS columns,
 							(
 								-- The view pg_indexes provides access to useful information about each index
 								-- in the database.
@@ -181,6 +181,7 @@ BEGIN
 						SELECT
 							pgtype.oid AS oid,
 							pgtype.typnamespace AS namespace_oid,
+							pgtype.typtype AS type_type,
 							pgtype.typname AS type_name,
 							(
 								-- The catalog pg_attribute stores information about table columns. There will be
@@ -197,8 +198,38 @@ BEGIN
 								) enum
 								WHERE
 									enum.type_oid = pgtype.oid
-							) AS enums
+							) AS enums,
+							(
+								-- The catalog pg_attribute stores information about table columns. There will be
+								-- exactly one pg_attribute row for every column in every table in the database.
+								-- (There will also be attribute entries for indexes, and indeed all objects that
+								-- have pg_class entries.)
+								SELECT array_to_json(array_agg(row_to_json(attr)))
+								FROM (
+									SELECT
+										a.attrelid AS class_oid,
+										a.attname AS attr_name,
+										a.attnum AS attr_num,
+										t.typname AS type_name,
+										(
+											SELECT n.nspname 
+											FROM pg_namespace n
+											WHERE n.oid = t.typnamespace
+										) AS type_schema,
+										t.oid AS type_oid
+									FROM pg_attribute a
+									INNER JOIN pg_type t
+										ON a.atttypid = t.oid
+								) attr
+								WHERE
+									attr.class_oid = pgtype.typrelid AND
+									-- Ordinary columns are numbered from 1 up.
+									-- System columns have negative numbers.
+									attr.attr_num > 0
+							) AS attributes
 						FROM pg_type pgtype
+						LEFT JOIN pg_class class
+							ON class.oid = pgtype.typrelid
 						-- typtype is:
 						-- b for a base type
 						-- c for a composite type (e.g., a table's row type)
@@ -206,7 +237,9 @@ BEGIN
 						-- e for an enum type
 						-- p for a pseudo-type
 						-- r for a range type
-						WHERE typtype = 'e'
+						WHERE
+							(pgtype.typtype = 'e') OR
+							(pgtype.typtype = 'c' AND class.relkind = 'c')
 					) pgtype
 					WHERE pgtype.namespace_oid = namespace.oid
 				) AS types,

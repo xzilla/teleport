@@ -152,7 +152,9 @@ func TestSchemaChildren(t *testing.T) {
 		&Type{
 			"789",
 			"test_type",
+			"c",
 			[]*Enum{},
+			[]*Attribute{},
 			nil,
 		},
 	}
