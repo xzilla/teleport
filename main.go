@@ -33,7 +33,14 @@ func main() {
 		os.Exit(1)
 	}
 
-	if config.ProcessingInterval == 0 {
+	invalidProcessingInterval := 
+		config.ProcessingIntervals.Batcher == 0 ||
+		config.ProcessingIntervals.Transmitter == 0 ||
+		config.ProcessingIntervals.Applier == 0 ||
+		config.ProcessingIntervals.Vacuum == 0 ||
+		config.ProcessingIntervals.DdlWatcher == 0
+
+	if invalidProcessingInterval {
 		log.Printf("Invalid config value 0 for ProcessingInterval\n")
 		os.Exit(1)
 	}
@@ -68,29 +75,27 @@ func main() {
 	}
 
 	if *mode == "replication" {
-		processingInterval := time.Duration(config.ProcessingInterval) * time.Millisecond
-
 		// Start batcher on a separate goroutine
 		batcher := batcher.New(db, targets)
-		go batcher.Watch(processingInterval)
+		go batcher.Watch(time.Duration(config.ProcessingIntervals.Batcher) * time.Millisecond)
 
 		// Start transmitter on a separate goroutine
 		transmitter := transmitter.New(db, targets)
-		go transmitter.Watch(processingInterval)
+		go transmitter.Watch(time.Duration(config.ProcessingIntervals.Transmitter) * time.Millisecond)
 
 		// Start applier on a separate goroutine
 		applier := applier.New(db, config.BatchSize)
-		go applier.Watch(processingInterval)
+		go applier.Watch(time.Duration(config.ProcessingIntervals.Applier) * time.Millisecond)
 
 		// Start vacuum on a separate goroutine
 		vacuum := vacuum.New(db)
-		go vacuum.Watch(processingInterval)
+		go vacuum.Watch(time.Duration(config.ProcessingIntervals.Vacuum) * time.Millisecond)
 
 		if len(targets) > 0 {
 			// Start vacuum on a separate goroutine if there's
 			// any target that needs to know about DDL changes
 			ddlwatcher := ddlwatcher.New(db)
-			go ddlwatcher.Watch(processingInterval)
+			go ddlwatcher.Watch(time.Duration(config.ProcessingIntervals.DdlWatcher) * time.Millisecond)
 		}
 
 		// Start HTTP server for receiving incoming requests

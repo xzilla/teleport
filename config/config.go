@@ -5,12 +5,20 @@ import (
 	"io/ioutil"
 )
 
+type ProcessingIntervals struct {
+	Batcher int `yaml:"batcher"`
+	Transmitter int `yaml:"transmitter"`
+	Applier int `yaml:"applier"`
+	Vacuum int `yaml:"vacuum"`
+	DdlWatcher int `yaml:"ddlwatcher"`
+}
+
 type Config struct {
-	Database           Database          `yaml:"database"`
-	ServerHTTP         HTTP              `yaml:"server"`
-	Targets            map[string]Target `yaml:"targets"`
-	BatchSize          int               `yaml:"batch_size"`
-	ProcessingInterval int               `yaml:"processing_interval"`
+	Database           Database           `yaml:"database"`
+	ServerHTTP         HTTP               `yaml:"server"`
+	Targets            map[string]Target  `yaml:"targets"`
+	BatchSize          int                `yaml:"batch_size"`
+	ProcessingIntervals ProcessingIntervals `yaml:"processing_intervals"`
 }
 
 func New() *Config {

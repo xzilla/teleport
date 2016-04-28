@@ -1,5 +1,10 @@
 batch_size: 10000
-processing_interval: 100
+processing_intervals:
+  batcher: 100
+  transmitter: 100
+  applier: 100
+  vacuum: 500
+  ddlwatcher: 5000
 database:
   name: "tar"
   database: "postgres2"
