@@ -49,14 +49,14 @@ func (b *batchRouter) create(w http.ResponseWriter, r *http.Request) error {
 		return err
 	}
 
-	log.Printf("Received batch: %v\n", newBatch)
-
 	// Commit transaction
 	err = tx.Commit()
 
 	if err != nil {
 		return err
 	}
+
+	log.Printf("Received batch: %v\n", newBatch)
 
 	// Respond HTTP OK
 	return httputils.WriteJSON(w, http.StatusOK, nil)

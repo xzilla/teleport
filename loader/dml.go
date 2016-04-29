@@ -176,17 +176,13 @@ func (l *Loader) resumeDMLEvent(event *database.Event, batch *database.Batch) er
 
 	log.Printf("Generated new batch: %#v\n", batch)
 
-	if err != nil {
-		return err
-	}
-
-	batch.DataStatus = "waiting_transmission"
-	batch.Status = ""
-	err = batch.UpdateQuery(tx)
+	err = tx.Commit()
 
 	if err != nil {
 		return err
 	}
+
+	tx = l.db.NewTransaction()
 
 	// Generate OFFSET/LIMITs to iterate
 	for i := 0; i < tableCount; i += l.BatchSize {
@@ -224,6 +220,10 @@ func (l *Loader) resumeDMLEvent(event *database.Event, batch *database.Batch) er
 			return err
 		}
 	}
+
+	batch.DataStatus = "waiting_transmission"
+	batch.Status = ""
+	err = batch.UpdateQuery(tx)
 
 	log.Printf("Updated data of batch: %#v\n", batch)
 
