@@ -15,6 +15,7 @@ func init() {
 		nil,
 		nil,
 		nil,
+		nil,
 	}
 
 	typ = &Type{

@@ -19,6 +19,7 @@ func init() {
 		nil,
 		nil,
 		nil,
+		nil,
 	}
 
 	class = &Table{

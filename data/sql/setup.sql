@@ -256,9 +256,24 @@ BEGIN
 						FROM pg_proc proc
 						WHERE proc.proisagg = false
 						AND proc.proname NOT LIKE 'teleport%'
+						AND proc.prolang IN (
+							SELECT oid FROM pg_language WHERE lanname IN ('plpgsql', 'sql')
+						)
 					) proc
 					WHERE proc.namespace_oid = namespace.oid
-				) AS functions
+				) AS functions,
+				(
+					-- The catalog pg_extension stores information about the installed extensions.
+					SELECT array_to_json(array_agg(row_to_json(extension)))
+					FROM (
+						SELECT
+							ext.oid AS oid,
+							ext.extnamespace AS namespace_oid,
+							ext.extname AS extension_name
+						FROM pg_extension ext
+					) extension
+					WHERE extension.namespace_oid = namespace.oid
+				) AS extensions
 			FROM pg_namespace namespace
 			WHERE
 				namespace.nspname NOT IN ('pg_catalog', 'information_schema', 'pg_toast', 'teleport')

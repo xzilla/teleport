@@ -74,6 +74,7 @@ func TestDiffCreateSchema(t *testing.T) {
 		nil,
 		nil,
 		nil,
+		nil,
 	}
 
 	actions := post.Diff(pre, defaultContext)
@@ -105,11 +106,13 @@ func TestDiffRenameSchema(t *testing.T) {
 		nil,
 		nil,
 		nil,
+		nil,
 	}
 	post = &Schema{
 		"1234",
 		"test_schema_renamed",
 		[]*Table{},
+		nil,
 		nil,
 		nil,
 		nil,
@@ -169,18 +172,27 @@ func TestSchemaChildren(t *testing.T) {
 		},
 	}
 
+	extensions := []*Extension{
+		&Extension{
+			"123",
+			"test_ext",
+			schema,
+		},
+	}
+
 	schema := &Schema{
 		"1234",
 		"test_schema",
 		classes,
 		types,
 		functions,
+		extensions,
 		nil,
 	}
 
 	children := schema.Children()
 
-	if len(children) != 3 {
+	if len(children) != 4 {
 		t.Errorf("children => %d, want %d", len(children), 2)
 	}
 
@@ -188,12 +200,16 @@ func TestSchemaChildren(t *testing.T) {
 		t.Errorf("child 0 => %v, want %v", children[0], types[0])
 	}
 
-	if children[1] != functions[0] {
-		t.Errorf("child 1 => %v, want %v", children[1], functions[0])
+	if children[1] != extensions[0] {
+		t.Errorf("child 1 => %v, want %v", children[1], extensions[0])
 	}
 
-	if children[2] != classes[0] {
-		t.Errorf("child 2 => %v, want %v", children[2], classes[0])
+	if children[2] != functions[0] {
+		t.Errorf("child 2 => %v, want %v", children[2], functions[0])
+	}
+
+	if children[3] != classes[0] {
+		t.Errorf("child 3 => %v, want %v", children[3], classes[0])
 	}
 }
 
@@ -204,6 +220,7 @@ func TestSchemaDrop(t *testing.T) {
 		"1234",
 		"test_schema",
 		[]*Table{},
+		nil,
 		nil,
 		nil,
 		nil,
@@ -237,11 +254,14 @@ func TestSchemaIsEqual(t *testing.T) {
 		nil,
 		nil,
 		nil,
+		nil,
 	}
+
 	post = &Schema{
 		"1234",
 		"test_schema_renamed",
 		[]*Table{},
+		nil,
 		nil,
 		nil,
 		nil,

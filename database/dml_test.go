@@ -50,6 +50,7 @@ func setupDml() {
 			classes,
 			nil,
 			nil,
+			nil,
 			db,
 		},
 	}

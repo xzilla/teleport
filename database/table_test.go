@@ -17,6 +17,7 @@ func init() {
 		nil,
 		nil,
 		nil,
+		nil,
 	}
 
 	defaultContext = ddldiff.Context{

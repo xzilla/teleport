@@ -13,6 +13,7 @@ type Schema struct {
 	Tables    []*Table    `json:"classes"`
 	Types     []*Type     `json:"types"`
 	Functions []*Function `json:"functions"`
+	Extensions []*Extension `json:"extensions"`
 	Db        *Database
 }
 
@@ -126,6 +127,10 @@ func (s *Schema) Children() []ddldiff.Diffable {
 		if typ.Type == "c" {
 			children = append(children, s.Types[i])
 		}
+	}
+
+	for i, _ := range s.Extensions {
+		children = append(children, s.Extensions[i])
 	}
 
 	for i, _ := range s.Functions {

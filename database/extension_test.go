@@ -7,8 +7,6 @@ import (
 	"testing"
 )
 
-var typ *Type
-
 func init() {
 	schema = &Schema{
 		"123",
@@ -20,53 +18,43 @@ func init() {
 		nil,
 	}
 
-	typ = &Type{
-		"789",
-		"test_type",
-		"c",
-		[]*Enum{},
-		[]*Attribute{},
-		schema,
-	}
-
 	defaultContext = ddldiff.Context{
 		Schema: "default_context",
 	}
 }
 
-func TestEnumDiff(t *testing.T) {
+func TestExtensionDiff(t *testing.T) {
 	var tests = []struct {
-		pre    *Enum
-		post   *Enum
+		pre    *Extension
+		post   *Extension
 		output []action.Action
 	}{
 		{
-			// Diff a enum creation
+			// Diff a extension creation
 			nil,
-			&Enum{
+			&Extension{
 				"123",
-				"test_enum3",
-				typ,
+				"test_ext_5",
+				schema,
 			},
 			[]action.Action{
-				&action.CreateEnum{
+				&action.CreateExtension{
 					"default_context",
-					"test_type",
-					"test_enum3",
+					"test_ext_5",
 				},
 			},
 		},
 		{
-			// Diff a enum rename
-			&Enum{
+			// Diff a extension rename
+			&Extension{
 				"123",
-				"test_enum3",
-				typ,
+				"test_ext",
+				schema,
 			},
-			&Enum{
+			&Extension{
 				"123",
-				"test_enum3_renamed",
-				typ,
+				"test_ext_renamed",
+				schema,
 			},
 			[]action.Action{},
 		},
@@ -86,7 +74,7 @@ func TestEnumDiff(t *testing.T) {
 
 		if !reflect.DeepEqual(actions, test.output) {
 			t.Errorf(
-				"diff %#v with %#v => %v, want %d",
+				"diff %#v with %#v => %#v, want %#v",
 				test.pre,
 				test.post,
 				actions,
@@ -96,45 +84,55 @@ func TestEnumDiff(t *testing.T) {
 	}
 }
 
-func TestEnumChildren(t *testing.T) {
-	enum := &Enum{
+func TestExtensionChildren(t *testing.T) {
+	extension := &Extension{
 		"123",
-		"test_enum1",
-		typ,
+		"test_ext",
+		schema,
 	}
 
-	children := enum.Children()
+	children := extension.Children()
 
 	if len(children) != 0 {
 		t.Errorf("children => %d, want %d", len(children), 0)
 	}
 }
 
-func TestEnumDrop(t *testing.T) {
-	enum := &Enum{
+func TestExtensionDrop(t *testing.T) {
+	extension := &Extension{
 		"123",
-		"test_enum1",
-		typ,
+		"test_ext",
+		schema,
 	}
 
-	actions := enum.Drop(defaultContext)
+	actions := extension.Drop(defaultContext)
 
-	if len(actions) != 0 {
-		t.Errorf("actions => %d, want %d", len(actions), 0)
+	if len(actions) != 1 {
+		t.Errorf("actions => %d, want %d", len(actions), 1)
+	}
+
+	dropAction, ok := actions[0].(*action.DropExtension)
+
+	if !ok {
+		t.Errorf("action is not DropExtension")
+	}
+
+	if dropAction.ExtensionName != extension.Name {
+		t.Errorf("drop action extension name => %s, want %s", dropAction.ExtensionName, extension.Name)
 	}
 }
 
-func TestEnumIsEqual(t *testing.T) {
-	pre := &Enum{
+func TestExtensionIsEqual(t *testing.T) {
+	pre := &Extension{
 		"123",
-		"test_enum1",
-		typ,
+		"test_ext",
+		schema,
 	}
 
-	post := &Enum{
+	post := &Extension{
 		"123",
-		"test_enum1_renamed",
-		typ,
+		"test_ext_2",
+		schema,
 	}
 
 	if !post.IsEqual(pre) {
@@ -142,19 +140,19 @@ func TestEnumIsEqual(t *testing.T) {
 	}
 
 	post.Name = pre.Name
-	post.Oid = "1235"
+	post.Oid = "124"
 
 	if post.IsEqual(pre) {
 		t.Errorf("expect enums not to be equal")
 	}
 
-	preOtherType := &Attribute{
-		"test_col_2",
-		1,
-		"int4",
-		"pg_catalog",
-		"0",
-		nil,
+	preOtherType := &Type{
+		"123",
+		"test_type_renamed",
+		"c",
+		[]*Enum{},
+		[]*Attribute{},
+		schema,
 	}
 
 	if post.IsEqual(preOtherType) {
