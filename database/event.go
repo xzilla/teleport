@@ -3,6 +3,7 @@ package database
 import (
 	"github.com/jmoiron/sqlx"
 	"strings"
+	"strconv"
 )
 
 type Event struct {
@@ -83,7 +84,9 @@ func (slice Events) Len() int {
 }
 
 func (slice Events) Less(i, j int) bool {
-	return slice[i].Id < slice[j].Id
+	iInt, _ := strconv.Atoi(slice[i].Id)
+	jInt, _ := strconv.Atoi(slice[j].Id)
+	return iInt < jInt
 }
 
 func (slice Events) Swap(i, j int) {
