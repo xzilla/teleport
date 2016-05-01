@@ -122,6 +122,7 @@ func (d *Dml) Diff() []action.Action {
 				d.GetTableName(),
 				d.GetTable().GetPrimaryKey().Name,
 				d.generateRows(d.Post),
+				false,
 			},
 		}
 	}

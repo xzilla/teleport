@@ -7,11 +7,11 @@ import (
 	"github.com/pagarme/teleport/client"
 	"github.com/pagarme/teleport/config"
 	"github.com/pagarme/teleport/database"
+	"github.com/pagarme/teleport/ddlwatcher"
 	"github.com/pagarme/teleport/loader"
 	"github.com/pagarme/teleport/server"
 	"github.com/pagarme/teleport/transmitter"
 	"github.com/pagarme/teleport/vacuum"
-	"github.com/pagarme/teleport/ddlwatcher"
 	"log"
 	"os"
 	"time"
@@ -33,12 +33,12 @@ func main() {
 		os.Exit(1)
 	}
 
-	invalidProcessingInterval := 
+	invalidProcessingInterval :=
 		config.ProcessingIntervals.Batcher == 0 ||
-		config.ProcessingIntervals.Transmitter == 0 ||
-		config.ProcessingIntervals.Applier == 0 ||
-		config.ProcessingIntervals.Vacuum == 0 ||
-		config.ProcessingIntervals.DdlWatcher == 0
+			config.ProcessingIntervals.Transmitter == 0 ||
+			config.ProcessingIntervals.Applier == 0 ||
+			config.ProcessingIntervals.Vacuum == 0 ||
+			config.ProcessingIntervals.DdlWatcher == 0
 
 	if invalidProcessingInterval {
 		log.Printf("Invalid config value 0 for ProcessingInterval\n")

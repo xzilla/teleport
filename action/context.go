@@ -44,3 +44,24 @@ func (c *Context) GetPreparedStatement(statement string) (*sqlx.Stmt, error) {
 
 	return nil, nil
 }
+
+func (c *Context) FlushStatements() error {
+	for _, stmt := range c.stmtCache {
+		// Exec and close each statement
+		_, err := stmt.Exec()
+		if err != nil {
+			return err
+		}
+
+		err = stmt.Close()
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (c *Context) Commit() error {
+	return c.Tx.Commit()
+}

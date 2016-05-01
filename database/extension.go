@@ -6,8 +6,8 @@ import (
 )
 
 type Extension struct {
-	Oid  string `json:"oid"`
-	Name string `json:"extension_name"`
+	Oid    string `json:"oid"`
+	Name   string `json:"extension_name"`
 	Schema *Schema
 }
 

@@ -7,7 +7,7 @@ import (
 
 type AlterAttribute struct {
 	SchemaName string
-	TypeName  string
+	TypeName   string
 	Column     Column
 	NewColumn  Column
 }

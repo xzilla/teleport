@@ -195,7 +195,7 @@ func (l *Loader) resumeDMLEvent(event *database.Event, batch *database.Batch) er
 		actions := make([]action.Action, 0)
 
 		for _, row := range rows {
-			actionRows := make([]action.Row, 0)
+			actionRows := make(action.Rows, 0)
 
 			for key, value := range *row {
 				actionRows = append(actionRows, action.Row{
@@ -204,11 +204,15 @@ func (l *Loader) resumeDMLEvent(event *database.Event, batch *database.Batch) er
 				})
 			}
 
+			// Sort rows to ensure consistency on generated queries
+			sort.Sort(actionRows)
+
 			act := &action.InsertRow{
 				l.target.ApplySchema,
 				class.RelationName,
 				class.GetPrimaryKey().Name,
 				actionRows,
+				true,
 			}
 
 			actions = append(actions, act)

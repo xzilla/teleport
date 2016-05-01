@@ -65,6 +65,29 @@ func (a *Applier) applyBatch(batch *database.Batch) (bool, error) {
 
 	// Start transaction
 	tx := a.db.NewTransaction()
+	context := action.NewContext(tx, a.db.Db)
+
+	flushBatch := func() (bool, error) {
+		err := context.FlushStatements()
+
+		if err != nil {
+			return false, err
+		}
+
+		err = batch.UpdateQuery(tx)
+
+		if err != nil {
+			return false, err
+		}
+
+		err = context.Commit()
+
+		if err != nil {
+			return false, err
+		}
+
+		return true, nil
+	}
 
 	// Update batch status based on a error
 	updateBatchStatus := func(previousErr error) (bool, error) {
@@ -72,6 +95,7 @@ func (a *Applier) applyBatch(batch *database.Batch) (bool, error) {
 			// Create new transaction because the old one failed
 			tx.Rollback()
 			tx = a.db.NewTransaction()
+			context = action.NewContext(tx, a.db.Db)
 
 			batch.Status = "waiting_apply"
 			batch.DataStatus = ""
@@ -83,15 +107,9 @@ func (a *Applier) applyBatch(batch *database.Batch) (bool, error) {
 			batch.WaitingReexecution = false
 		}
 
-		err := batch.UpdateQuery(tx)
+		_, err := flushBatch()
 
-		if err != nil {
-			return false, err
-		}
-
-		err = tx.Commit()
-
-		if err != nil {
+		if err == nil {
 			return false, err
 		}
 
@@ -104,8 +122,6 @@ func (a *Applier) applyBatch(batch *database.Batch) (bool, error) {
 		if err != nil {
 			return false, err
 		}
-
-		context := action.NewContext(tx, a.db.Db)
 
 		for _, act := range actions {
 			err := a.applyAction(act, context)
@@ -128,7 +144,6 @@ func (a *Applier) applyBatch(batch *database.Batch) (bool, error) {
 		currentBatchSize := 0
 		previousStatement := batch.LastExecutedStatement
 
-		currentContext := action.NewContext(tx, a.db.Db)
 		act, err = batch.ReadAction(reader)
 
 		for err == nil {
@@ -137,7 +152,7 @@ func (a *Applier) applyBatch(batch *database.Batch) (bool, error) {
 
 			// Start applying from previous stop point
 			if currentStatement > previousStatement {
-				err = a.applyAction(act, currentContext)
+				err = a.applyAction(act, context)
 
 				if err != nil {
 					return updateBatchStatus(err)
@@ -147,24 +162,16 @@ func (a *Applier) applyBatch(batch *database.Batch) (bool, error) {
 				currentBatchSize += 1
 
 				if currentBatchSize >= a.batchSize {
-					// Current batch reached the maximum size.
-					// Commit batch to database.
-					err = batch.UpdateQuery(tx)
+					shouldContinue, err := flushBatch()
 
 					if err != nil {
-						return false, err
-					}
-
-					err = tx.Commit()
-
-					if err != nil {
-						return false, err
+						return shouldContinue, err
 					}
 
 					// Restart transaction
 					tx = a.db.NewTransaction()
 
-					currentContext = action.NewContext(tx, a.db.Db)
+					context = action.NewContext(tx, a.db.Db)
 
 					// Reset batch size
 					currentBatchSize = 0

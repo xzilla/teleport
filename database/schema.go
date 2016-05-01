@@ -8,13 +8,13 @@ import (
 
 // Define a database schema
 type Schema struct {
-	Oid       string      `json:"oid"`
-	Name      string      `json:"schema_name"`
-	Tables    []*Table    `json:"classes"`
-	Types     []*Type     `json:"types"`
-	Functions []*Function `json:"functions"`
+	Oid        string       `json:"oid"`
+	Name       string       `json:"schema_name"`
+	Tables     []*Table     `json:"classes"`
+	Types      []*Type      `json:"types"`
+	Functions  []*Function  `json:"functions"`
 	Extensions []*Extension `json:"extensions"`
-	Db        *Database
+	Db         *Database
 }
 
 type Schemas []*Schema

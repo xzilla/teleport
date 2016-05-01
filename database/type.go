@@ -6,12 +6,12 @@ import (
 )
 
 type Type struct {
-	Oid    string  `json:"oid"`
-	Name   string  `json:"type_name"`
-	Type   string  `json:"type_type"`
-	Enums  []*Enum `json:"enums"`
-	Attributes  []*Attribute `json:"attributes"`
-	Schema *Schema
+	Oid        string       `json:"oid"`
+	Name       string       `json:"type_name"`
+	Type       string       `json:"type_type"`
+	Enums      []*Enum      `json:"enums"`
+	Attributes []*Attribute `json:"attributes"`
+	Schema     *Schema
 }
 
 func (post *Type) Diff(other ddldiff.Diffable, context ddldiff.Context) []action.Action {

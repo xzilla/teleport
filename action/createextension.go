@@ -6,8 +6,8 @@ import (
 )
 
 type CreateExtension struct {
-	SchemaName string
-	ExtensionName  string
+	SchemaName    string
+	ExtensionName string
 }
 
 // Register type for gob

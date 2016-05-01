@@ -7,12 +7,12 @@ import (
 
 // Define a class column
 type Attribute struct {
-	Name         string `json:"attr_name"`
-	Num          int    `json:"attr_num"`
-	TypeName     string `json:"type_name"`
-	TypeSchema   string `json:"type_schema"`
-	TypeOid      string `json:"type_oid"`
-	Type         *Type
+	Name       string `json:"attr_name"`
+	Num        int    `json:"attr_num"`
+	TypeName   string `json:"type_name"`
+	TypeSchema string `json:"type_schema"`
+	TypeOid    string `json:"type_oid"`
+	Type       *Type
 }
 
 func (a *Attribute) IsNativeType() bool {

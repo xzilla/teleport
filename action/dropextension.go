@@ -6,7 +6,7 @@ import (
 )
 
 type DropExtension struct {
-	ExtensionName  string
+	ExtensionName string
 }
 
 // Register type for gob

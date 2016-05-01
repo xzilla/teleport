@@ -108,6 +108,7 @@ func TestDmlDiff(t *testing.T) {
 							},
 						},
 					},
+					false,
 				},
 			},
 		},

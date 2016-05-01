@@ -41,29 +41,19 @@ func init() {
 		os.Exit(1)
 	}
 
-	stubEvent := &database.Event{
-		Id:            "",
-		Kind:          "ddl",
-		Status:        "waiting_batch",
-		TriggerTag:    "TAG",
-		TriggerEvent:  "EVENT",
-		TransactionId: "123",
-	}
-
-	action := &StubAction{}
-
-	stubEvent.SetDataFromAction(action)
+	stubAction := &StubAction{}
 
 	stubBatch = &database.Batch{
-		Id:          "1",
+		Id:          "",
 		Status:      "waiting_apply",
+		DataStatus:  "waiting_apply",
 		Source:      "source",
 		Target:      "target",
 		Data:        nil,
 		StorageType: "db",
 	}
 
-	stubBatch.SetEvents([]database.Event{*stubEvent})
+	stubBatch.SetActions([]action.Action{stubAction})
 
 	targets := make(map[string]*client.Client)
 
@@ -77,7 +67,7 @@ func init() {
 // StubAction implements Action
 type StubAction struct{}
 
-func (a *StubAction) Execute(c action.Context) error {
+func (a *StubAction) Execute(c *action.Context) error {
 	_, err := c.Tx.Exec("CREATE TABLE test (id INT); INSERT INTO test (id) VALUES (3);")
 	return err
 }
@@ -100,7 +90,7 @@ func TestApplyBatch(t *testing.T) {
 	stubBatch.InsertQuery(tx)
 	tx.Commit()
 
-	err := applier.applyBatch(stubBatch)
+	_, err := applier.applyBatch(stubBatch)
 
 	if err != nil {
 		t.Errorf("applyBatch returned error: %v", err)
@@ -113,7 +103,7 @@ func TestApplyBatch(t *testing.T) {
 		t.Errorf("test id => %s, want %s", testId, "3")
 	}
 
-	batches, _ := db.GetBatches("applied")
+	batches, _ := db.GetBatches("applied", "")
 
 	if len(batches) != 1 {
 		t.Errorf("applied batches => %d, want %d", len(batches), 1)

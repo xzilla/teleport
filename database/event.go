@@ -2,8 +2,8 @@ package database
 
 import (
 	"github.com/jmoiron/sqlx"
-	"strings"
 	"strconv"
+	"strings"
 )
 
 type Event struct {
