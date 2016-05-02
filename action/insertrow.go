@@ -52,7 +52,7 @@ func (a *InsertRow) Execute(c *Context) error {
 		escapedRows := make([]string, 0)
 		values := make([]interface{}, 0)
 
-		var primaryKeyRow *Row
+		var primaryKeyRow Row
 
 		for i, row := range a.Rows {
 			escapedCols = append(escapedCols, fmt.Sprintf("\"%s\"", row.Column.Name))
@@ -72,7 +72,7 @@ func (a *InsertRow) Execute(c *Context) error {
 			}
 
 			if row.Column.Name == a.PrimaryKeyName {
-				primaryKeyRow = &row
+				primaryKeyRow = row
 			}
 		}
 
@@ -117,7 +117,7 @@ func (a *InsertRow) Execute(c *Context) error {
 			updateAction := &UpdateRow{
 				a.SchemaName,
 				a.TableName,
-				*primaryKeyRow,
+				primaryKeyRow,
 				a.Rows,
 			}
 
