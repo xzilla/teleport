@@ -59,7 +59,7 @@ func (a *Applier) applyAction(act action.Action, context *action.Context) error 
 
 // Apply a batch
 func (a *Applier) applyBatch(batch *database.Batch) (bool, error) {
-	if batch.DataStatus != "transmitted" {
+	if batch.DataStatus != "transmitted" && batch.DataStatus != "waiting_apply" {
 		return false, nil
 	}
 
@@ -109,7 +109,7 @@ func (a *Applier) applyBatch(batch *database.Batch) (bool, error) {
 
 		_, err := flushBatch()
 
-		if err == nil {
+		if err != nil {
 			return false, err
 		}
 
