@@ -58,10 +58,10 @@ func NewBar(name string, id int) *Bar {
 	return &Bar{name, id}
 }
 
-var defaultContext *Context
+var defaultContext Context
 
 func init() {
-	defaultContext = &Context{
+	defaultContext = Context{
 		Schema: "default_context",
 	}
 }
