@@ -7,13 +7,13 @@ import (
 	"github.com/pagarme/teleport/client"
 	"github.com/pagarme/teleport/config"
 	"github.com/pagarme/teleport/database"
+	"github.com/kylelemons/godebug/pretty"
 	"os"
 	"reflect"
 	"testing"
 )
 
 var db *database.Database
-var stubEvent *database.Event
 var batcher *Batcher
 
 func init() {
@@ -42,15 +42,6 @@ func init() {
 		os.Exit(1)
 	}
 
-	stubEvent = &database.Event{
-		Id:            "",
-		Kind:          "ddl",
-		Status:        "waiting_batch",
-		TriggerTag:    "TAG",
-		TriggerEvent:  "EVENT",
-		TransactionId: "123",
-	}
-
 	targets := make(map[string]*client.Client)
 
 	for key, target := range config.Targets {
@@ -66,7 +57,7 @@ type StubAction struct {
 	SeparateBatch bool
 }
 
-func (a *StubAction) Execute(c action.Context) error {
+func (a *StubAction) Execute(c *action.Context) error {
 	return nil
 }
 
@@ -78,19 +69,37 @@ func (a *StubAction) NeedsSeparatedBatch() bool {
 	return a.SeparateBatch
 }
 
-func TestMarkIgnoredEvents(t *testing.T) {
+func TestMarkEventsBatched(t *testing.T) {
+	db.Db.Exec(`
+		TRUNCATE teleport.event;
+		TRUNCATE teleport.batch;
+	`)
+
 	tx := db.NewTransaction()
+	stubEvent := &database.Event{
+		Kind:          "ddl",
+		Status:        "waiting_batch",
+		TriggerTag:    "TAG",
+		TriggerEvent:  "EVENT",
+		TransactionId: "123",
+	}
 	stubEvent.InsertQuery(tx)
 	tx.Commit()
 
-	batcher.markIgnoredEvents([]*database.Event{}, map[database.Event][]action.Action{
-		*stubEvent: []action.Action{},
-	})
+	tx = db.NewTransaction()
 
-	ignoredEvents, _ := db.GetEvents("ignored")
+	err := batcher.markEventsBatched([]*database.Event{stubEvent}, tx)
+
+	if err != nil {
+		t.Errorf("mark events batched returned error: %#v\n", err)
+	}
+
+	tx.Commit()
+
+	batchedEvents, _ := db.GetEvents("batched")
 	var updatedEvent *database.Event
 
-	for _, event := range ignoredEvents {
+	for _, event := range batchedEvents {
 		if stubEvent.Id == event.Id {
 			updatedEvent = event
 			break
@@ -102,148 +111,173 @@ func TestMarkIgnoredEvents(t *testing.T) {
 	}
 }
 
-func TestActionsForEvents(t *testing.T) {
+func TestCreateBatchesWithActions(t *testing.T) {
 	testAction := &StubAction{true, false}
+	separateAction := &StubAction{true, true}
 
-	tx := db.NewTransaction()
-	stubEvent.Kind = "test"
-	stubEvent.SetDataFromAction(testAction)
-	stubEvent.InsertQuery(tx)
-	tx.Commit()
-
-	output := map[database.Event][]action.Action{
-		*stubEvent: []action.Action{
+	actionsForTarget := map[string][]action.Action{
+		"test_target": []action.Action{
+			testAction,
+			testAction,
+			separateAction,
 			testAction,
 		},
 	}
 
-	actionsForEvents, _ := batcher.actionsForEvents([]*database.Event{stubEvent})
+	tx := batcher.db.NewTransaction()
 
-	if !reflect.DeepEqual(actionsForEvents, output) {
-		t.Errorf(
-			"action for event => %#v, want %#v",
-			actionsForEvents,
-			output,
-		)
-	}
-}
-
-func TestCreateBatchWithEvents(t *testing.T) {
-	tx := db.NewTransaction()
-	stubEventData := "event data"
-	stubEvent.Data = &stubEventData
-	stubEvent.InsertQuery(tx)
-	tx.Commit()
-
-	batch, err := batcher.createBatchWithEvents([]database.Event{*stubEvent}, "test_target")
+	batches, err := batcher.CreateBatchesWithActions(actionsForTarget, tx)
 
 	if err != nil {
-		t.Errorf("createBatchWithEvents returned error: %v", err)
-	}
-
-	if batch.Source != "test-db" {
-		t.Errorf("batch source => %s, want %s", batch.Source, "test-db")
-	}
-
-	if batch.Target != "test_target" {
-		t.Errorf("batch source => %s, want %s", batch.Target, "test_target")
-	}
-
-	if batch.Status != "waiting_transmission" {
-		t.Errorf("batch status => %s, want %s", batch.Status, "waiting_transmission")
-	}
-
-	event, _ := db.GetEvent(stubEvent.Id)
-
-	if event.Status != "batched" {
-		t.Errorf("event status => %s, want %s", event.Status, "batched")
-	}
-
-	var batchId string
-	db.Db.Get(&batchId, "SELECT batch_id FROM teleport.batch_events WHERE batch_id = $1 AND event_id = $2;", batch.Id, stubEvent.Id)
-
-	if batchId != batch.Id {
-		t.Errorf("batch_id in batch_events table => %s, want %s", batchId, batch.Id)
-	}
-}
-
-func TestCreateBatchesWithActions(t *testing.T) {
-	db.Db.Exec(`
-		TRUNCATE teleport.event;
-		TRUNCATE teleport.batch;
-	`)
-
-	tx := db.NewTransaction()
-	stubEvent.InsertQuery(tx)
-	tx.Commit()
-
-	usedEvents, batches, err := batcher.CreateBatchesWithActions(
-		map[database.Event][]action.Action{
-			*stubEvent: []action.Action{
-				&StubAction{true, false},
-				&StubAction{true, false},
-				&StubAction{true, false},
-				&StubAction{true, false},
-			},
-		},
-	)
-
-	if err != nil {
-		t.Errorf("createBatchWithEvents returned error: %v", err)
-	}
-
-	if len(usedEvents) != 4 {
-		t.Errorf("usedEvents => %d, want %d", len(usedEvents), 4)
-	}
-
-	if len(batches) != 1 {
-		t.Errorf("batches => %d, want %d", len(batches), 3)
-	}
-
-	events, _ := batches[0].GetEvents()
-
-	if len(events) != 4 {
-		t.Errorf("batch 0 => %d, want %d", len(events), 4)
-	}
-
-	usedEvents, batches, err = batcher.CreateBatchesWithActions(
-		map[database.Event][]action.Action{
-			*stubEvent: []action.Action{
-				&StubAction{true, false},
-				&StubAction{true, false},
-				&StubAction{true, true},
-				&StubAction{true, false},
-			},
-		},
-	)
-
-	if err != nil {
-		t.Errorf("createBatchWithEvents returned error: %v", err)
-	}
-
-	if len(usedEvents) != 4 {
-		t.Errorf("usedEvents => %d, want %d", len(usedEvents), 4)
+		t.Errorf("create batches returned error: %#v", err)
 	}
 
 	if len(batches) != 3 {
 		t.Errorf("batches => %d, want %d", len(batches), 3)
 	}
 
-	events, _ = batches[0].GetEvents()
-
-	if len(events) != 2 {
-		t.Errorf("batch 0 => %d, want %d", len(events), 2)
+	expectedActions := [][]action.Action{
+		[]action.Action{
+			testAction,
+			testAction,
+		},
+		[]action.Action{
+			separateAction,
+		},
+		[]action.Action{
+			testAction,
+		},
 	}
 
-	events, _ = batches[1].GetEvents()
+	for i, batch := range batches {
+		actions, _ := batch.GetActions()
 
-	if len(events) != 1 {
-		t.Errorf("batch 1 => %d, want %d", len(events), 1)
+		if !reflect.DeepEqual(expectedActions[i], actions) {
+			t.Errorf(
+				"actions for batch %i => %#v, want %#v",
+				i,
+				actions,
+				expectedActions[i],
+			)
+		}
+	}
+}
+
+func TestActionsForTarget(t *testing.T) {
+	batcher.db.Schemas = map[string]*database.Schema{
+		"public": &database.Schema{
+			Tables: []*database.Table{
+				&database.Table{
+					RelationKind: "r",
+					RelationName: "test_table",
+					Columns: []*database.Column{
+						&database.Column{
+							Name: "id",
+							Num: 1,
+							TypeName: "int4",
+							TypeSchema: "pg_catalog",
+							TypeOid: "123",
+							IsPrimaryKey: true,
+							Table: nil,
+						},
+						&database.Column{
+							Name: "content",
+							Num: 2,
+							TypeName: "text",
+							TypeSchema: "pg_catalog",
+							TypeOid: "124",
+							IsPrimaryKey: false,
+							Table: nil,
+						},
+					},
+				},
+			},
+		},
 	}
 
-	events, _ = batches[2].GetEvents()
+	dataEvent1 := `{
+		"pre":[{"oid":"2200","schema_name":"public","owner_id":"10","classes":
+			[{"oid":"16443","namespace_oid":"2200","relation_kind":"r","relation_name":"test_table","columns":
+				[
+					{"class_oid":"16443","attr_name":"id","attr_num":1,"type_name":"int4","type_oid":"23","is_primary_key":true,"type_schema":"pg_catalog"}
+				]
+			}]
+		}],
+		"post":[{"oid":"2200","schema_name":"public","owner_id":"10","classes":
+			[{"oid":"16443","namespace_oid":"2200","relation_kind":"r","relation_name":"test_table","columns":
+				[
+					{"class_oid":"16443","attr_name":"id","attr_num":1,"type_name":"int4","type_oid":"23","is_primary_key":true,"type_schema":"pg_catalog"},
+					{"class_oid":"16443","attr_name":"content","attr_num":2,"type_name":"text","type_oid":"24","type_schema":"pg_catalog"}
+				]
+			}]
+		}]
+	}`
 
-	if len(events) != 1 {
-		t.Errorf("batch 2 => %d, want %d", len(events), 1)
+	dataEvent2 := `{
+		"pre":null,
+		"post":{
+			"id": 5
+		}
+	}`
+
+	events := database.Events{
+		&database.Event{
+			Kind:          "ddl",
+			Status:        "waiting_batch",
+			TriggerTag:    "TAG",
+			TriggerEvent:  "EVENT",
+			TransactionId: "123",
+			Data:          &dataEvent1,
+		},
+		&database.Event{
+			Kind:          "dml",
+			Status:        "waiting_batch",
+			TriggerTag:    "public.test_table",
+			TriggerEvent:  "INSERT",
+			TransactionId: "123",
+			Data:          &dataEvent2,
+		},
 	}
+
+	actionsForTargets, err := batcher.actionsForTargets(events)
+
+	if err != nil {
+		t.Errorf("actions for targets returned error: %#v", err)
+	}
+
+	expectedActions := map[string][]action.Action{
+		"test_target": []action.Action{
+			&action.CreateColumn{
+				SchemaName: "live",
+				TableName: "test_table",
+				Column: action.Column{
+					Name: "content",
+					Type: "text",
+					IsNativeType: true,
+				},
+			},
+			&action.InsertRow{
+				SchemaName: "live",
+				TableName: "test_table",
+				PrimaryKeyName: "id",
+				Rows: action.Rows{
+					action.Row{
+						Value: 5,
+						Column: action.Column{
+							Name: "id",
+							Type: "int4",
+							IsNativeType: true,
+						},
+					},
+				},
+			},
+		},
+	}
+
+	if diff := pretty.Compare(expectedActions, actionsForTargets); diff != "" {
+		t.Errorf(
+			"actions for target => %s",
+			diff,
+		)
+    }
 }

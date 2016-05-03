@@ -60,7 +60,7 @@ func (b *Batcher) createBatches() error {
 	tx := b.db.NewTransaction()
 
 	// Get actions for each target
-	actionsForTarget, err := b.actionsForTargets(events, b.targets)
+	actionsForTarget, err := b.actionsForTargets(events)
 
 	if err != nil {
 		return err
@@ -177,13 +177,13 @@ func (b *Batcher) createBatchWithActions(actions []action.Action, targetName str
 	return batch, nil
 }
 
-func (b *Batcher) actionsForTargets(events database.Events, targets map[string]*client.Client) (map[string][]action.Action, error) {
+func (b *Batcher) actionsForTargets(events database.Events) (map[string][]action.Action, error) {
 	// Sort events by id first
 	sort.Sort(events)
 
 	actionsForTarget := make(map[string][]action.Action)
 
-	for targetName, target := range targets {
+	for targetName, target := range b.targets {
 		schema, columnExpression := database.ParseTargetExpression(target.TargetExpression)
 		actions := make([]action.Action, 0)
 

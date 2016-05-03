@@ -6,7 +6,7 @@ volumes:
 services:
   test:
     build: .
-    command: go test ./...
+    command: go test -cover -v ./...
     volumes:
       - .:/go/src/github.com/pagarme/teleport/
 

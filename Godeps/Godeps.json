@@ -2,6 +2,9 @@
 	"ImportPath": "github.com/pagarme/teleport",
 	"GoVersion": "go1.6",
 	"GodepVersion": "v60",
+	"Packages": [
+		"./..."
+	],
 	"Deps": [
 		{
 			"ImportPath": "github.com/go-yaml/yaml",
@@ -24,6 +27,14 @@
 			"ImportPath": "github.com/jmoiron/sqlx/reflectx",
 			"Comment": "sqlx-v1.1-61-g398dd58",
 			"Rev": "398dd5876282499cdfd4cb8ea0f31a672abe9495"
+		},
+		{
+			"ImportPath": "github.com/kylelemons/godebug/diff",
+			"Rev": "eadb3ce320cbab8393bea5ca17bebac3f78a021b"
+		},
+		{
+			"ImportPath": "github.com/kylelemons/godebug/pretty",
+			"Rev": "eadb3ce320cbab8393bea5ca17bebac3f78a021b"
 		},
 		{
 			"ImportPath": "github.com/lib/pq",
