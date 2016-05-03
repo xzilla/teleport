@@ -5,6 +5,7 @@ services:
 
 before_install:
   - docker-compose up -d postgres
+  - docker-compose build
 
 script:
   - docker-compose up test
