@@ -2,12 +2,138 @@
 [![Build Status](https://travis-ci.org/pagarme/teleport.svg?branch=master)](https://travis-ci.org/pagarme/teleport)
 
 A trigger-based Postgres replicator that performs DDL migrations by diffing
-schema changes and replicates real-time data changes based on DML triggers. In
-other words, it works without any special permissions on the database, just
-like AWS RDS databases. Yes, you read it right.
+schema changes and replicating real-time data changes based on DML triggers.
+
+In other words, a complete replicator that works without any special
+permissions on the database, just like the ones you don't have in AWS RDS.
+
+Yes, you read it right.
 
 ## Install
 
 ```
 go get -u github.com/pagarme/teleport
 ```
+
+## Getting started
+
+Each running instance of teleport is responsible for managing a host, exposing
+a HTTP API to receive batches from other instances.
+
+So, for a master-slave replication you should run one teleport instance for the
+source host (master) and other for the target host (slave), and set the API of
+the target as the destination for the data fetched from the source.
+
+### Configuring the source instance
+
+For the source, create a config file named `source_config.yml`:
+
+```yml
+batch_size: 10000
+processing_intervals:
+  batcher: 100
+  transmitter: 100
+  applier: 100
+  vacuum: 500
+  ddlwatcher: 5000
+database:
+  name: "finops-db"
+  database: "postgres"
+  hostname: "postgres.mydomain.com"
+  username: "teleport"
+  password: "root"
+  port: 5432
+server:
+  hostname: "0.0.0.0"
+  port: 3000
+targets:
+  my-target:
+    target_expression: "public.*"
+    endpoint:
+      hostname: "target.mydomain.com"
+      port: 3001
+    apply_schema: "test"
+```
+
+For each `target` under the `targets` section, it's possible to define a
+`target_expression`, which defines what tables will be replicated. The
+expression should be schema-qualified.
+
+You should also set a `apply_schema`, which defines in what schema the data
+will be applied in the target, and a `endpoint` of the target teleport
+instance.
+
+### Configuring the target instance
+
+For the target, create a config file named `target_config.yml`:
+
+```yml
+batch_size: 10000
+processing_intervals:
+  batcher: 100
+  transmitter: 100
+  applier: 100
+  vacuum: 500
+  ddlwatcher: 5000
+database:
+  name: "my-target"
+  database: "postgres"
+  hostname: "postgres-replica.mydomain.com"
+  username: "teleport"
+  password: "root"
+  port: 5432
+server:
+  hostname: "target.mydomain.com"
+  port: 3001
+```
+
+You may have noted this config file does not include a `targets` section,
+simply because this instance will not be the source for any host. You can,
+however, use a instance as both source and target by simply including a
+`targets` section.
+
+### Initial load
+
+It's possible to generate initial-load batches on the source that will be
+transmitted to the target. To do a initial-load, run on source:
+
+```
+$ teleport -config source_config.yml -mode initial-load -load-target my-target
+```
+
+This will create batches on the source that will be transmitted to `my-target`
+as soon as teleport starts running.
+
+### Starting up
+
+You may start instances before the end of the initial load.  This will
+replicate data as it's extracted from the source to the target, and further
+modifications will be replicated and applied later on.
+
+On source, teleport will diff, group and batch events and transmit batches to
+the target. On the target, batches will be applied on the same order as they
+ocurred on the source.
+
+On source, run:
+
+```
+$ teleport -config source_config.yml
+```
+
+On target, run:
+
+```
+$ teleport -config target_config.yml
+```
+
+Teleport is now up and running! \o/
+
+## Tests
+
+```
+$ docker-compose run test
+```
+
+## License
+
+The MIT license.
