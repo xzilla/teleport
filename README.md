@@ -21,6 +21,19 @@ that is not reflected on target yet, it will queue the batch, apply the schema
 change and then apply the failed batches again.  This ensures consistency on
 the data even after running migrations and changing the source schema.
 
+## Features
+
+All the features above are replicatable by teleport:
+
+- INSERT/UPDATE/DELETE rows
+- Tables/columns
+- Composite types
+- Enums
+- Schemas
+- Functions
+- Indexes
+- Extensions
+
 ## Install
 
 ```
