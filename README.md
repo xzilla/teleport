@@ -2,12 +2,24 @@
 [![Build Status](https://travis-ci.org/pagarme/teleport.svg?branch=master)](https://travis-ci.org/pagarme/teleport)
 
 A trigger-based Postgres replicator that performs DDL migrations by diffing
-schema changes and replicating real-time data changes based on DML triggers.
-
-In other words, a complete replicator that works without any special
-permissions on the database, just like the ones you don't have in AWS RDS.
+schema changes and replicating real-time data changes based on DML triggers. In
+other words, a complete replicator that works without any special permissions
+on the database, just like the ones you don't have in AWS RDS.
 
 Yes, you read it right.
+
+## How it works
+
+In a configurable time interval, teleport diffs the current schema and
+replicate new tables, columns, indexes and so on from the source to the target.
+Inserted, updated or deleted rows are detected by triggers on the source, which
+generate events that teleport transform into batches for the appropriate
+targets.
+
+If teleport fails to apply a batch of new/updated rows due to a schema change
+that is not reflected on target yet, it will queue the batch, apply the schema
+change and then apply the failed batches again.  This ensures consistency on
+the data even after running migrations and changing the source schema.
 
 ## Install
 
@@ -20,7 +32,7 @@ go get -u github.com/pagarme/teleport
 Each running instance of teleport is responsible for managing a host, exposing
 a HTTP API to receive batches from other instances.
 
-So, for a master-slave replication you should run one teleport instance for the
+For a master-slave replication you should run one teleport instance for the
 source host (master) and other for the target host (slave), and set the API of
 the target as the destination for the data fetched from the source.
 
