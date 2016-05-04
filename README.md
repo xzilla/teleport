@@ -30,11 +30,10 @@ go get -u github.com/pagarme/teleport
 ## Getting started
 
 Each running instance of teleport is responsible for managing a host, exposing
-a HTTP API to receive batches from other instances.
-
-For a master-slave replication you should run one teleport instance for the
-source host (master) and other for the target host (slave), and set the API of
-the target as the destination for the data fetched from the source.
+a HTTP API to receive batches from other instances. For a master-slave
+replication you should run one teleport instance for the source host (master)
+and other for the target host (slave), and set the API of the target as the
+destination for the data fetched from the source.
 
 ### Configuring the source instance
 
@@ -139,6 +138,21 @@ $ teleport -config target_config.yml
 ```
 
 Teleport is now up and running! \o/
+
+## Performance
+
+We've been using teleport to replicate a roughly large production database
+(150GB) with ~50 DML updates per second and performance is pretty satisfying.
+Under our normal load, each teleport instance uses ~150MB of memory and not
+significant CPU usage nor spikes.
+
+As teleport relies on (very light) triggers for data replication, the source
+database performance may be slightly affected, but impacts were negligible for
+our use cases.
+
+Initial load uses Postgres' `COPY FROM` to load data, which makes it __very__
+fast. The initial load of our entire 150GB database took under ~14 hours using
+the `db.m4.xlarge` RDS instance for source and target.
 
 ## Tests
 
