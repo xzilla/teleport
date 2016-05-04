@@ -25,4 +25,4 @@ before_install:
 
 script:  
     - docker-compose build
-    - docker-compose up test
+    - docker-compose run test
