@@ -1,15 +1,21 @@
 package database
 
 import (
-	"github.com/pagarme/teleport/action"
 	"reflect"
 	"testing"
+
+	"github.com/pagarme/teleport/action"
+	"github.com/pagarme/teleport/config"
 )
 
 var event *Event
 
 func setupDml() {
-	db = New("", "", "", "", "", 0)
+	db = New(config.Database{
+		Options: map[string]string{
+			"sslmode": "disable",
+		},
+	})
 
 	columns := []*Column{
 		&Column{

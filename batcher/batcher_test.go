@@ -3,14 +3,15 @@ package batcher
 import (
 	"encoding/gob"
 	"fmt"
+	"os"
+	"reflect"
+	"testing"
+
+	"github.com/kylelemons/godebug/pretty"
 	"github.com/pagarme/teleport/action"
 	"github.com/pagarme/teleport/client"
 	"github.com/pagarme/teleport/config"
 	"github.com/pagarme/teleport/database"
-	"github.com/kylelemons/godebug/pretty"
-	"os"
-	"reflect"
-	"testing"
 )
 
 var db *database.Database
@@ -27,14 +28,7 @@ func init() {
 		os.Exit(1)
 	}
 
-	db = database.New(
-		config.Database.Name,
-		config.Database.Database,
-		config.Database.Hostname,
-		config.Database.Username,
-		config.Database.Password,
-		config.Database.Port,
-	)
+	db = database.New(config.Database)
 
 	// Start db
 	if err = db.Start(); err != nil {
@@ -172,22 +166,22 @@ func TestActionsForTarget(t *testing.T) {
 					RelationName: "test_table",
 					Columns: []*database.Column{
 						&database.Column{
-							Name: "id",
-							Num: 1,
-							TypeName: "int4",
-							TypeSchema: "pg_catalog",
-							TypeOid: "123",
+							Name:         "id",
+							Num:          1,
+							TypeName:     "int4",
+							TypeSchema:   "pg_catalog",
+							TypeOid:      "123",
 							IsPrimaryKey: true,
-							Table: nil,
+							Table:        nil,
 						},
 						&database.Column{
-							Name: "content",
-							Num: 2,
-							TypeName: "text",
-							TypeSchema: "pg_catalog",
-							TypeOid: "124",
+							Name:         "content",
+							Num:          2,
+							TypeName:     "text",
+							TypeSchema:   "pg_catalog",
+							TypeOid:      "124",
 							IsPrimaryKey: false,
-							Table: nil,
+							Table:        nil,
 						},
 					},
 				},
@@ -249,23 +243,23 @@ func TestActionsForTarget(t *testing.T) {
 		"test_target": []action.Action{
 			&action.CreateColumn{
 				SchemaName: "live",
-				TableName: "test_table",
+				TableName:  "test_table",
 				Column: action.Column{
-					Name: "content",
-					Type: "text",
+					Name:         "content",
+					Type:         "text",
 					IsNativeType: true,
 				},
 			},
 			&action.InsertRow{
-				SchemaName: "live",
-				TableName: "test_table",
+				SchemaName:     "live",
+				TableName:      "test_table",
 				PrimaryKeyName: "id",
 				Rows: action.Rows{
 					action.Row{
 						Value: 5,
 						Column: action.Column{
-							Name: "id",
-							Type: "int4",
+							Name:         "id",
+							Type:         "int4",
 							IsNativeType: true,
 						},
 					},
@@ -279,5 +273,5 @@ func TestActionsForTarget(t *testing.T) {
 			"actions for target => %s",
 			diff,
 		)
-    }
+	}
 }

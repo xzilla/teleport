@@ -3,50 +3,50 @@ package database
 import (
 	"database/sql"
 	"fmt"
+	"log"
+
 	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq"
 	"github.com/pagarme/teleport/action"
 	"github.com/pagarme/teleport/asset"
-	"log"
+	"github.com/pagarme/teleport/config"
 )
 
 // Database definition
 type Database struct {
-	Name     string
-	Database string
-	Hostname string
-	Username string
-	Password string
-	Port     int
-	Schemas  map[string]*Schema
-	Db       *sqlx.DB
+	Name    string
+	Config  config.Database
+	Schemas map[string]*Schema
+	Db      *sqlx.DB
 }
 
-func New(name, database, hostname, username, password string, port int) *Database {
+func New(dbconf config.Database) *Database {
 	return &Database{
-		Name:     name,
-		Database: database,
-		Hostname: hostname,
-		Username: username,
-		Password: password,
-		Port:     port,
-		Schemas:  make(map[string]*Schema),
+		Name:    dbconf.Name,
+		Config:  dbconf,
+		Schemas: make(map[string]*Schema),
 	}
+}
+
+func (db *Database) ConnectionString() string {
+	s := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%d",
+		db.Config.Hostname,
+		db.Config.Username,
+		db.Config.Password,
+		db.Config.Database,
+		db.Config.Port,
+	)
+	for k, v := range db.Config.Options {
+		s += " " + k + "=" + v
+	}
+	return s
 }
 
 // Open connection with database and setup internal tables
 func (db *Database) Start() error {
 	var err error
 
-	db.Db, err = sqlx.Connect("postgres", fmt.Sprintf(
-		"host=%s user=%s password=%s dbname=%s port=%d sslmode=disable",
-		db.Hostname,
-		db.Username,
-		db.Password,
-		db.Database,
-		db.Port,
-	))
-
+	db.Db, err = sqlx.Connect("postgres", db.ConnectionString())
 	db.Db.SetMaxOpenConns(5)
 
 	if err != nil {

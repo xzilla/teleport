@@ -8,4 +8,5 @@ type Database struct {
 	Username string
 	Password string
 	Port     int
+	Options  map[string]string
 }
