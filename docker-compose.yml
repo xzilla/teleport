@@ -30,6 +30,6 @@ services:
 
   # Databases
   postgres:
-    image: postgres:9.4
+    image: postgres:9.2.16
     volumes:
         - .:/code

@@ -21,8 +21,7 @@ that is not reflected on target yet, it will queue the batch, apply the schema
 change and then apply the failed batches again.  This ensures consistency on
 the data even after running migrations and changing the source schema.
 
-Currently only source databases of Postgres versions >= 9.3 are supported. This is partly due to "IF NOT EXISTS" clauses
-in `data/sql/setup.sql` and also due to the use of 9.3 json aggregation functions such as `json_agg`
+Currently only source databases with Postgres versions >= 9.2.16 are supported.
 
 ## Features
 
