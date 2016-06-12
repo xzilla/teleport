@@ -3,12 +3,13 @@ package applier
 import (
 	"encoding/gob"
 	"fmt"
+	"os"
+	"testing"
+
 	"github.com/pagarme/teleport/action"
 	"github.com/pagarme/teleport/client"
 	"github.com/pagarme/teleport/config"
 	"github.com/pagarme/teleport/database"
-	"os"
-	"testing"
 )
 
 var db *database.Database
@@ -26,14 +27,7 @@ func init() {
 		os.Exit(1)
 	}
 
-	db = database.New(
-		config.Database.Name,
-		config.Database.Database,
-		config.Database.Hostname,
-		config.Database.Username,
-		config.Database.Password,
-		config.Database.Port,
-	)
+	db = database.New(config.Database)
 
 	// Start db
 	if err = db.Start(); err != nil {
@@ -61,7 +55,7 @@ func init() {
 }
 
 // StubAction implements Action
-type StubAction struct{
+type StubAction struct {
 	Success bool
 }
 
@@ -170,7 +164,7 @@ func TestApplyBatchFsMultipleApplies(t *testing.T) {
 	tx := db.NewTransaction()
 	stubBatch = database.NewBatch("fs")
 	stubBatch.DataStatus = "transmitted"
-	stubBatch.SetActions([]action.Action{&StubAction{true},&StubAction{true},&StubAction{true},&StubAction{true},&StubAction{true}})
+	stubBatch.SetActions([]action.Action{&StubAction{true}, &StubAction{true}, &StubAction{true}, &StubAction{true}, &StubAction{true}})
 	stubBatch.InsertQuery(tx)
 	tx.Commit()
 

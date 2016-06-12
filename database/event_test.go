@@ -2,10 +2,11 @@ package database
 
 import (
 	"fmt"
-	"github.com/pagarme/teleport/config"
 	"os"
 	"reflect"
 	"testing"
+
+	"github.com/pagarme/teleport/config"
 )
 
 var db *Database
@@ -19,14 +20,7 @@ func setupEvent() {
 		os.Exit(1)
 	}
 
-	db = New(
-		config.Database.Name,
-		config.Database.Database,
-		config.Database.Hostname,
-		config.Database.Username,
-		config.Database.Password,
-		config.Database.Port,
-	)
+	db = New(config.Database)
 
 	// Start db
 	if err = db.Start(); err != nil {

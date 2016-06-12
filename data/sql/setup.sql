@@ -1,5 +1,11 @@
 -- Create schema for teleport tables teleport
-CREATE SCHEMA IF NOT EXISTS teleport;
+DO $$
+BEGIN
+	IF NOT EXISTS (SELECT 1 FROM pg_namespace WHERE nspname = 'teleport') THEN
+		CREATE SCHEMA teleport;
+	END IF;
+END
+$$;
 
 -- Define event_kind type.
 -- ddl = schema changes
@@ -45,41 +51,61 @@ END
 $$;
 
 -- Create table to store teleport events
-CREATE TABLE IF NOT EXISTS teleport.event (
-	id serial primary key,
-	kind teleport.event_kind,
-	status teleport.event_status,
-	trigger_tag text,
-	trigger_event text,
-	transaction_id int,
-	data text
-);
+DO $$
+BEGIN
+	IF NOT EXISTS (SELECT 1 FROM pg_tables WHERE schemaname = 'teleport' AND tablename = 'event') THEN
+		CREATE TABLE teleport.event (
+			id serial primary key,
+			kind teleport.event_kind,
+			status teleport.event_status,
+			trigger_tag text,
+			trigger_event text,
+			transaction_id int,
+			data text
+		);
+	END IF;
+END
+$$;
+
 
 -- Create table to store batches of data
-CREATE TABLE IF NOT EXISTS teleport.batch (
-	id serial primary key,
-	status teleport.batch_status,
-	data_status teleport.batch_status,
-	storage_type teleport.batch_storage_type,
-	data text,
-	source text,
-	target text,
-	waiting_reexecution boolean not null default false,
-	last_executed_statement int default 0
-);
+DO $$
+BEGIN
+	IF NOT EXISTS (SELECT 1 FROM pg_tables WHERE schemaname = 'teleport' AND tablename = 'batch') THEN
+		CREATE TABLE teleport.batch (
+			id serial primary key,
+			status teleport.batch_status,
+			data_status teleport.batch_status,
+			storage_type teleport.batch_storage_type,
+			data text,
+			source text,
+			target text,
+			waiting_reexecution boolean not null default false,
+			last_executed_statement int default 0
+		);
+	END IF;
+END
+$$;
+
 
 -- Create table to store events of a given batch
-CREATE TABLE IF NOT EXISTS teleport.batch_events (
-	batch_id int,
-	event_id int
-);
+DO $$
+BEGIN
+	IF NOT EXISTS (SELECT 1 FROM pg_tables WHERE schemaname = 'teleport' AND tablename = 'batch_events') THEN
+		CREATE TABLE teleport.batch_events (
+			batch_id int,
+			event_id int
+		);
+	END IF;
+END
+$$;
 
 -- Returns current schema of all tables in all schemas as a JSON
 -- JSON array containing each column's definition.
 CREATE OR REPLACE FUNCTION teleport_get_schema() RETURNS text AS $$
 BEGIN
 	RETURN (
-		SELECT json_agg(row_to_json(data)) FROM (
+		SELECT array_to_json(array_agg(row_to_json(data))) FROM (
 			-- The catalog pg_namespace stores namespaces. A namespace is the structure
 			-- underlying SQL schemas: each namespace can have a separate collection of
 			-- relations, types, etc. without name conflicts.

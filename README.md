@@ -6,7 +6,7 @@ schema changes and replicating real-time data changes based on DML triggers. In
 other words, a complete replicator that works without any special permissions
 on the database, just like the ones you don't have in AWS RDS.
 
-Yes, you read it right.
+Yes, you read it right
 
 ## How it works
 
@@ -20,6 +20,8 @@ If teleport fails to apply a batch of new/updated rows due to a schema change
 that is not reflected on target yet, it will queue the batch, apply the schema
 change and then apply the failed batches again.  This ensures consistency on
 the data even after running migrations and changing the source schema.
+
+Currently only source databases with Postgres versions >= 9.2.16 are supported.
 
 ## Features
 

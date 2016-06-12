@@ -2,12 +2,13 @@ package database
 
 import (
 	"fmt"
-	"github.com/pagarme/teleport/action"
-	"github.com/pagarme/teleport/config"
 	"io/ioutil"
 	"os"
 	"reflect"
 	"testing"
+
+	"github.com/pagarme/teleport/action"
+	"github.com/pagarme/teleport/config"
 )
 
 var createSchemaAction *action.CreateSchema
@@ -22,14 +23,7 @@ func init() {
 		os.Exit(1)
 	}
 
-	db = New(
-		config.Database.Name,
-		config.Database.Database,
-		config.Database.Hostname,
-		config.Database.Username,
-		config.Database.Password,
-		config.Database.Port,
-	)
+	db = New(config.Database)
 
 	createSchemaAction = &action.CreateSchema{
 		SchemaName: "test_schema",

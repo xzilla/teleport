@@ -7,6 +7,8 @@ database:
   username: "postgres"
   password: "root"
   port: 5432
+  options:
+    sslmode: disable
 server:
   hostname: "0.0.0.0"
   port: 3000

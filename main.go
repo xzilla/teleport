@@ -2,6 +2,10 @@ package main
 
 import (
 	"flag"
+	"log"
+	"os"
+	"time"
+
 	"github.com/pagarme/teleport/applier"
 	"github.com/pagarme/teleport/batcher"
 	"github.com/pagarme/teleport/client"
@@ -12,9 +16,6 @@ import (
 	"github.com/pagarme/teleport/server"
 	"github.com/pagarme/teleport/transmitter"
 	"github.com/pagarme/teleport/vacuum"
-	"log"
-	"os"
-	"time"
 )
 
 func main() {
@@ -50,14 +51,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	db := database.New(
-		config.Database.Name,
-		config.Database.Database,
-		config.Database.Hostname,
-		config.Database.Username,
-		config.Database.Password,
-		config.Database.Port,
-	)
+	db := database.New(config.Database)
 
 	// Start db
 	if err = db.Start(); err != nil {

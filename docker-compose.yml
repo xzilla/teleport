@@ -9,6 +9,8 @@ services:
     command: bash -c "ASSET_FLAGS=-debug make asset; go test -cover -v ./..."
     volumes:
       - .:/go/src/github.com/pagarme/teleport/
+    depends_on:
+      - postgres
 
   source:
     build: .
@@ -28,6 +30,6 @@ services:
 
   # Databases
   postgres:
-    image: postgres:9.4
+    image: postgres:9.2.16
     volumes:
         - .:/code
