@@ -26,15 +26,11 @@ BEGIN
 
 	IF (SELECT event_row.id IS NOT NULL) THEN
 		WITH all_json_key_value AS (
-			SELECT 'pre' AS key, data::json AS value FROM teleport.event WHERE id = event_row.id
-			UNION ALL
-			SELECT 'post' AS key, teleport_get_schema()::json AS value
+			SELECT data::json AS pre, teleport_get_schema()::json AS post FROM teleport.event WHERE id = event_row.id
 		)
 		UPDATE teleport.event
 			SET status = 'waiting_batch',
-				data = (SELECT json_object_agg(s.key, s.value)
-					FROM all_json_key_value s
-				)
+				data = (SELECT row_to_json(all_json_key_value) FROM all_json_key_value)
 		WHERE id = event_row.id;
 	END IF;
 
