@@ -102,7 +102,7 @@ $$;
 
 -- Returns current schema of all tables in all schemas as a JSON
 -- JSON array containing each column's definition.
-CREATE OR REPLACE FUNCTION teleport_get_schema() RETURNS text AS $$
+CREATE OR REPLACE FUNCTION teleport.get_schema() RETURNS text AS $$
 BEGIN
 	RETURN (
 		SELECT array_to_json(array_agg(row_to_json(data))) FROM (
