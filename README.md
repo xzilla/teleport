@@ -22,6 +22,7 @@ change and then apply the failed batches again.  This ensures consistency on
 the data even after running migrations and changing the source schema.
 
 Currently only source databases with Postgres versions >= 9.2.16 are supported.
+Teleport requires that all replicated tables have a primary key.
 
 ## Features
 
