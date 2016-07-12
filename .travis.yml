@@ -24,6 +24,4 @@ before_install:
     - sudo mv docker-compose /usr/local/bin
 
 script:  
-    - docker-compose build
-    - docker-compose up -d postgres
-    - docker-compose run test
+    - ./script/test

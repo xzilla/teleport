@@ -14,7 +14,7 @@ services:
 
   source:
     build: .
-    command: bash -c "ASSET_FLAGS=-debug make asset; go run main.go -config source_config.yml"
+    command: bash -c "ASSET_FLAGS=-debug make asset; go run main.go -config tmp/source_config.yml"
     volumes:
       - .:/go/src/github.com/pagarme/teleport/
     ports:
@@ -22,7 +22,7 @@ services:
 
   target:
     build: .
-    command: bash -c "ASSET_FLAGS=-debug make asset; go run main.go -config target_config.yml"
+    command: bash -c "ASSET_FLAGS=-debug make asset; go run main.go -config tmp/target_config.yml"
     volumes:
       - .:/go/src/github.com/pagarme/teleport/
     ports:

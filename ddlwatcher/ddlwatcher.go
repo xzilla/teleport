@@ -30,7 +30,7 @@ func (d *DdlWatcher) Watch(sleepTime time.Duration) {
 
 func (d *DdlWatcher) runWatcher() error {
 	_, err := d.db.Db.Exec(`
-		SELECT teleport_ddl_watcher();
+		SELECT teleport.ddl_watcher();
 	`)
 
 	return err

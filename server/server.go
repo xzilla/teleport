@@ -8,6 +8,7 @@ import (
 	"github.com/pagarme/teleport/server/httputils"
 	"github.com/pagarme/teleport/server/router"
 	batchrouter "github.com/pagarme/teleport/server/router/batch"
+	statusrouter "github.com/pagarme/teleport/server/router/status"
 	"log"
 	"net/http"
 	"time"
@@ -25,6 +26,7 @@ func New(db *database.Database, config config.HTTP) *Server {
 	}
 
 	server.AddRouter(batchrouter.New(db))
+	server.AddRouter(statusrouter.New())
 
 	return server
 }
