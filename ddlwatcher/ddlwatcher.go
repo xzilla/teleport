@@ -29,8 +29,12 @@ func (d *DdlWatcher) Watch(sleepTime time.Duration) {
 }
 
 func (d *DdlWatcher) runWatcher() error {
+	// SERIALIZABLE is needed to ensure consistency when
+	// fetching the schema from pg_catalog.
 	_, err := d.db.Db.Exec(`
-		SELECT teleport.ddl_watcher();
+		BEGIN TRANSACTION ISOLATION LEVEL SERIALIZABLE;
+			SELECT teleport.ddl_watcher();
+		COMMIT;
 	`)
 
 	return err
