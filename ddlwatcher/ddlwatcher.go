@@ -29,8 +29,6 @@ func (d *DdlWatcher) Watch(sleepTime time.Duration) {
 }
 
 func (d *DdlWatcher) runWatcher() error {
-	log.Printf("running ddl watcher\n");
-
 	_, err := d.db.Db.Exec(`
 		SELECT teleport.ddl_watcher();
 	`)
