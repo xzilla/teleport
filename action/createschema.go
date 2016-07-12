@@ -16,7 +16,15 @@ func init() {
 
 func (a *CreateSchema) Execute(c *Context) error {
 	_, err := c.Tx.Exec(
-		fmt.Sprintf("CREATE SCHEMA IF NOT EXISTS \"%s\";", a.SchemaName),
+		fmt.Sprintf(`
+			DO $$
+			BEGIN
+				IF NOT EXISTS (SELECT 1 FROM pg_namespace WHERE nspname = '%s') THEN
+					CREATE SCHEMA %s;
+				END IF;
+			END
+			$$
+		`, a.SchemaName, a.SchemaName),
 	)
 
 	return err
