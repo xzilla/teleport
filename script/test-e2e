@@ -1,0 +1,66 @@
+#!/bin/sh
+
+set -e
+
+# Drop database for target, recreate database and test schema
+docker-compose run --rm postgres psql -h postgres -U postgres postgres  -c "DROP DATABASE IF EXISTS postgres2;"
+docker-compose run --rm postgres psql -h postgres -U postgres postgres  -c "CREATE DATABASE postgres2;"
+docker-compose run --rm postgres psql -h postgres -U postgres postgres2 -c "CREATE SCHEMA test;"
+docker-compose run --rm postgres psql -h postgres -U postgres postgres  -c "
+DROP SCHEMA IF EXISTS public CASCADE;
+DROP SCHEMA IF EXISTS teleport CASCADE;
+CREATE SCHEMA public;
+"
+
+# Insert test data
+docker-compose run --rm postgres psql -h postgres -U postgres postgres -c "
+DROP TABLE IF EXISTS test_table;
+CREATE TABLE test_table (id SERIAL PRIMARY KEY, content TEXT, obj JSON);
+
+INSERT INTO test_table (content, obj) VALUES ('asdasd', '{\"testing_this\":\"lol\"}'::json);
+INSERT INTO test_table (content, obj) VALUES ('asdasd2', '{\"testing_this2\":\"lol2\"}'::json);
+"
+
+# Start teleport source/target
+# docker-compose up -d source target
+docker-compose up -d source target
+
+# Wait for source and target servers to be up and running
+docker-compose run --rm source bash <<EOF
+wait_http() {
+	until curl --fail --silent \$1 > /dev/null 2>&1;
+	do sleep 0.5; done
+}
+
+echo Waiting for source
+wait_http http://source:3000/status
+
+echo Waiting for target
+wait_http http://target:3001/status
+EOF
+
+# Run initial load
+docker-compose run --rm source teleport -config tmp/source_config.yml -mode initial-load -load-target my_target
+
+# Create test column
+docker-compose run --rm postgres psql -h postgres -U postgres postgres -c "
+ALTER TABLE test_table ADD COLUMN num INT;
+ALTER TABLE test_table DROP COLUMN content;
+"
+
+# Wait DDL replication
+sleep 2
+
+# Insert test data
+docker-compose run --rm postgres psql -h postgres -U postgres postgres -c "
+INSERT INTO test_table (obj, num) VALUES ('{\"testing_this3\":0}'::json, 125);
+INSERT INTO test_table (obj, num) VALUES ('{\"testing_this4\":true}'::json, 126);
+"
+
+# Get output from source
+docker-compose run --rm postgres psql -h postgres -U postgres postgres -c  "SELECT * FROM test_table ORDER BY 1; " > /tmp/source_diff.txt
+
+# And compare to target
+docker-compose run --rm postgres psql -h postgres -U postgres postgres2 -c "SELECT * FROM test.test_table ORDER BY 1; " > /tmp/target_diff.txt
+
+diff /tmp/source_diff.txt /tmp/target_diff.txt

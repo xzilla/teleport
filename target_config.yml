@@ -6,7 +6,7 @@ processing_intervals:
   vacuum: 500
   ddlwatcher: 5000
 database:
-  name: "tar"
+  name: "my_target"
   database: "postgres2"
   hostname: "postgres"
   username: "postgres"
@@ -17,4 +17,3 @@ database:
 server:
   hostname: "0.0.0.0"
   port: 3001
-  # auth: asd
