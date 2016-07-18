@@ -32,6 +32,13 @@ func (post *Function) Diff(other ddldiff.Diffable, context ddldiff.Context) []ac
 				pre.Name,
 				post.Name,
 			})
+		} else if pre.Def != post.Def {
+			// CREATE OR REPLACE FUNCTION
+			actions = append(actions, &action.CreateFunction{
+				context.Schema,
+				post.Name,
+				post.Def,
+			})
 		}
 	}
 

@@ -30,7 +30,7 @@ func TestFunctionDiff(t *testing.T) {
 		output []action.Action
 	}{
 		{
-			// Diff a index creation
+			// Diff a function creation
 			nil,
 			&Function{
 				"123",
@@ -48,7 +48,31 @@ func TestFunctionDiff(t *testing.T) {
 			},
 		},
 		{
-			// Diff a index rename
+			// Diff a function code change
+			&Function{
+				"123",
+				"test_fn",
+				"create function test_fn()",
+				"",
+				schema,
+			},
+			&Function{
+				"123",
+				"test_fn",
+				"create function test_fn() asd",
+				"",
+				schema,
+			},
+			[]action.Action{
+				&action.CreateFunction{
+					"default_context",
+					"test_fn",
+					"create function test_fn() asd",
+				},
+			},
+		},
+		{
+			// Diff a function rename
 			&Function{
 				"123",
 				"test_fn",
