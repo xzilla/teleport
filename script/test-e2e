@@ -27,6 +27,20 @@ BEGIN
 	RETURN 1;
 END;
 \$\$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION test_func_table() RETURNS SETOF test_table AS \$\$
+BEGIN
+	RETURN;
+END;
+\$\$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE  FUNCTION test_func_index() RETURNS test_enum AS \$\$
+BEGIN
+	RETURN 'red';
+END;
+\$\$ LANGUAGE plpgsql IMMUTABLE;
+
+CREATE INDEX test_table_color_ind ON test_table (test_func_index());
 "
 
 # Start teleport source/target
@@ -48,7 +62,7 @@ wait_http http://target:3001/status
 EOF
 
 # Run initial load
-docker-compose run --rm source teleport -config tmp/source_config.yml -mode initial-load -load-target my_target
+docker-compose up initial-load
 
 # Modify schema
 docker-compose run --rm postgres psql -h postgres -U postgres postgres -c "

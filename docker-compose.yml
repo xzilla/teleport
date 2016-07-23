@@ -12,6 +12,12 @@ services:
     depends_on:
       - postgres
 
+  initial-load:
+    build: .
+    command: bash -c "ASSET_FLAGS=-debug make asset; go run main.go -config tmp/source_config.yml -mode initial-load -load-target my_target"
+    volumes:
+      - .:/go/src/github.com/pagarme/teleport/
+
   source:
     build: .
     command: bash -c "ASSET_FLAGS=-debug make asset; go run main.go -config tmp/source_config.yml"

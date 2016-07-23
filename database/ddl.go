@@ -54,11 +54,30 @@ func (d *Ddl) filterSchemas(schemas []*Schema) []*Schema {
 }
 
 func (d *Ddl) Diff() []action.Action {
-	return ddldiff.Diff(
+	actions := ddldiff.Diff(
 		d.schemaToDiffable(d.filterSchemas(d.PreSchemas)),
 		d.schemaToDiffable(d.filterSchemas(d.PostSchemas)),
 		ddldiff.Context{
 			Schema: d.TargetSchema,
 		},
 	)
+
+	// Move indexes to the end of list of actions
+	// (FIXME using a decent dependency conflict resolution)
+	newActions := make([]action.Action, 0)
+	indicesActions := make([]action.Action, 0)
+
+	for _, act := range actions {
+		_, isCreateIndex := act.(*action.CreateIndex)
+		_, isAlterIndex := act.(*action.AlterIndex)
+		_, isDropIndex := act.(*action.DropIndex)
+
+		if isCreateIndex || isAlterIndex || isDropIndex {
+			indicesActions = append(indicesActions, act)
+		} else {
+			newActions = append(newActions, act)
+		}
+	}
+
+	return append(newActions, indicesActions...)
 }

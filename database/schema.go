@@ -116,6 +116,10 @@ func (post *Schema) Diff(other ddldiff.Diffable, context ddldiff.Context) []acti
 func (s *Schema) Children() []ddldiff.Diffable {
 	children := make([]ddldiff.Diffable, 0)
 
+	for i, _ := range s.Extensions {
+		children = append(children, s.Extensions[i])
+	}
+
 	// Add enums first
 	for i, typ := range s.Types {
 		if typ.Type == "e" {
@@ -130,16 +134,12 @@ func (s *Schema) Children() []ddldiff.Diffable {
 		}
 	}
 
-	for i, _ := range s.Extensions {
-		children = append(children, s.Extensions[i])
+	for i, _ := range s.Tables {
+		children = append(children, s.Tables[i])
 	}
 
 	for i, _ := range s.Functions {
 		children = append(children, s.Functions[i])
-	}
-
-	for i, _ := range s.Tables {
-		children = append(children, s.Tables[i])
 	}
 
 	return children
