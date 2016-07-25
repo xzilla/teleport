@@ -47,9 +47,9 @@ func (db *Database) GetBatches(status, dataStatus string) ([]*Batch, error) {
 	var err error
 
 	if dataStatus == "" {
-		err = db.selectObjs(&batches, "SELECT * FROM teleport.batch WHERE status = $1 ORDER BY waiting_reexecution, id ASC;", status)
+		err = db.selectObjs(&batches, "SELECT * FROM teleport.batch WHERE status = $1 ORDER BY waiting_reexecution, id ASC LIMIT 1000;", status)
 	} else {
-		err = db.selectObjs(&batches, "SELECT * FROM teleport.batch WHERE status = $1 AND data_status = $2 ORDER BY waiting_reexecution, id ASC;", status, dataStatus)
+		err = db.selectObjs(&batches, "SELECT * FROM teleport.batch WHERE status = $1 AND data_status = $2 ORDER BY waiting_reexecution, id ASC LIMIT 1000;", status, dataStatus)
 	}
 
 	return batches, err
