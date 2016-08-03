@@ -57,6 +57,7 @@ For the source, create a config file named `source_config.yml`:
 
 ```yml
 batch_size: 10000
+max_events_per_batch: 10000
 processing_intervals:
   batcher: 100
   transmitter: 100
@@ -96,6 +97,7 @@ For the target, create a config file named `target_config.yml`:
 
 ```yml
 batch_size: 10000
+max_events_per_batch: 10000
 processing_intervals:
   batcher: 100
   transmitter: 100

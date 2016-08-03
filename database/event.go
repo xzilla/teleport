@@ -32,9 +32,16 @@ func NewEvent(eventData string) *Event {
 	}
 }
 
-func (db *Database) GetEvents(status string) ([]*Event, error) {
+func (db *Database) GetEvents(status string, limit int) ([]*Event, error) {
+	var err error
 	var events []*Event
-	err := db.selectObjs(&events, "SELECT * FROM teleport.event WHERE status = $1 ORDER BY id ASC;", status)
+
+	if limit == -1 {
+		err = db.selectObjs(&events, "SELECT * FROM teleport.event WHERE status = $1 ORDER BY id ASC;", status)
+	} else {
+		err = db.selectObjs(&events, "SELECT * FROM teleport.event WHERE status = $1 ORDER BY id ASC LIMIT $2;", status, limit)
+	}
+
 	return events, err
 }
 

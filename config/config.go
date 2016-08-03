@@ -19,6 +19,7 @@ type Config struct {
 	Targets             map[string]Target   `yaml:"targets"`
 	BatchSize           int                 `yaml:"batch_size"`
 	ProcessingIntervals ProcessingIntervals `yaml:"processing_intervals"`
+	MaxEventsPerBatch   int                 `yaml:"max_events_per_batch"`
 }
 
 func New() *Config {

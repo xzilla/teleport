@@ -70,7 +70,7 @@ func main() {
 
 	if *mode == "replication" {
 		// Start batcher on a separate goroutine
-		batcher := batcher.New(db, targets)
+		batcher := batcher.New(db, targets, config.MaxEventsPerBatch)
 		go batcher.Watch(time.Duration(config.ProcessingIntervals.Batcher) * time.Millisecond)
 
 		// Start transmitter on a separate goroutine
@@ -108,7 +108,7 @@ func main() {
 			os.Exit(1)
 		}
 
-		loader := loader.New(db, target, *loadTarget, config.BatchSize)
+		loader := loader.New(db, target, *loadTarget, config.BatchSize, config.MaxEventsPerBatch)
 		err := loader.Load()
 
 		if err != nil {

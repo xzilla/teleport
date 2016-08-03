@@ -12,14 +12,16 @@ import (
 )
 
 type Batcher struct {
-	db      *database.Database
-	targets map[string]*client.Client
+	db                *database.Database
+	targets           map[string]*client.Client
+	maxEventsPerBatch int
 }
 
-func New(db *database.Database, targets map[string]*client.Client) *Batcher {
+func New(db *database.Database, targets map[string]*client.Client, maxEventsPerBatch int) *Batcher {
 	return &Batcher{
-		db:      db,
-		targets: targets,
+		db:                db,
+		targets:           targets,
+		maxEventsPerBatch: maxEventsPerBatch,
 	}
 }
 
@@ -39,7 +41,7 @@ func (b *Batcher) Watch(sleepTime time.Duration) {
 // Group all events 'waiting_batch' and create a batch with them.
 func (b *Batcher) createBatches() error {
 	// Get events waiting replication
-	events, err := b.db.GetEvents("waiting_batch")
+	events, err := b.db.GetEvents("waiting_batch", b.maxEventsPerBatch)
 
 	if err != nil {
 		return err

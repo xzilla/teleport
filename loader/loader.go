@@ -14,10 +14,10 @@ type Loader struct {
 	batcher    *batcher.Batcher
 }
 
-func New(db *database.Database, target *client.Client, targetName string, batchSize int) *Loader {
+func New(db *database.Database, target *client.Client, targetName string, batchSize, maxEventsPerBatch int) *Loader {
 	batcher := batcher.New(db, map[string]*client.Client{
 		targetName: target,
-	})
+	}, maxEventsPerBatch)
 
 	return &Loader{
 		db:         db,
@@ -29,7 +29,7 @@ func New(db *database.Database, target *client.Client, targetName string, batchS
 }
 
 func (l *Loader) Load() error {
-	events, err := l.db.GetEvents("building")
+	events, err := l.db.GetEvents("building", -1)
 
 	if err != nil {
 		return err

@@ -42,7 +42,7 @@ func init() {
 		targets[key] = client.New(target)
 	}
 
-	batcher = New(db, targets)
+	batcher = New(db, targets, -1)
 }
 
 // StubAction implements Action
@@ -90,7 +90,7 @@ func TestMarkEventsBatched(t *testing.T) {
 
 	tx.Commit()
 
-	batchedEvents, _ := db.GetEvents("batched")
+	batchedEvents, _ := db.GetEvents("batched", -1)
 	var updatedEvent *database.Event
 
 	for _, event := range batchedEvents {
