@@ -36,7 +36,7 @@ func (db *Database) GetEvents(status string, limit int) ([]*Event, error) {
 	var err error
 	var events []*Event
 
-	if limit == -1 {
+	if limit <= 0 {
 		err = db.selectObjs(&events, "SELECT * FROM teleport.event WHERE status = $1 ORDER BY id ASC;", status)
 	} else {
 		err = db.selectObjs(&events, "SELECT * FROM teleport.event WHERE status = $1 ORDER BY id ASC LIMIT $2;", status, limit)
