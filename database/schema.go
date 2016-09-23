@@ -58,7 +58,7 @@ func (s *Schema) fillParentReferences() {
 // Fetches the schema from the database and update Schema
 func (db *Database) RefreshSchema() error {
 	// Get schema from query
-	rows, err := db.runQuery("SELECT teleport.get_schema();")
+	rows, err := db.runQuery(nil, "SELECT teleport.get_schema();")
 
 	if err != nil {
 		return err

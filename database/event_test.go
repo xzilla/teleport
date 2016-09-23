@@ -80,7 +80,7 @@ func TestGetEvents(t *testing.T) {
 		Data:          &data,
 	}
 
-	events, err := db.GetEvents("waiting_batch", -1)
+	events, err := db.GetEvents(nil, "waiting_batch", -1)
 
 	if err != nil {
 		t.Errorf("get events returned error: %v\n", err)

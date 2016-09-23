@@ -40,31 +40,37 @@ func (b *Batcher) Watch(sleepTime time.Duration) {
 
 // Group all events 'waiting_batch' and create a batch with them.
 func (b *Batcher) createBatches() error {
-	// Get events waiting replication
-	events, err := b.db.GetEvents("waiting_batch", b.maxEventsPerBatch)
+	err := b.db.RefreshSchema()
 
 	if err != nil {
 		return err
-	}
-
-	err = b.db.RefreshSchema()
-
-	if err != nil {
-		return err
-	}
-
-	// Stop if there are no events
-	if len(events) == 0 {
-		return nil
 	}
 
 	// Start a transaction
 	tx := b.db.NewTransaction()
 
+	// Get events waiting replication
+	events, err := b.db.GetEvents(tx, "waiting_batch", b.maxEventsPerBatch)
+
+	if err != nil {
+		tx.Rollback()
+
+		return err
+	}
+
+	// Stop if there are no events
+	if len(events) == 0 {
+		tx.Rollback()
+
+		return nil
+	}
+
 	// Get actions for each target
 	actionsForTarget, err := b.actionsForTargets(events)
 
 	if err != nil {
+		tx.Rollback()
+
 		return err
 	}
 
@@ -72,12 +78,16 @@ func (b *Batcher) createBatches() error {
 	_, err = b.CreateBatchesWithActions(actionsForTarget, tx)
 
 	if err != nil {
+		tx.Rollback()
+
 		return err
 	}
 
 	err = b.markEventsBatched(events, tx)
 
 	if err != nil {
+		tx.Rollback()
+
 		return err
 	}
 

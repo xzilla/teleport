@@ -128,12 +128,20 @@ func (db *Database) setupTables() error {
 }
 
 // Run query on database
-func (db *Database) runQuery(query string, args ...interface{}) (*sql.Rows, error) {
-	return db.Db.Query(query, args...)
+func (db *Database) runQuery(tx *sqlx.Tx, query string, args ...interface{}) (*sql.Rows, error) {
+	if tx != nil {
+		return tx.Query(query, args...)
+	} else {
+		return db.Db.Query(query, args...)
+	}
 }
 
-func (db *Database) selectObjs(v interface{}, query string, args ...interface{}) error {
-	return db.Db.Select(v, query, args...)
+func (db *Database) selectObjs(tx *sqlx.Tx, v interface{}, query string, args ...interface{}) error {
+	if tx != nil {
+		return tx.Select(v, query, args...)
+	} else {
+		return db.Db.Select(v, query, args...)
+	}
 }
 
 // Open file and run query
@@ -145,5 +153,5 @@ func (db *Database) runQueryFromFile(file string) (*sql.Rows, error) {
 		return nil, err
 	}
 
-	return db.runQuery(string(content))
+	return db.runQuery(nil, string(content))
 }

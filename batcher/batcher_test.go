@@ -90,7 +90,7 @@ func TestMarkEventsBatched(t *testing.T) {
 
 	tx.Commit()
 
-	batchedEvents, _ := db.GetEvents("batched", -1)
+	batchedEvents, _ := db.GetEvents(nil, "batched", -1)
 	var updatedEvent *database.Event
 
 	for _, event := range batchedEvents {

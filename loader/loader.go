@@ -29,7 +29,7 @@ func New(db *database.Database, target *client.Client, targetName string, batchS
 }
 
 func (l *Loader) Load() error {
-	events, err := l.db.GetEvents("building", -1)
+	events, err := l.db.GetEvents(nil, "building", -1)
 
 	if err != nil {
 		return err
