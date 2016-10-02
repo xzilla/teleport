@@ -167,21 +167,6 @@ func (l *Loader) resumeDMLEvent(event *database.Event, batch *database.Batch) er
 
 	colsForColumns := l.generateActionColumnsFromColumns(class.Columns)
 
-	event.Status = "batched"
-	err = event.UpdateQuery(tx)
-
-	if err != nil {
-		return err
-	}
-
-	log.Printf("Generated new batch: %#v\n", batch)
-
-	err = tx.Commit()
-
-	if err != nil {
-		return err
-	}
-
 	tx = l.db.NewTransaction()
 
 	// Generate OFFSET/LIMITs to iterate
@@ -230,6 +215,21 @@ func (l *Loader) resumeDMLEvent(event *database.Event, batch *database.Batch) er
 	err = batch.UpdateQuery(tx)
 
 	log.Printf("Updated data of batch: %#v\n", batch)
+
+	if err := tx.Commit(); err != nil {
+		return err
+	}
+
+	tx = l.db.NewTransaction()
+
+	event.Status = "batched"
+	err = event.UpdateQuery(tx)
+
+	if err != nil {
+		return err
+	}
+
+	log.Printf("Generated new batch: %#v\n", batch)
 
 	return tx.Commit()
 }
