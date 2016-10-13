@@ -1,6 +1,4 @@
-FROM golang:1.5
-
-ENV GO15VENDOREXPERIMENT=1
+FROM golang:1.7
 
 RUN mkdir -p /go/src/github.com/pagarme/teleport/
 WORKDIR /go/src/github.com/pagarme/teleport/

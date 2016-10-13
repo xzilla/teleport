@@ -1,8 +1,8 @@
 package vacuum
 
 import (
+	log "github.com/Sirupsen/logrus"
 	"github.com/pagarme/teleport/database"
-	"log"
 	"time"
 )
 
@@ -21,7 +21,7 @@ func (v *Vacuum) Watch(sleepTime time.Duration) {
 		err := v.clean()
 
 		if err != nil {
-			log.Printf("Error vacuum cleaning! %v\n", err)
+			log.Errorf("Error vacuum cleaning! %v", err)
 		}
 
 		time.Sleep(sleepTime)

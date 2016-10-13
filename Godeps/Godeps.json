@@ -1,17 +1,38 @@
 {
 	"ImportPath": "github.com/pagarme/teleport",
-	"GoVersion": "go1.6",
+	"GoVersion": "go1.7",
+	"GodepVersion": "v74",
 	"Packages": [
 		"./..."
 	],
 	"Deps": [
+		{
+			"ImportPath": "github.com/Sirupsen/logrus",
+			"Comment": "v0.8.7-53-g446d1c1",
+			"Rev": "446d1c146faa8ed3f4218f056fcd165f6bcfda81"
+		},
+		{
+			"ImportPath": "github.com/certifi/gocertifi",
+			"Comment": "2016.09.26",
+			"Rev": "a61bf5eafa3aee233ec8043e9da052447e5463dd"
+		},
+		{
+			"ImportPath": "github.com/evalphobia/logrus_sentry",
+			"Comment": "v0.2.3",
+			"Rev": "16401a02b5b34a236a2feb04ced6bbcb4aec8900"
+		},
+		{
+			"ImportPath": "github.com/getsentry/raven-go",
+			"Rev": "b8684db99b339af19aa6f067df3be9de6e995f89"
+		},
 		{
 			"ImportPath": "github.com/go-yaml/yaml",
 			"Rev": "a83829b6f1293c91addabc89d0571c246397bbf4"
 		},
 		{
 			"ImportPath": "github.com/gorilla/context",
-			"Rev": "215affda49addc4c8ef7e2534915df2c8c35c6cd"
+			"Comment": "v1.1-4-gaed02d1",
+			"Rev": "aed02d124ae4a0e94fea4541c8effd05bf0c8296"
 		},
 		{
 			"ImportPath": "github.com/gorilla/mux",
@@ -44,6 +65,10 @@
 			"ImportPath": "github.com/lib/pq/oid",
 			"Comment": "go1.0-cutoff-59-gb269bd0",
 			"Rev": "b269bd035a727d6c1081f76e7a239a1b00674c40"
+		},
+		{
+			"ImportPath": "golang.org/x/sys/unix",
+			"Rev": "eb2c74142fd19a79b3f237334c7384d5167b1b46"
 		}
 	]
 }

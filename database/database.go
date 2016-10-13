@@ -3,7 +3,7 @@ package database
 import (
 	"database/sql"
 	"fmt"
-	"log"
+	log "github.com/Sirupsen/logrus"
 
 	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq"
@@ -106,9 +106,9 @@ func (db *Database) installDDLTriggers() error {
 	rows, err := db.runQueryFromFile("data/sql/source_trigger.sql")
 
 	if err == nil {
-		log.Printf("Installed triggers on database")
+		log.Infof("Installed triggers on database")
 	} else {
-		log.Printf("Failed to install triggers on database: %v", err)
+		log.Errorf("Failed to install triggers on database: %v", err)
 	}
 
 	rows.Close()

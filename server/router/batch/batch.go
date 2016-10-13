@@ -3,12 +3,12 @@ package batch
 import (
 	"encoding/json"
 	"fmt"
+	log "github.com/Sirupsen/logrus"
 	"github.com/gorilla/mux"
 	"github.com/pagarme/teleport/database"
 	"github.com/pagarme/teleport/server/httputils"
 	"github.com/pagarme/teleport/server/router"
 	"io"
-	"log"
 	"net/http"
 )
 
@@ -56,7 +56,7 @@ func (b *batchRouter) create(w http.ResponseWriter, r *http.Request) error {
 		return err
 	}
 
-	log.Printf("Received batch: %v\n", newBatch)
+	log.Infof("Received batch: %v", newBatch)
 
 	// Respond HTTP OK
 	return httputils.WriteJSON(w, http.StatusOK, nil)
@@ -84,7 +84,7 @@ func (b *batchRouter) update(w http.ResponseWriter, r *http.Request) error {
 		return err
 	}
 
-	log.Printf("Receiving data for batch: %v\n", batch)
+	log.Infof("Receiving data for batch: %v", batch)
 
 	out, err := batch.CreateFile()
 
@@ -118,7 +118,7 @@ func (b *batchRouter) update(w http.ResponseWriter, r *http.Request) error {
 		return err
 	}
 
-	log.Printf("Received data for batch: %v\n", batch)
+	log.Infof("Received data for batch: %v", batch)
 
 	// Respond HTTP OK
 	return httputils.WriteJSON(w, http.StatusOK, nil)

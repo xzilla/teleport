@@ -157,6 +157,13 @@ $ teleport -config target_config.yml
 
 Teleport is now up and running! \o/
 
+## Sentry Support
+Teleport has native [sentry](https://getsentry.com). To enable it, just use the following config with the sentry DSN:
+
+```
+sentry_endpoint: https://user:password@sentry.endpoint.com/8
+```
+
 ## Performance
 
 We've been using teleport to replicate a roughly large production database

@@ -2,9 +2,9 @@ package transmitter
 
 import (
 	"fmt"
+	log "github.com/Sirupsen/logrus"
 	"github.com/pagarme/teleport/client"
 	"github.com/pagarme/teleport/database"
-	"log"
 	"time"
 )
 
@@ -26,13 +26,13 @@ func (t *Transmitter) Watch(sleepTime time.Duration) {
 		batches, err := t.db.GetBatches("waiting_transmission", "")
 
 		if err != nil {
-			log.Printf("Error fetching batches for transmission! %v\n", err)
+			log.Errorf("Error fetching batches for transmission! %v", err)
 		} else {
 			for _, batch := range batches {
 				err := t.transmitBatch(batch)
 
 				if err != nil {
-					log.Printf("Error transmitting batch %s! %v", batch.Id, err)
+					log.Errorf("Error transmitting batch %s! %v", batch.Id, err)
 					break
 				}
 			}
@@ -41,13 +41,13 @@ func (t *Transmitter) Watch(sleepTime time.Duration) {
 		batches, err = t.db.GetBatches("transmitted", "waiting_transmission")
 
 		if err != nil {
-			log.Printf("Error fetching batches data for transmission! %v\n", err)
+			log.Errorf("Error fetching batches data for transmission! %v", err)
 		} else {
 			for _, batch := range batches {
 				err := t.transmitBatchData(batch)
 
 				if err != nil {
-					log.Printf("Error transmitting batch %s data! %v", batch.Id, err)
+					log.Errorf("Error transmitting batch %s data! %v", batch.Id, err)
 					break
 				}
 			}
@@ -65,7 +65,7 @@ func (t *Transmitter) transmitBatch(batch *database.Batch) error {
 		return fmt.Errorf("could not find client for target '%s'", batch.Target)
 	}
 
-	log.Printf("Transmitting batch: %#v", batch)
+	log.Infof("Transmitting batch: %#v", batch)
 
 	err := client.SendRequest("/batches", batch)
 
@@ -73,7 +73,7 @@ func (t *Transmitter) transmitBatch(batch *database.Batch) error {
 		return err
 	}
 
-	defer log.Printf("Transmitted batch: %#v", batch)
+	defer log.Infof("Transmitted batch: %#v", batch)
 
 	return t.markBatchTransmitted(batch, false)
 }
@@ -94,7 +94,7 @@ func (t *Transmitter) transmitBatchData(batch *database.Batch) error {
 
 	defer file.Close()
 
-	log.Printf("Transmitting batch data: %#v", batch)
+	log.Infof("Transmitting batch data: %#v", batch)
 
 	err = client.SendFile(
 		fmt.Sprintf("/batches/%s", batch.Id),
@@ -106,7 +106,7 @@ func (t *Transmitter) transmitBatchData(batch *database.Batch) error {
 		return err
 	}
 
-	defer log.Printf("Transmitted batch data: %#v", batch)
+	defer log.Infof("Transmitted batch data: %#v", batch)
 
 	return t.markBatchTransmitted(batch, true)
 }

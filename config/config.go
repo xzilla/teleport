@@ -14,6 +14,7 @@ type ProcessingIntervals struct {
 }
 
 type Config struct {
+	SentryEndpoint      string              `yaml:"sentry_endpoint"`
 	Database            Database            `yaml:"database"`
 	ServerHTTP          HTTP                `yaml:"server"`
 	Targets             map[string]Target   `yaml:"targets"`
