@@ -52,7 +52,7 @@ func (c *Table) InstallTriggers() error {
 		err := currentAction.Execute(action.NewContext(tx, c.Schema.Db.Db))
 
 		if err != nil {
-			log.Errorf("Error creating triggers on %s: %v", c.RelationName, err)
+			log.Warnf("Error creating triggers on %s: %v", c.RelationName, err)
 		}
 	}
 
@@ -81,7 +81,7 @@ func (post *Table) Diff(other ddldiff.Diffable, context ddldiff.Context) []actio
 
 			// Warn on errors installing triggers
 			if err != nil {
-				log.Errorf("Error installing triggers on table %s: %v", post.RelationName, err)
+				log.Warnf("Error installing triggers on table %s: %v", post.RelationName, err)
 			}
 
 			primaryKeyAttr := post.GetPrimaryKey()

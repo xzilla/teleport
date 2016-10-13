@@ -108,7 +108,7 @@ func (db *Database) installDDLTriggers() error {
 	if err == nil {
 		log.Infof("Installed triggers on database")
 	} else {
-		log.Errorf("Failed to install triggers on database: %v", err)
+		log.Warnf("Failed to install triggers on database: %v", err)
 	}
 
 	rows.Close()
