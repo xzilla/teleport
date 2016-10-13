@@ -27,7 +27,7 @@ func (c *Table) InstallTriggers() error {
 		return fmt.Errorf("table %s does not have primary key!", c.RelationName)
 	}
 
-	log.Errorf("Installing triggers for %s.%s...", c.Schema.Name, c.RelationName)
+	log.Infof("Installing triggers for %s.%s...", c.Schema.Name, c.RelationName)
 
 	actions := []action.Action{
 		&action.DropTrigger{
