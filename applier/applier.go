@@ -1,10 +1,10 @@
 package applier
 
 import (
+	log "github.com/Sirupsen/logrus"
 	"github.com/pagarme/teleport/action"
 	"github.com/pagarme/teleport/database"
 	"io"
-	"log"
 	"time"
 )
 
@@ -26,13 +26,13 @@ func (a *Applier) Watch(sleepTime time.Duration) {
 		batches, err := a.db.GetBatches("waiting_apply", "")
 
 		if err != nil {
-			log.Printf("Error fetching batches to apply! %v\n", err)
+			log.Errorf("Error fetching batches to apply! %v", err)
 		} else {
 			for _, batch := range batches {
 				shouldContinue, err := a.applyBatch(batch)
 
 				if err != nil {
-					log.Printf("Error applying batch %s: %v\n", batch.Id, err)
+					log.Errorf("Error applying batch %s: %v", batch.Id, err)
 				}
 
 				if !shouldContinue {
@@ -50,7 +50,7 @@ func (a *Applier) applyAction(act action.Action, context *action.Context) error 
 	err := act.Execute(context)
 
 	if err != nil {
-		log.Printf("Error applying action %#v: %v", act, err)
+		log.Errorf("Error applying action %#v: %v", act, err)
 		return err
 	}
 
@@ -187,7 +187,7 @@ func (a *Applier) applyBatch(batch *database.Batch) (bool, error) {
 		}
 	}
 
-	log.Printf("Applied batch: %v\n", batch)
+	log.Infof("Applied batch: %v", batch)
 
 	return updateBatchStatus(nil)
 }

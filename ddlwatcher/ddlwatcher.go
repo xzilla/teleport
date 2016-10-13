@@ -1,8 +1,8 @@
 package ddlwatcher
 
 import (
+	log "github.com/Sirupsen/logrus"
 	"github.com/pagarme/teleport/database"
-	"log"
 	"time"
 )
 
@@ -21,7 +21,7 @@ func (d *DdlWatcher) Watch(sleepTime time.Duration) {
 		err := d.runWatcher()
 
 		if err != nil {
-			log.Printf("Error running DDL watcher! %v\n", err)
+			log.Errorf("Error running DDL watcher! %v", err)
 		}
 
 		time.Sleep(sleepTime)

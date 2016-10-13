@@ -2,7 +2,8 @@ package main
 
 import (
 	"flag"
-	"log"
+	log "github.com/Sirupsen/logrus"
+	"github.com/evalphobia/logrus_sentry"
 	"os"
 	"time"
 
@@ -30,8 +31,23 @@ func main() {
 	err := config.ReadFromFile(*configPath)
 
 	if err != nil {
-		log.Printf("Error opening config file '%s': %v\n", *configPath, err)
+		log.Panicf("Error opening config file '%s': %v", *configPath, err)
 		os.Exit(1)
+	}
+
+	if config.SentryEndpoint != "" {
+		hook, err := logrus_sentry.NewSentryHook(config.SentryEndpoint, []log.Level{
+			log.PanicLevel,
+			log.FatalLevel,
+			log.ErrorLevel,
+		})
+
+		if err != nil {
+			log.Panicf("Error initializing sentry: %v", err)
+			os.Exit(1)
+		}
+
+		log.AddHook(hook)
 	}
 
 	invalidProcessingInterval :=
@@ -42,12 +58,12 @@ func main() {
 			config.ProcessingIntervals.DdlWatcher == 0
 
 	if invalidProcessingInterval {
-		log.Printf("Invalid config value 0 for ProcessingInterval\n")
+		log.Panicf("Invalid config value 0 for ProcessingInterval")
 		os.Exit(1)
 	}
 
 	if config.BatchSize == 0 {
-		log.Printf("Invalid config value 0 for BatchSize\n")
+		log.Panicf("Invalid config value 0 for BatchSize")
 		os.Exit(1)
 	}
 
@@ -55,7 +71,7 @@ func main() {
 
 	// Start db
 	if err = db.Start(); err != nil {
-		log.Printf("Erro starting database: ", err)
+		log.Panicf("Error starting database: ", err)
 		os.Exit(1)
 	}
 
@@ -97,14 +113,14 @@ func main() {
 
 		// Start HTTP server
 		if err = server.Start(); err != nil {
-			log.Printf("Error starting HTTP server: %v\n", err)
+			log.Panicf("Error starting HTTP server: %v", err)
 			os.Exit(1)
 		}
 	} else if *mode == "initial-load" {
 		target, ok := targets[*loadTarget]
 
 		if !ok {
-			log.Printf("Error starting loader: target %s not found!\n", *loadTarget)
+			log.Panicf("Error starting loader: target %s not found!", *loadTarget)
 			os.Exit(1)
 		}
 
@@ -112,7 +128,7 @@ func main() {
 		err := loader.Load()
 
 		if err != nil {
-			log.Printf("Error creating events: %#v\n", err)
+			log.Errorf("Error creating events: %#v", err)
 		}
 	}
 }

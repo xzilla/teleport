@@ -2,9 +2,9 @@ package database
 
 import (
 	"fmt"
+	log "github.com/Sirupsen/logrus"
 	"github.com/pagarme/teleport/action"
 	"github.com/pagarme/teleport/batcher/ddldiff"
-	"log"
 )
 
 // Define a database table
@@ -27,7 +27,7 @@ func (c *Table) InstallTriggers() error {
 		return fmt.Errorf("table %s does not have primary key!", c.RelationName)
 	}
 
-	log.Printf("Installing triggers for %s.%s...", c.Schema.Name, c.RelationName)
+	log.Errorf("Installing triggers for %s.%s...", c.Schema.Name, c.RelationName)
 
 	actions := []action.Action{
 		&action.DropTrigger{
@@ -52,7 +52,7 @@ func (c *Table) InstallTriggers() error {
 		err := currentAction.Execute(action.NewContext(tx, c.Schema.Db.Db))
 
 		if err != nil {
-			log.Printf("Error creating triggers on %s: %v", c.RelationName, err)
+			log.Errorf("Error creating triggers on %s: %v", c.RelationName, err)
 		}
 	}
 
@@ -81,7 +81,7 @@ func (post *Table) Diff(other ddldiff.Diffable, context ddldiff.Context) []actio
 
 			// Warn on errors installing triggers
 			if err != nil {
-				log.Printf("Error installing triggers on table %s: %v\n", post.RelationName, err)
+				log.Errorf("Error installing triggers on table %s: %v", post.RelationName, err)
 			}
 
 			primaryKeyAttr := post.GetPrimaryKey()

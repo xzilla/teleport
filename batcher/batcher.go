@@ -2,11 +2,11 @@ package batcher
 
 import (
 	"fmt"
+	log "github.com/Sirupsen/logrus"
 	"github.com/jmoiron/sqlx"
 	"github.com/pagarme/teleport/action"
 	"github.com/pagarme/teleport/client"
 	"github.com/pagarme/teleport/database"
-	"log"
 	"sort"
 	"time"
 )
@@ -31,7 +31,7 @@ func (b *Batcher) Watch(sleepTime time.Duration) {
 		err := b.createBatches()
 
 		if err != nil {
-			log.Printf("Error creating batch! %v\n", err)
+			log.Errorf("Error creating batch! %v", err)
 		}
 
 		time.Sleep(sleepTime)
@@ -174,7 +174,7 @@ func (b *Batcher) createBatchWithActions(actions []action.Action, targetName str
 		return nil, err
 	}
 
-	log.Printf("Generated new batch: %#v\n", batch)
+	log.Infof("Generated new batch: %#v", batch)
 
 	return batch, nil
 }

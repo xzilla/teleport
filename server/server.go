@@ -2,6 +2,7 @@ package server
 
 import (
 	"fmt"
+	log "github.com/Sirupsen/logrus"
 	"github.com/gorilla/mux"
 	"github.com/pagarme/teleport/config"
 	"github.com/pagarme/teleport/database"
@@ -9,7 +10,6 @@ import (
 	"github.com/pagarme/teleport/server/router"
 	batchrouter "github.com/pagarme/teleport/server/router/batch"
 	statusrouter "github.com/pagarme/teleport/server/router/status"
-	"log"
 	"net/http"
 	"time"
 )
@@ -39,7 +39,7 @@ func (s *Server) Start() error {
 		s.HTTP.Port,
 	)
 
-	log.Printf("Starting server on %s", hostStr)
+	log.Infof("Starting server on %s", hostStr)
 
 	return http.ListenAndServe(hostStr, s.GetDefaultHandler())
 }
@@ -62,7 +62,7 @@ func (s *Server) handlerForRoute(route router.Route) http.Handler {
 			httputils.WriteError(w, err)
 		}
 
-		log.Printf(
+		log.Infof(
 			"%s\t%s\t%s",
 			r.Method,
 			r.RequestURI,

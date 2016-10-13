@@ -2,10 +2,10 @@ package loader
 
 import (
 	"fmt"
+	log "github.com/Sirupsen/logrus"
 	"github.com/jmoiron/sqlx"
 	"github.com/pagarme/teleport/action"
 	"github.com/pagarme/teleport/database"
-	"log"
 	"sort"
 	"strings"
 )
@@ -111,7 +111,7 @@ func (l *Loader) resumeDMLEvents(eventBatches map[*database.Event]*database.Batc
 			return err
 		}
 
-		log.Printf("Ended processing event %#v\n", event)
+		log.Infof("Ended processing event %#v", event)
 	}
 
 	return nil
@@ -174,7 +174,7 @@ func (l *Loader) resumeDMLEvent(event *database.Event, batch *database.Batch) er
 		return err
 	}
 
-	log.Printf("Generated new batch: %#v\n", batch)
+	log.Infof("Generated new batch: %#v", batch)
 
 	err = tx.Commit()
 
@@ -229,7 +229,7 @@ func (l *Loader) resumeDMLEvent(event *database.Event, batch *database.Batch) er
 	batch.Status = ""
 	err = batch.UpdateQuery(tx)
 
-	log.Printf("Updated data of batch: %#v\n", batch)
+	log.Infof("Updated data of batch: %#v", batch)
 
 	return tx.Commit()
 }
