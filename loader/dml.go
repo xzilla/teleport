@@ -183,10 +183,16 @@ func (l *Loader) resumeDMLEvent(event *database.Event, batch *database.Batch) er
 	}
 
 	tx = l.db.NewTransaction()
+  
+	err = l.openSelectCursor(tx, schema, class)
+	
+	if err != nil {
+		return err
+	}
 
 	// Generate OFFSET/LIMITs to iterate
 	for i := 0; i < tableCount; i += l.BatchSize {
-		rows, err := l.fetchRows(tx, schema, class, l.BatchSize, i)
+		rows, err := l.fetchRows(tx, l.BatchSize)
 
 		if err != nil {
 			return err
@@ -225,6 +231,12 @@ func (l *Loader) resumeDMLEvent(event *database.Event, batch *database.Batch) er
 		}
 	}
 
+	err = l.closeSelectCursor(tx)
+
+	if err != nil {
+		return err
+	}
+
 	batch.DataStatus = "waiting_transmission"
 	batch.Status = ""
 	err = batch.UpdateQuery(tx)
@@ -248,17 +260,30 @@ func (l *Loader) getTableCount(tx *sqlx.Tx, schema *database.Schema, table *data
 	return count, err
 }
 
-func (l *Loader) fetchRows(tx *sqlx.Tx, schema *database.Schema, table *database.Table, limit, offset int) ([]*map[string]interface{}, error) {
+func (l *Loader) openSelectCursor(tx *sqlx.Tx, schema *database.Schema, table *database.Table) error {
+	_, err := tx.Queryx(
+		fmt.Sprintf(
+			`DECLARE curSelect CURSOR FOR SELECT * FROM "%s"."%s" ORDER BY "%s";`,
+			schema.Name,
+			table.RelationName,
+			table.GetPrimaryKey().Name,
+		),
+	)
+	return err
+}
+
+func (l *Loader) closeSelectCursor(tx *sqlx.Tx) error {
+	_, err := tx.Queryx("CLOSE curSelect;")
+	return err
+}
+
+func (l *Loader) fetchRows(tx *sqlx.Tx, count int) ([]*map[string]interface{}, error) {
 	result := make([]*map[string]interface{}, 0)
 
 	rows, err := tx.Queryx(
 		fmt.Sprintf(
-			`SELECT * FROM "%s"."%s" ORDER BY "%s" LIMIT %d OFFSET %d;`,
-			schema.Name,
-			table.RelationName,
-			table.GetPrimaryKey().Name,
-			limit,
-			offset,
+			`FETCH %d FROM curSelect ;`,
+			count,
 		),
 	)
 
