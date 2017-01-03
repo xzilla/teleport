@@ -89,7 +89,8 @@ func (d *Dml) generateRows(obj *map[string]interface{}) []action.Row {
 
 		if column == nil {
 			message := "Error trying to generate rows from Dml. " +
-				"Field %v not present in table %v. Contents: %+v"
+				"Field %v not present in table %v. " +
+				"Contents: %+v"
 			log.Errorf(message, key, d.GetTableName(), *obj)
 			continue
 		}
