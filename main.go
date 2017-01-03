@@ -40,6 +40,7 @@ func main() {
 			log.PanicLevel,
 			log.FatalLevel,
 			log.ErrorLevel,
+			log.InfoLevel,
 		})
 
 		if err != nil {
