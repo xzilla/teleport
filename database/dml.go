@@ -3,6 +3,7 @@ package database
 import (
 	"encoding/gob"
 	"encoding/json"
+	log "github.com/Sirupsen/logrus"
 	"github.com/pagarme/teleport/action"
 	"sort"
 	"strings"
@@ -84,6 +85,13 @@ func (d *Dml) generateRows(obj *map[string]interface{}) []action.Row {
 				column = att
 				break
 			}
+		}
+
+		if column == nil {
+			message := "Error trying to generate rows from Dml. " +
+				"Field %v not present in table %v. Contents: %+v"
+			log.Errorf(message, key, d.GetTableName(), *obj)
+			continue
 		}
 
 		rows = append(rows, action.Row{

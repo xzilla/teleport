@@ -193,6 +193,46 @@ func TestDmlDiff(t *testing.T) {
 				},
 			},
 		},
+		{
+			// Test update a row
+			&Dml{
+				nil,
+				&map[string]interface{}{
+					"id":           5,
+					"content":      "test",
+					"other_column": "something is wrong",
+				},
+				event,
+				db,
+				"target_schema",
+			},
+			[]action.Action{
+				&action.InsertRow{
+					"target_schema",
+					"test_table",
+					"id",
+					[]action.Row{
+						action.Row{
+							"test",
+							action.Column{
+								"content",
+								"text",
+								true,
+							},
+						},
+						action.Row{
+							5,
+							action.Column{
+								"id",
+								"int4",
+								true,
+							},
+						},
+					},
+					false,
+				},
+			},
+		},
 	}
 
 	for _, test := range tests {
