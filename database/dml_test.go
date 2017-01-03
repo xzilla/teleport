@@ -194,7 +194,7 @@ func TestDmlDiff(t *testing.T) {
 			},
 		},
 		{
-			// Test update a row with content not present in table
+			// Test insert a row with content not present in table
 			&Dml{
 				nil,
 				&map[string]interface{}{
