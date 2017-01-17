@@ -86,13 +86,20 @@ func main() {
 	}
 
 	if *mode == "replication" {
-		// Start batcher on a separate goroutine
-		batcher := batcher.New(db, targets, config.MaxEventsPerBatch)
-		go batcher.Watch(time.Duration(config.ProcessingIntervals.Batcher) * time.Millisecond)
+		// Only start the following coroutines if there are targets to send data to
+		if len(targets) > 0 {
+			// Start batcher on a separate goroutine
+			batcher := batcher.New(db, targets, config.MaxEventsPerBatch)
+			go batcher.Watch(time.Duration(config.ProcessingIntervals.Batcher) * time.Millisecond)
 
-		// Start transmitter on a separate goroutine
-		transmitter := transmitter.New(db, targets)
-		go transmitter.Watch(time.Duration(config.ProcessingIntervals.Transmitter) * time.Millisecond)
+			// Start transmitter on a separate goroutine
+			transmitter := transmitter.New(db, targets)
+			go transmitter.Watch(time.Duration(config.ProcessingIntervals.Transmitter) * time.Millisecond)
+
+			// Start DDL watcher on a separate goroutine
+			ddlwatcher := ddlwatcher.New(db)
+			go ddlwatcher.Watch(time.Duration(config.ProcessingIntervals.DdlWatcher) * time.Millisecond)
+		}
 
 		// Start applier on a separate goroutine
 		applier := applier.New(db, config.BatchSize)
@@ -101,13 +108,6 @@ func main() {
 		// Start vacuum on a separate goroutine
 		vacuum := vacuum.New(db)
 		go vacuum.Watch(time.Duration(config.ProcessingIntervals.Vacuum) * time.Millisecond)
-
-		if len(targets) > 0 {
-			// Start vacuum on a separate goroutine if there's
-			// any target that needs to know about DDL changes
-			ddlwatcher := ddlwatcher.New(db)
-			go ddlwatcher.Watch(time.Duration(config.ProcessingIntervals.DdlWatcher) * time.Millisecond)
-		}
 
 		// Start HTTP server for receiving incoming requests
 		server := server.New(db, config.ServerHTTP)
