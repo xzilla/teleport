@@ -72,7 +72,7 @@ func main() {
 
 	// Start db
 	if err = db.Start(); err != nil {
-		log.Panicf("Error starting database: ", err)
+		log.Panicf("Error starting database: %v", err)
 		os.Exit(1)
 	}
 
