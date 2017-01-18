@@ -20,6 +20,10 @@ import (
 )
 
 func main() {
+	// Startup message. It's useful to get the logs of the last successful run.
+	// In order to use it, run `docker-compose logs (source|target) | sed -n '/Teleport Started/{h;b};H;${x;p}'`
+	log.Info("[Teleport Started]")
+
 	// Parse config
 	configPath := flag.String("config", "config.yml", "config file path")
 	mode := flag.String("mode", "replication", "teleport mode [replication|initial-load]")
