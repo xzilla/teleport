@@ -117,5 +117,13 @@ docker-compose run --rm postgres psql -h postgres -U postgres postgres2 -c "
 SELECT *, test.test_func() FROM test.test_table ORDER BY 1;
 " > /tmp/target_diff.txt
 
+# Check is source_diff isn't empty
+[ $(cat /tmp/source_diff.txt | wc -c) -ne 0 ]
+
+# Check if target_diff isn't empty
+[ $(cat /tmp/target_diff.txt | wc -c) -ne 0 ]
+
+# Check if files aren't different from one another
 diff /tmp/source_diff.txt /tmp/target_diff.txt
+
 echo "Tests e2e ran successfully"
