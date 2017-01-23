@@ -70,7 +70,6 @@ $$;
 -- Create status index to make removal of events faster by the vacuum
 DO $$
 BEGIN
-	DROP INDEX teleport.event_status_index;
 	-- We need to check the event_status_index doesn't
 	-- exist before creating it
 	IF NOT EXISTS (
