@@ -5,10 +5,10 @@ import (
 	"time"
 )
 
-func launchManager(manager *manager) {
+func launchLink(link *link) {
 	select {
-	case <-manager.Shutdown:
-		manager.Close()
+	case <-link.Shutdown:
+		link.Close()
 	}
 }
 
@@ -16,9 +16,9 @@ func TestClosesGoroutinesGracefully(t *testing.T) {
 	shutdown := make(chan struct{})
 	closed := make(chan interface{})
 
-	manager := New(shutdown, closed)
+	link := NewLink(shutdown, closed)
 
-	go launchManager(manager)
+	go launchLink(link)
 	go close(shutdown)
 
 	select {
@@ -32,9 +32,9 @@ func TestShouldTimeoutWHenShutdownChannelIsNotClosed(t *testing.T) {
 	shutdown := make(chan struct{})
 	closed := make(chan interface{})
 
-	manager := New(shutdown, closed)
+	link := NewLink(shutdown, closed)
 
-	go launchManager(manager)
+	go launchLink(link)
 
 	select {
 	case <-closed:

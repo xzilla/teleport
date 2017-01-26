@@ -1,14 +1,14 @@
 package manager
 
-type manager struct {
+type link struct {
 	Shutdown <-chan struct{}
 	closed   chan<- interface{}
 }
 
-func New(shutdown chan struct{}, closed chan<- interface{}) *manager {
-	return &manager{shutdown, closed}
+func NewLink(shutdown chan struct{}, closed chan<- interface{}) *link {
+	return &link{shutdown, closed}
 }
 
-func (m *manager) Close() {
+func (m *link) Close() {
 	m.closed <- nil
 }
