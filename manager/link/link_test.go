@@ -1,13 +1,14 @@
-package manager
+package link_test
 
 import (
+	. "github.com/pagarme/teleport/manager/link"
 	"testing"
 	"time"
 )
 
-func launchLink(link *link) {
+func launchLink(link Link) {
 	select {
-	case <-link.Shutdown:
+	case <-link.Shutdown():
 		link.Close()
 	}
 }
