@@ -8,7 +8,7 @@ import (
 
 func launchLink(link Link) {
 	select {
-	case <-link.Shutdown():
+	case <-link.AwaitShutdown():
 		link.Close()
 	}
 }

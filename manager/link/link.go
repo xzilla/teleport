@@ -1,7 +1,7 @@
 package link
 
 type Link interface {
-	Shutdown() <-chan struct{}
+	AwaitShutdown() <-chan struct{}
 	Close()
 }
 
@@ -18,6 +18,6 @@ func (m *link) Close() {
 	m.closed <- nil
 }
 
-func (m *link) Shutdown() <-chan struct{} {
+func (m *link) AwaitShutdown() <-chan struct{} {
 	return m.shutdown
 }
