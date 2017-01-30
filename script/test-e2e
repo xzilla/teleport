@@ -19,6 +19,13 @@ on_error() {
 
 trap on_error ERR
 
+# Stop containers, then start postgres
+docker-compose stop
+docker-compose up -d postgres
+
+# Setup configuration files
+./script/test-bootstrap
+
 # Drop database for target, recreate database and test schema
 docker-compose run --rm postgres psql -h postgres -U postgres postgres  -c "DROP DATABASE IF EXISTS postgres2;"
 docker-compose run --rm postgres psql -h postgres -U postgres postgres  -c "CREATE DATABASE postgres2;"
@@ -61,8 +68,6 @@ CREATE INDEX test_table_color_ind ON test_table (test_func_index());
 "
 
 # Start teleport source/target
-# docker-compose up -d source target
-
 docker-compose up -d source target
 
 # Wait for source and target servers to be up and running
@@ -125,5 +130,12 @@ SELECT *, test.test_func() FROM test.test_table ORDER BY 1;
 
 # Check if files aren't different from one another
 diff /tmp/source_diff.txt /tmp/target_diff.txt
+
+
+# Stop processes
+docker-compose stop
+
+# Remove temporary files
+rm -rf tmp
 
 echo "Tests e2e ran successfully"
