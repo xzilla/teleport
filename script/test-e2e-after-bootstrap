@@ -25,6 +25,12 @@ POSTGRES=$1
 docker-compose stop
 docker-compose up -d $POSTGRES
 
+docker-compose run --rm $POSTGRES bash <<EOF
+until psql -h $POSTGRES -U "postgres" -c '\l'; do
+  sleep 0.5
+done
+EOF
+
 # Drop database for target, recreate database and test schema
 docker-compose run --rm $POSTGRES psql -h $POSTGRES -U postgres postgres  -c "DROP DATABASE IF EXISTS postgres2;"
 docker-compose run --rm $POSTGRES psql -h $POSTGRES -U postgres postgres  -c "CREATE DATABASE postgres2;"
