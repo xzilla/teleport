@@ -32,7 +32,7 @@ func init() {
 
 	// Start db
 	if err = db.Start(); err != nil {
-		fmt.Printf("Erro starting database: %v", err)
+		fmt.Printf("Error starting database: %v", err)
 		os.Exit(1)
 	}
 
