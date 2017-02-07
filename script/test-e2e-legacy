@@ -2,12 +2,8 @@
 
 set -e
 
-# Stop containers, then start postgres
-docker-compose stop
-docker-compose up -d postgres
-
 # Setup configuration files
 ./script/test-bootstrap-legacy
 
 # Execute data transformation tests
-./script/test-e2e-after-bootstrap
+./script/test-e2e-after-bootstrap postgres-legacy

@@ -36,6 +36,11 @@ services:
 
   # Databases
   postgres:
+    image: postgres:9.5
+    volumes:
+        - .:/code
+
+  postgres-legacy:
     image: postgres:9.2.16
     volumes:
         - .:/code
