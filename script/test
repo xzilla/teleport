@@ -3,6 +3,8 @@
 # Die on any error
 set -e
 
+docker-compose up -d postgres
+
 # Run golang tests
 docker-compose run --rm test
 
