@@ -4,7 +4,6 @@ import (
 	"flag"
 	log "github.com/Sirupsen/logrus"
 	"github.com/evalphobia/logrus_sentry"
-	"os"
 	"time"
 
 	"github.com/pagarme/teleport/applier"
@@ -57,8 +56,12 @@ func main() {
 		config.ProcessingIntervals.Batcher == 0 ||
 			config.ProcessingIntervals.Transmitter == 0 ||
 			config.ProcessingIntervals.Applier == 0 ||
-			config.ProcessingIntervals.Vacuum == 0 ||
+			config.ProcessingIntervals.Vacuum == 0
+
+	if !config.UseEventTriggers {
+		invalidProcessingInterval = invalidProcessingInterval ||
 			config.ProcessingIntervals.DdlWatcher == 0
+	}
 
 	if invalidProcessingInterval {
 		log.Panicf("Invalid config value 0 for ProcessingInterval")

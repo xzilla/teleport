@@ -21,6 +21,7 @@ type Config struct {
 	BatchSize           int                 `yaml:"batch_size"`
 	ProcessingIntervals ProcessingIntervals `yaml:"processing_intervals"`
 	MaxEventsPerBatch   int                 `yaml:"max_events_per_batch"`
+	UseEventTriggers    bool                `yaml:"use_event_triggers"`
 }
 
 func New() *Config {
