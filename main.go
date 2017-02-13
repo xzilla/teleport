@@ -53,7 +53,7 @@ func main() {
 	}
 
 	if config.InvalidProcessingIntervals() {
-		log.Panicf("Invalid config value 0 for ProcessingInterval")
+		log.Panicf("Invalid config value <=0 for ProcessingInterval")
 	}
 
 	if config.BatchSize == 0 {
