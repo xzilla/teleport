@@ -52,26 +52,7 @@ func main() {
 		log.AddHook(hook)
 	}
 
-	// Some processing intervals only make sense when there are actually
-	// targets to send data to.
-
-	invalidInterval := false
-
-	if len(config.Targets) > 0 {
-		invalidInterval = invalidInterval ||
-			config.ProcessingIntervals.Batcher == 0 ||
-			config.ProcessingIntervals.Transmitter == 0
-
-		if !config.UseEventTriggers {
-			invalidInterval = invalidInterval || config.ProcessingIntervals.DdlWatcher == 0
-		}
-	}
-
-	invalidInterval = invalidInterval ||
-		config.ProcessingIntervals.Applier == 0 ||
-		config.ProcessingIntervals.Vacuum == 0
-
-	if invalidInterval {
+	if invalidProcessingIntervals(config) {
 		log.Panicf("Invalid config value 0 for ProcessingInterval")
 	}
 
@@ -140,4 +121,32 @@ func main() {
 			log.Errorf("Error creating events: %#v", err)
 		}
 	}
+}
+
+func invalidProcessingIntervals(config *config.Config) bool {
+	// Some processing intervals only make sense when there are actually
+	// targets to send data to.
+	if len(config.Targets) > 0 {
+		if config.ProcessingIntervals.Batcher <= 0 {
+			return true
+		}
+
+		if config.ProcessingIntervals.Transmitter <= 0 {
+			return true
+		}
+
+		if !config.UseEventTriggers && config.ProcessingIntervals.DdlWatcher <= 0 {
+			return true
+		}
+	}
+
+	if config.ProcessingIntervals.Applier <= 0 {
+		return true
+	}
+
+	if config.ProcessingIntervals.Vacuum <= 0 {
+		return true
+	}
+
+	return false
 }
