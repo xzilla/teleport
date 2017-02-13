@@ -74,7 +74,7 @@ func (db *Database) NewTransaction() *sqlx.Tx {
 
 // Install triggers on a source table
 func (db *Database) InstallTriggers(targetExpression string) error {
-	err := db.installDDLTriggers()
+	err := db.installLDDLWatcher()
 
 	if err != nil {
 		return err
@@ -101,8 +101,8 @@ func (db *Database) InstallTriggers(targetExpression string) error {
 	return nil
 }
 
-// Install triggers in schema
-func (db *Database) installDDLTriggers() error {
+// Install source triggers using watcher
+func (db *Database) installLDDLWatcher() error {
 	rows, err := db.runQueryFromFile("data/sql/source_trigger.sql")
 
 	if err == nil {
