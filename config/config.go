@@ -24,6 +24,34 @@ type Config struct {
 	UseEventTriggers    bool                `yaml:"use_event_triggers"`
 }
 
+func (c Config) InvalidProcessingIntervals() bool {
+	// Some processing intervals only make sense when there are actually
+	// targets to send data to.
+	if len(c.Targets) > 0 {
+		if c.ProcessingIntervals.Batcher <= 0 {
+			return true
+		}
+
+		if c.ProcessingIntervals.Transmitter <= 0 {
+			return true
+		}
+
+		if !c.UseEventTriggers && c.ProcessingIntervals.DdlWatcher <= 0 {
+			return true
+		}
+	}
+
+	if c.ProcessingIntervals.Applier <= 0 {
+		return true
+	}
+
+	if c.ProcessingIntervals.Vacuum <= 0 {
+		return true
+	}
+
+	return false
+}
+
 func New() *Config {
 	return &Config{}
 }
