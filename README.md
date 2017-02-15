@@ -1,20 +1,21 @@
 # teleport
 [![Build Status](https://travis-ci.org/pagarme/teleport.svg?branch=master)](https://travis-ci.org/pagarme/teleport)
 
-A trigger-based Postgres replicator that performs DDL migrations by diffing
-schema changes and replicating real-time data changes based on DML triggers. In
-other words, a complete replicator that works without any special permissions
-on the database, just like the ones you don't have in AWS RDS.
+A trigger-based Postgres replicator that performs real-time data changes based
+on DML triggers, and DDL migrations by either DDL event triggers or by diffing
+schema changes when event triggers are not available. In other words, a
+complete replicator that works without any special permissions on the database,
+just like the ones you don't have in AWS RDS.
 
 Yes, you read it right
 
 ## How it works
 
-In a configurable time interval, teleport diffs the current schema and
-replicate new tables, columns, indexes and so on from the source to the target.
-Inserted, updated or deleted rows are detected by triggers on the source, which
-generate events that teleport transform into batches for the appropriate
-targets.
+When DDL event triggers are not available, using a configurable time interval,
+Teleport diffs the current schema and replicate new tables, columns, indexes
+and so on from the source to the target. Inserted, updated or deleted rows are
+detected by triggers on the source, which generate events that teleport
+transform into batches for the appropriate targets.
 
 If teleport fails to apply a batch of new/updated rows due to a schema change
 that is not reflected on target yet, it will queue the batch, apply the schema
@@ -22,6 +23,8 @@ change and then apply the failed batches again.  This ensures consistency on
 the data even after running migrations and changing the source schema.
 
 Currently only source databases with Postgres versions >= 9.2.16 are supported.
+DDL event triggers are only available for Postgres versions >= 9.3. For AWS
+RDS, event triggers are only [available after Postgres versions >= 9.4.9][aws_event_triggers]
 Teleport requires that all replicated tables have a primary key.
 
 ## Features
@@ -58,6 +61,7 @@ For the source, create a config file named `source_config.yml`:
 ```yml
 batch_size: 10000
 max_events_per_batch: 10000
+use_event_triggers: true # Available for Postgres >= 9.3
 processing_intervals:
   batcher: 100
   transmitter: 100
@@ -188,3 +192,5 @@ $ docker-compose run test
 ## License
 
 The MIT license.
+
+[aws_event_triggers](http://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/CHAP_PostgreSQL.html#PostgreSQL.Concepts.General.FeatureSupport.EventTriggers)
