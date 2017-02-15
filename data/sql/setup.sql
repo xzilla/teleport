@@ -330,7 +330,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
--- Creates and event whenever there is a DML event
+-- Creates an event whenever there is a DML event
 CREATE OR REPLACE FUNCTION teleport_dml_event() RETURNS TRIGGER AS $$
 BEGIN
 	INSERT INTO teleport.event (data, kind, trigger_tag, trigger_event, transaction_id, status) VALUES
