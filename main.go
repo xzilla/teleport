@@ -67,6 +67,8 @@ func main() {
 		log.Panicf("Error starting database: %v", err)
 	}
 
+	db.InstallDDLTriggers(config.UseEventTriggers)
+
 	targets := make(map[string]*client.Client)
 
 	// Create a new client for each target
@@ -87,9 +89,11 @@ func main() {
 			transmitter := transmitter.New(db, targets)
 			go transmitter.Watch(time.Duration(config.ProcessingIntervals.Transmitter) * time.Millisecond)
 
-			// Start DDL watcher on a separate goroutine
-			ddlwatcher := ddlwatcher.New(db)
-			go ddlwatcher.Watch(time.Duration(config.ProcessingIntervals.DdlWatcher) * time.Millisecond)
+			if !config.UseEventTriggers {
+				// Start DDL watcher on a separate goroutine
+				ddlwatcher := ddlwatcher.New(db)
+				go ddlwatcher.Watch(time.Duration(config.ProcessingIntervals.DdlWatcher) * time.Millisecond)
+			}
 		}
 
 		// Start applier on a separate goroutine

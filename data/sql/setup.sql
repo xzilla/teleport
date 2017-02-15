@@ -329,3 +329,29 @@ CREATE OR REPLACE FUNCTION get_cuid() RETURNS text AS $$
 BEGIN
 END;
 $$ LANGUAGE plpgsql;
+
+-- Creates and event whenever there is a DML event
+CREATE OR REPLACE FUNCTION teleport_dml_event() RETURNS TRIGGER AS $$
+BEGIN
+	INSERT INTO teleport.event (data, kind, trigger_tag, trigger_event, transaction_id, status) VALUES
+	(
+		(
+			SELECT row_to_json(data) FROM (
+				SELECT
+					(CASE WHEN TG_OP = 'INSERT' THEN NULL ELSE OLD END) as pre,
+					(CASE WHEN TG_OP = 'DELETE' THEN NULL ELSE NEW END) as post
+			) data
+		)::text,
+		-- row_to_json(CASE WHEN TG_OP = 'DELETE' THEN OLD ELSE NEW END)::text,
+		'dml',
+		CONCAT(TG_TABLE_SCHEMA, '.', TG_RELNAME),
+		TG_OP,
+		txid_current(),
+		'waiting_batch'
+	);
+	RETURN NULL;
+EXCEPTION WHEN OTHERS THEN
+	RETURN NULL;
+END;
+$$ LANGUAGE plpgsql;
+

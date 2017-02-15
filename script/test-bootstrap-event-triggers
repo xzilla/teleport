@@ -1,0 +1,55 @@
+#!/bin/sh
+
+# Create config files
+rm -rf tmp
+mkdir tmp
+
+cat > tmp/source_config.yml <<EOF
+batch_size: 10000
+use_event_triggers: true
+processing_intervals:
+  batcher: 100
+  transmitter: 100
+  applier: 100
+  vacuum: 500
+database:
+  name: "finops-db"
+  database: "postgres"
+  hostname: "postgres"
+  username: "postgres"
+  password: "root"
+  port: 5432
+  options:
+    sslmode: disable
+server:
+  hostname: "0.0.0.0"
+  port: 3000
+targets:
+  my_target:
+    target_expression: "public.*"
+    endpoint:
+      hostname: "target"
+      port: 3001
+    apply_schema: "test"
+EOF
+
+cat > tmp/target_config.yml <<EOF
+batch_size: 10000
+processing_intervals:
+  batcher: 100
+  transmitter: 100
+  applier: 100
+  vacuum: 500
+database:
+  name: "my_target"
+  database: "postgres2"
+  hostname: "postgres"
+  username: "postgres"
+  password: "root"
+  port: 5432
+  options:
+    sslmode: disable
+server:
+  hostname: "0.0.0.0"
+  port: 3001
+EOF

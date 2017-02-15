@@ -1,0 +1,9 @@
+#!/bin/bash
+
+set -e
+
+# Setup configuration files
+./script/test-bootstrap-event-triggers
+
+# Execute data transformation tests
+./script/test-e2e-after-bootstrap postgres
