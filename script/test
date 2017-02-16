@@ -3,14 +3,10 @@
 # Die on any error
 set -e
 
-docker-compose stop
 docker-compose up -d postgres
-
-./script/test-bootstrap
 
 # Run golang tests
 docker-compose run --rm test
 
 ./script/test-e2e
 
-rm -rf tmp

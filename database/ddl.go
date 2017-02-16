@@ -43,6 +43,7 @@ func (d *Ddl) schemaToDiffable(schema []*Schema) []ddldiff.Diffable {
 	return diff
 }
 
+// filterSchemas return one schema that matches `d.SourceSchema`
 func (d *Ddl) filterSchemas(schemas []*Schema) []*Schema {
 	for _, schema := range schemas {
 		if schema.Name == d.SourceSchema {

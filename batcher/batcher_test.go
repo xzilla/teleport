@@ -32,7 +32,7 @@ func init() {
 
 	// Start db
 	if err = db.Start(); err != nil {
-		fmt.Printf("Erro starting database: ", err)
+		fmt.Printf("Error starting database: %v", err)
 		os.Exit(1)
 	}
 
@@ -101,7 +101,7 @@ func TestMarkEventsBatched(t *testing.T) {
 	}
 
 	if updatedEvent == nil {
-		t.Errorf("ignored event => nil, want %d", stubEvent)
+		t.Errorf("ignored event => nil, want %v", stubEvent)
 	}
 }
 
@@ -148,7 +148,7 @@ func TestCreateBatchesWithActions(t *testing.T) {
 
 		if !reflect.DeepEqual(expectedActions[i], actions) {
 			t.Errorf(
-				"actions for batch %i => %#v, want %#v",
+				"actions for batch %d => %#v, want %#v",
 				i,
 				actions,
 				expectedActions[i],
