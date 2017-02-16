@@ -17,6 +17,7 @@ LANGUAGE plpgsql;
 
 DROP EVENT TRIGGER IF EXISTS teleport_before_ddl;
 CREATE EVENT TRIGGER teleport_before_ddl ON ddl_command_start
+EXECUTE PROCEDURE teleport.before_ddl_func();
 
 -- After the ddl event is finished, we save the current schema, so the ddl diff
 -- can correnctly create the patches for a batch.
@@ -42,5 +43,6 @@ LANGUAGE plpgsql;
 
 DROP EVENT TRIGGER IF EXISTS teleport_after_ddl;
 CREATE EVENT TRIGGER teleport_after_ddl ON ddl_command_end
+EXECUTE PROCEDURE teleport.after_ddl_func();
 
 
