@@ -2,8 +2,6 @@
 -- table
 CREATE OR REPLACE FUNCTION teleport.before_ddl_func() RETURNS event_trigger AS $$
 BEGIN
-    RAISE INFO 'Before trigger function: %', current_user;
-
     INSERT INTO teleport.event (data, kind, trigger_tag, trigger_event, transaction_id, status) VALUES
     (
 	teleport.get_schema()::text,
@@ -19,7 +17,6 @@ LANGUAGE plpgsql;
 
 DROP EVENT TRIGGER IF EXISTS teleport_before_ddl;
 CREATE EVENT TRIGGER teleport_before_ddl ON ddl_command_start
-EXECUTE PROCEDURE teleport.before_ddl_func();
 
 -- After the ddl event is finished, we save the current schema, so the ddl diff
 -- can correnctly create the patches for a batch.
@@ -28,8 +25,6 @@ DECLARE
 	event_row teleport.event%ROWTYPE;
 	post json;
 BEGIN
-    RAISE INFO 'After trigger function: %', current_user;
-
     SELECT * INTO event_row FROM teleport.event WHERE status = 'building' and kind = 'ddl' and trigger_tag = 'ddl_command_start' ORDER BY id DESC LIMIT 1;
 
     post := teleport.get_schema()::json;
@@ -47,6 +42,5 @@ LANGUAGE plpgsql;
 
 DROP EVENT TRIGGER IF EXISTS teleport_after_ddl;
 CREATE EVENT TRIGGER teleport_after_ddl ON ddl_command_end
-EXECUTE PROCEDURE teleport.after_ddl_func();
 
 
