@@ -67,6 +67,23 @@ BEGIN
 END
 $$;
 
+-- Create status index to make removal of events faster by the vacuum
+DO $$
+BEGIN
+	-- We need to check the event_status_index doesn't
+	-- exist before creating it
+	IF NOT EXISTS (
+		SELECT 1
+		FROM   pg_class c
+		JOIN   pg_namespace n ON n.oid = c.relnamespace
+		WHERE  c.relname = 'event_status_index'
+		AND    n.nspname = 'teleport'
+		) THEN
+
+		CREATE INDEX event_status_index ON teleport.event (status);
+	END IF;
+END
+$$;
 
 -- Create table to store batches of data
 DO $$
