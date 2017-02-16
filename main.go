@@ -4,7 +4,6 @@ import (
 	"flag"
 	log "github.com/Sirupsen/logrus"
 	"github.com/evalphobia/logrus_sentry"
-	"os"
 	"time"
 
 	"github.com/pagarme/teleport/applier"
@@ -36,7 +35,6 @@ func main() {
 
 	if err != nil {
 		log.Panicf("Error opening config file '%s': %v", *configPath, err)
-		os.Exit(1)
 	}
 
 	if config.SentryEndpoint != "" {
@@ -49,27 +47,17 @@ func main() {
 
 		if err != nil {
 			log.Panicf("Error initializing sentry: %v", err)
-			os.Exit(1)
 		}
 
 		log.AddHook(hook)
 	}
 
-	invalidProcessingInterval :=
-		config.ProcessingIntervals.Batcher == 0 ||
-			config.ProcessingIntervals.Transmitter == 0 ||
-			config.ProcessingIntervals.Applier == 0 ||
-			config.ProcessingIntervals.Vacuum == 0 ||
-			config.ProcessingIntervals.DdlWatcher == 0
-
-	if invalidProcessingInterval {
-		log.Panicf("Invalid config value 0 for ProcessingInterval")
-		os.Exit(1)
+	if config.InvalidProcessingIntervals() {
+		log.Panicf("Invalid config value <=0 for ProcessingInterval")
 	}
 
 	if config.BatchSize == 0 {
 		log.Panicf("Invalid config value 0 for BatchSize")
-		os.Exit(1)
 	}
 
 	db := database.New(config.Database)
@@ -77,8 +65,9 @@ func main() {
 	// Start db
 	if err = db.Start(); err != nil {
 		log.Panicf("Error starting database: %v", err)
-		os.Exit(1)
 	}
+
+	db.InstallDDLTriggers(config.UseEventTriggers)
 
 	targets := make(map[string]*client.Client)
 
@@ -100,9 +89,11 @@ func main() {
 			transmitter := transmitter.New(db, targets)
 			go transmitter.Watch(time.Duration(config.ProcessingIntervals.Transmitter) * time.Millisecond)
 
-			// Start DDL watcher on a separate goroutine
-			ddlwatcher := ddlwatcher.New(db)
-			go ddlwatcher.Watch(time.Duration(config.ProcessingIntervals.DdlWatcher) * time.Millisecond)
+			if !config.UseEventTriggers {
+				// Start DDL watcher on a separate goroutine
+				ddlwatcher := ddlwatcher.New(db)
+				go ddlwatcher.Watch(time.Duration(config.ProcessingIntervals.DdlWatcher) * time.Millisecond)
+			}
 		}
 
 		// Start applier on a separate goroutine
@@ -119,14 +110,12 @@ func main() {
 		// Start HTTP server
 		if err = server.Start(); err != nil {
 			log.Panicf("Error starting HTTP server: %v", err)
-			os.Exit(1)
 		}
 	} else if *mode == "initial-load" {
 		target, ok := targets[*loadTarget]
 
 		if !ok {
 			log.Panicf("Error starting loader: target %s not found!", *loadTarget)
-			os.Exit(1)
 		}
 
 		loader := loader.New(db, target, *loadTarget, config.BatchSize, config.MaxEventsPerBatch)

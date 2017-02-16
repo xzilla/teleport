@@ -19,25 +19,30 @@ on_error() {
 
 trap on_error ERR
 
+POSTGRES=$1
+
 # Stop containers, then start postgres
 docker-compose stop
-docker-compose up -d postgres
+docker-compose up -d $POSTGRES
 
-# Setup configuration files
-./script/test-bootstrap
+docker-compose run --rm $POSTGRES bash <<EOF
+until psql -h $POSTGRES -U "postgres" -c '\l'; do
+  sleep 0.5
+done
+EOF
 
 # Drop database for target, recreate database and test schema
-docker-compose run --rm postgres psql -h postgres -U postgres postgres  -c "DROP DATABASE IF EXISTS postgres2;"
-docker-compose run --rm postgres psql -h postgres -U postgres postgres  -c "CREATE DATABASE postgres2;"
-docker-compose run --rm postgres psql -h postgres -U postgres postgres2 -c "CREATE SCHEMA test;"
-docker-compose run --rm postgres psql -h postgres -U postgres postgres  -c "
+docker-compose run --rm $POSTGRES psql -h $POSTGRES -U postgres postgres  -c "DROP DATABASE IF EXISTS postgres2;"
+docker-compose run --rm $POSTGRES psql -h $POSTGRES -U postgres postgres  -c "CREATE DATABASE postgres2;"
+docker-compose run --rm $POSTGRES psql -h $POSTGRES -U postgres postgres2 -c "CREATE SCHEMA test;"
+docker-compose run --rm $POSTGRES psql -h $POSTGRES -U postgres postgres  -c "
 DROP SCHEMA IF EXISTS public CASCADE;
 DROP SCHEMA IF EXISTS teleport CASCADE;
 CREATE SCHEMA public;
 "
 
 # Insert test data
-docker-compose run --rm postgres psql -h postgres -U postgres postgres -c "
+docker-compose run --rm $POSTGRES psql -h $POSTGRES -U postgres postgres -c "
 DROP TABLE IF EXISTS test_table;
 CREATE TYPE test_enum AS ENUM ('red', 'green', 'blue');
 
@@ -88,7 +93,7 @@ EOF
 docker-compose up initial-load
 
 # Modify schema
-docker-compose run --rm postgres psql -h postgres -U postgres postgres -c "
+docker-compose run --rm $POSTGRES psql -h $POSTGRES -U postgres postgres -c "
 ALTER TABLE test_table ADD COLUMN num INT;
 ALTER TABLE test_table DROP COLUMN content;
 CREATE OR REPLACE FUNCTION test_func() RETURNS INTEGER AS \$\$
@@ -99,13 +104,13 @@ END;
 "
 
 # Alter ENUM
-docker-compose run --rm postgres psql -h postgres -U postgres postgres -c "ALTER TYPE test_enum ADD VALUE 'yellow';"
+docker-compose run --rm $POSTGRES psql -h $POSTGRES -U postgres postgres -c "ALTER TYPE test_enum ADD VALUE 'yellow';"
 
 # Wait DDL replication
 sleep 2
 
 # Insert test data
-docker-compose run --rm postgres psql -h postgres -U postgres postgres -c "
+docker-compose run --rm $POSTGRES psql -h $POSTGRES -U postgres postgres -c "
 DELETE FROM test_table WHERE id = 2;
 INSERT INTO test_table (obj, num) VALUES ('{\"testing_this4\":true}'::json, 126);
 UPDATE test_table SET color = 'green';
@@ -113,12 +118,12 @@ INSERT INTO test_table (obj, num, color) VALUES ('{\"testing_this3\":0}'::json, 
 "
 
 # Get output from source
-docker-compose run --rm postgres psql -h postgres -U postgres postgres -c "
+docker-compose run --rm $POSTGRES psql -h $POSTGRES -U postgres postgres -c "
 SELECT *, test_func() FROM test_table ORDER BY 1;
 " > /tmp/source_diff.txt
 
 # And compare to target
-docker-compose run --rm postgres psql -h postgres -U postgres postgres2 -c "
+docker-compose run --rm $POSTGRES psql -h $POSTGRES -U postgres postgres2 -c "
 SELECT *, test.test_func() FROM test.test_table ORDER BY 1;
 " > /tmp/target_diff.txt
 
@@ -130,7 +135,6 @@ SELECT *, test.test_func() FROM test.test_table ORDER BY 1;
 
 # Check if files aren't different from one another
 diff /tmp/source_diff.txt /tmp/target_diff.txt
-
 
 # Stop processes
 docker-compose stop

@@ -6,12 +6,12 @@ mkdir tmp
 
 cat > tmp/source_config.yml <<EOF
 batch_size: 10000
+use_event_triggers: true
 processing_intervals:
   batcher: 100
   transmitter: 100
   applier: 100
   vacuum: 500
-  ddlwatcher: 500
 database:
   name: "finops-db"
   database: "postgres"
@@ -40,7 +40,6 @@ processing_intervals:
   transmitter: 100
   applier: 100
   vacuum: 500
-  ddlwatcher: 500
 database:
   name: "my_target"
   database: "postgres2"

@@ -21,6 +21,37 @@ type Config struct {
 	BatchSize           int                 `yaml:"batch_size"`
 	ProcessingIntervals ProcessingIntervals `yaml:"processing_intervals"`
 	MaxEventsPerBatch   int                 `yaml:"max_events_per_batch"`
+	UseEventTriggers    bool                `yaml:"use_event_triggers"`
+}
+
+func (c Config) InvalidProcessingIntervals() bool {
+	if c.ProcessingIntervals.Applier <= 0 {
+		return true
+	}
+
+	if c.ProcessingIntervals.Vacuum <= 0 {
+		return true
+	}
+
+	// Some processing intervals only make sense when there are actually
+	// targets to send data to.
+	if len(c.Targets) == 0 {
+		return false
+	}
+
+	if c.ProcessingIntervals.Batcher <= 0 {
+		return true
+	}
+
+	if c.ProcessingIntervals.Transmitter <= 0 {
+		return true
+	}
+
+	if !c.UseEventTriggers && c.ProcessingIntervals.DdlWatcher <= 0 {
+		return true
+	}
+
+	return false
 }
 
 func New() *Config {
