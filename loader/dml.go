@@ -39,6 +39,18 @@ func (l *Loader) createDMLEvents() (map[*database.Event]*database.Batch, error) 
 				continue
 			}
 
+			found := false
+			for _, filter := range l.tables {
+				if action.IsInTargetExpression(&filter, &schema.Name, &class.RelationName) {
+					found = true
+					break
+				}
+			}
+
+			if !found {
+				continue
+			}
+
 			// r = regular table
 			if class.RelationKind != "r" {
 				continue
@@ -183,9 +195,9 @@ func (l *Loader) resumeDMLEvent(event *database.Event, batch *database.Batch) er
 	}
 
 	tx = l.db.NewTransaction()
-  
+
 	err = l.openSelectCursor(tx, schema, class)
-	
+
 	if err != nil {
 		return err
 	}

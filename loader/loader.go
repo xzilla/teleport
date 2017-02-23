@@ -12,9 +12,10 @@ type Loader struct {
 	target     *client.Client
 	targetName string
 	batcher    *batcher.Batcher
+	tables     []string
 }
 
-func New(db *database.Database, target *client.Client, targetName string, batchSize, maxEventsPerBatch int) *Loader {
+func New(db *database.Database, target *client.Client, targetName string, batchSize, maxEventsPerBatch int, tables []string) *Loader {
 	batcher := batcher.New(db, map[string]*client.Client{
 		targetName: target,
 	}, maxEventsPerBatch)
@@ -25,10 +26,11 @@ func New(db *database.Database, target *client.Client, targetName string, batchS
 		targetName: targetName,
 		batcher:    batcher,
 		BatchSize:  batchSize,
+		tables:     tables,
 	}
 }
 
-func (l *Loader) Load() error {
+func (l *Loader) Load(onlyDml bool) error {
 	events, err := l.db.GetEvents("building", -1)
 
 	if err != nil {
@@ -42,11 +44,13 @@ func (l *Loader) Load() error {
 	}
 
 	if len(eventBatches) == 0 {
-		// Start new initial load
-		_, err = l.createDDLBatch()
+		if !onlyDml {
+			// Start new initial load
+			_, err = l.createDDLBatch()
 
-		if err != nil {
-			return err
+			if err != nil {
+				return err
+			}
 		}
 
 		// Create DML events

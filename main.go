@@ -2,9 +2,11 @@ package main
 
 import (
 	"flag"
+	"strings"
+	"time"
+
 	log "github.com/Sirupsen/logrus"
 	"github.com/evalphobia/logrus_sentry"
-	"time"
 
 	"github.com/pagarme/teleport/applier"
 	"github.com/pagarme/teleport/batcher"
@@ -27,6 +29,8 @@ func main() {
 	configPath := flag.String("config", "config.yml", "config file path")
 	mode := flag.String("mode", "replication", "teleport mode [replication|initial-load]")
 	loadTarget := flag.String("load-target", "", "target to perform initial load [target name]")
+	targetTables := flag.String("target-tables", "*", "tables to perform initial load [table name]")
+	onlyDml := flag.Bool("only-dml", false, "only perform dml on initial load")
 	flag.Parse()
 
 	// Load config file
@@ -118,8 +122,13 @@ func main() {
 			log.Panicf("Error starting loader: target %s not found!", *loadTarget)
 		}
 
-		loader := loader.New(db, target, *loadTarget, config.BatchSize, config.MaxEventsPerBatch)
-		err := loader.Load()
+		tables := []string{"*"}
+		if targetTables != nil {
+			tables = strings.Split(*targetTables, ",")
+		}
+
+		loader := loader.New(db, target, *loadTarget, config.BatchSize, config.MaxEventsPerBatch, tables)
+		err := loader.Load(*onlyDml)
 
 		if err != nil {
 			log.Errorf("Error creating events: %#v", err)
