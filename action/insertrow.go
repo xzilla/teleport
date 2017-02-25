@@ -23,6 +23,50 @@ func init() {
 	gob.Register(&time.Time{})
 }
 
+type RowData struct {
+	EscapedCols   []string
+	EscapedRows   []string
+	Values        []interface{}
+	PrimaryKeyRow Row
+	SchemaName    string
+	TableName     string
+	Rows          Rows
+}
+
+func (r RowData) SavePointQuery() string {
+	return fmt.Sprintf(
+		`SAVEPOINT "%s%s";`,
+		r.SchemaName,
+		r.TableName,
+	)
+}
+
+func (r RowData) RollbackSavePointQuery() string {
+	return fmt.Sprintf(
+		`ROLLBACK TO SAVEPOINT "%s%s";`,
+		r.SchemaName,
+		r.TableName,
+	)
+}
+
+func (r RowData) InsertValuesQuery() string {
+	return fmt.Sprintf(
+		`INSERT INTO "%s"."%s" (%s) VALUES (%s);`,
+		r.SchemaName,
+		r.TableName,
+		strings.Join(r.EscapedCols, ","),
+		strings.Join(r.EscapedRows, ","),
+	)
+}
+
+func (r RowData) ReleaseSavePointQuery() string {
+	return fmt.Sprintf(
+		`RELEASE SAVEPOINT "%s%s";`,
+		r.SchemaName,
+		r.TableName,
+	)
+}
+
 func (a *InsertRow) Execute(c *Context) error {
 	if a.BulkInsert {
 		escapedCols := make([]string, 0)
@@ -47,7 +91,38 @@ func (a *InsertRow) Execute(c *Context) error {
 			return err
 		}
 	} else {
-		return (&FallbackUpserter{}).upsert(a, c)
+		// Perform a single insert (upsert)
+		data := &RowData{}
+		data.SchemaName = a.SchemaName
+		data.TableName = a.TableName
+		data.EscapedCols = make([]string, 0)
+		data.EscapedRows = make([]string, 0)
+		data.Values = make([]interface{}, 0)
+		data.Rows = a.Rows
+
+		for i, row := range a.Rows {
+			data.EscapedCols = append(data.EscapedCols, fmt.Sprintf("\"%s\"", row.Column.Name))
+			data.EscapedRows = append(data.EscapedRows, fmt.Sprintf("$%d::%s\"%s\"", i+1, row.Column.GetTypeSchemaStr(a.SchemaName), row.Column.Type))
+
+			// Marshall JSON objects as pg driver does not support it
+			if obj, ok := row.Value.(*map[string]interface{}); ok {
+				jsonStr, err := json.Marshal(obj)
+
+				if err != nil {
+					return err
+				}
+
+				data.Values = append(data.Values, string(jsonStr))
+			} else {
+				data.Values = append(data.Values, row.Value)
+			}
+
+			if row.Column.Name == a.PrimaryKeyName {
+				data.PrimaryKeyRow = row
+			}
+		}
+
+		return (&FallbackUpserter{}).upsert(data, c)
 	}
 
 	return nil
@@ -59,79 +134,34 @@ type Upserter interface {
 
 type FallbackUpserter struct{}
 
-func (f *FallbackUpserter) upsert(r *InsertRow, c *Context) error {
-	// Perform a single insert (upsert)
-	escapedCols := make([]string, 0)
-	escapedRows := make([]string, 0)
-	values := make([]interface{}, 0)
-
-	var primaryKeyRow Row
-
-	for i, row := range r.Rows {
-		escapedCols = append(escapedCols, fmt.Sprintf("\"%s\"", row.Column.Name))
-		escapedRows = append(escapedRows, fmt.Sprintf("$%d::%s\"%s\"", i+1, row.Column.GetTypeSchemaStr(r.SchemaName), row.Column.Type))
-
-		// Marshall JSON objects as pg driver does not support it
-		if obj, ok := row.Value.(*map[string]interface{}); ok {
-			jsonStr, err := json.Marshal(obj)
-
-			if err != nil {
-				return err
-			}
-
-			values = append(values, string(jsonStr))
-		} else {
-			values = append(values, row.Value)
-		}
-
-		if row.Column.Name == r.PrimaryKeyName {
-			primaryKeyRow = row
-		}
-	}
-
+func (f *FallbackUpserter) upsert(data *RowData, c *Context) error {
 	// Save transaction prior to inserting to rollback
 	// if INSERT fails, so a UPDATE can be tried
-	_, err := c.Tx.Exec(fmt.Sprintf(
-		`SAVEPOINT "%s%s";`,
-		r.SchemaName,
-		r.TableName,
-	))
+	_, err := c.Tx.Exec(data.SavePointQuery())
 
 	if err != nil {
 		return err
 	}
 
 	_, err = c.Tx.Exec(
-		fmt.Sprintf(
-			`
-				INSERT INTO "%s"."%s" (%s) VALUES (%s);
-			`,
-			r.SchemaName,
-			r.TableName,
-			strings.Join(escapedCols, ","),
-			strings.Join(escapedRows, ","),
-		),
-		values...,
+		data.InsertValuesQuery(),
+		data.Values...,
 	)
 
 	// Try to UPDATE (upsert) if INSERT fails...
 	if err != nil {
 		// Rollback to SAVEPOINT
-		_, err = c.Tx.Exec(fmt.Sprintf(
-			`ROLLBACK TO SAVEPOINT "%s%s";`,
-			r.SchemaName,
-			r.TableName,
-		))
+		_, err = c.Tx.Exec(data.RollbackSavePointQuery())
 
 		if err != nil {
 			return err
 		}
 
 		updateAction := &UpdateRow{
-			r.SchemaName,
-			r.TableName,
-			primaryKeyRow,
-			r.Rows,
+			data.SchemaName,
+			data.TableName,
+			data.PrimaryKeyRow,
+			data.Rows,
 		}
 
 		err = updateAction.Execute(c)
@@ -141,11 +171,7 @@ func (f *FallbackUpserter) upsert(r *InsertRow, c *Context) error {
 		}
 	} else {
 		// Release SAVEPOINT to avoid "out of shared memory"
-		_, err := c.Tx.Exec(fmt.Sprintf(
-			`RELEASE SAVEPOINT "%s%s";`,
-			r.SchemaName,
-			r.TableName,
-		))
+		_, err := c.Tx.Exec(data.ReleaseSavePointQuery())
 
 		if err != nil {
 			return err
