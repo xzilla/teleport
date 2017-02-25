@@ -59,6 +59,27 @@ func (r RowData) InsertValuesQuery() string {
 	)
 }
 
+func (r RowData) InsertOnConstraintUpdateQuery() string {
+	updateStatements := make([]string, len(r.EscapedCols))
+
+	for _, col := range r.EscapedCols {
+		statement := fmt.Sprintf(`t.%s = EXCLUDED.%s`, col, col)
+		updateStatements = append(updateStatements, statement)
+	}
+
+	return fmt.Sprintf(`
+		INSERT INTO "%s"."%s" AS t (%s) VALUES (%s)
+		ON CONFLICT (%s) DO UPDATE
+		SET %s;`,
+		r.SchemaName,
+		r.TableName,
+		strings.Join(r.EscapedCols, ","),
+		strings.Join(r.EscapedRows, ","),
+		fmt.Sprintf("\"%s\"", r.PrimaryKeyRow.Column.Name),
+		strings.Join(updateStatements, ","),
+	)
+}
+
 func (r RowData) ReleaseSavePointQuery() string {
 	return fmt.Sprintf(
 		`RELEASE SAVEPOINT "%s%s";`,
@@ -164,21 +185,23 @@ func (f *FallbackUpserter) upsert(data *RowData, c *Context) error {
 			data.Rows,
 		}
 
-		err = updateAction.Execute(c)
-
-		if err != nil {
-			return err
-		}
+		return updateAction.Execute(c)
 	} else {
 		// Release SAVEPOINT to avoid "out of shared memory"
 		_, err := c.Tx.Exec(data.ReleaseSavePointQuery())
-
-		if err != nil {
-			return err
-		}
+		return err
 	}
+}
 
-	return nil
+type OnConflictUpserter struct{}
+
+func (f *OnConflictUpserter) upsert(data *RowData, c *Context) error {
+	_, err := c.Tx.Exec(
+		data.InsertOnConstraintUpdateQuery(),
+		data.Values...,
+	)
+
+	return err
 }
 
 func (a *InsertRow) Filter(targetExpression string) bool {
