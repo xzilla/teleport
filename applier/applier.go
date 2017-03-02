@@ -5,6 +5,7 @@ import (
 	"github.com/pagarme/teleport/action"
 	"github.com/pagarme/teleport/database"
 	"io"
+	"reflect"
 	"time"
 )
 
@@ -116,6 +117,8 @@ func (a *Applier) applyBatch(batch *database.Batch) (bool, error) {
 		return true, previousErr
 	}
 
+	log.Infof("Applying batch: %v", batch)
+
 	if batch.StorageType == "db" {
 		actions, err := batch.GetActions()
 
@@ -123,7 +126,8 @@ func (a *Applier) applyBatch(batch *database.Batch) (bool, error) {
 			return false, err
 		}
 
-		for _, act := range actions {
+		for i, act := range actions {
+			log.Infof("Applying action #%d: %v", i, reflect.TypeOf(act))
 			err := a.applyAction(act, context)
 
 			if err != nil {
