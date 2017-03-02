@@ -127,7 +127,7 @@ func (a *Applier) applyBatch(batch *database.Batch) (bool, error) {
 		}
 
 		for i, act := range actions {
-			log.Infof("Applying action #%d: %v", i, reflect.TypeOf(act))
+			log.Debugf("Applying action #%d: %v", i, reflect.TypeOf(act))
 			err := a.applyAction(act, context)
 
 			if err != nil {
