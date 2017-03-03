@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"fmt"
 	log "github.com/Sirupsen/logrus"
+	"strings"
 
 	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq"
@@ -151,4 +152,17 @@ func (db *Database) runQueryFromFile(file string) (*sql.Rows, error) {
 	}
 
 	return db.runQuery(string(content))
+}
+
+// DBVersion Returns the current Postgres version
+func (db Database) DBVersion() (string, error) {
+	var version string
+	err := db.Db.Get(&version, "SELECT version();")
+
+	if err != nil {
+		return "", err
+	}
+
+	versionParts := strings.Split(version, " ")
+	return versionParts[1], nil
 }

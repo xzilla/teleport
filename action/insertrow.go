@@ -143,19 +143,25 @@ func (a *InsertRow) Execute(c *Context) error {
 			}
 		}
 
-		return (&FallbackUpserter{}).upsert(data, c)
+		return chosenUpserter.upsert(data, c)
 	}
 
 	return nil
 }
 
+var chosenUpserter Upserter
+
+func SetUpsertMethod(upserter Upserter) {
+	chosenUpserter = upserter
+}
+
 type Upserter interface {
-	upsert(*InsertRow, *Context) error
+	upsert(*RowData, *Context) error
 }
 
 type FallbackUpserter struct{}
 
-func (f *FallbackUpserter) upsert(data *RowData, c *Context) error {
+func (f FallbackUpserter) upsert(data *RowData, c *Context) error {
 	// Save transaction prior to inserting to rollback
 	// if INSERT fails, so a UPDATE can be tried
 	_, err := c.Tx.Exec(data.SavePointQuery())
@@ -195,7 +201,7 @@ func (f *FallbackUpserter) upsert(data *RowData, c *Context) error {
 
 type OnConflictUpserter struct{}
 
-func (f *OnConflictUpserter) upsert(data *RowData, c *Context) error {
+func (f OnConflictUpserter) upsert(data *RowData, c *Context) error {
 	_, err := c.Tx.Exec(
 		data.InsertOnConstraintUpdateQuery(),
 		data.Values...,
