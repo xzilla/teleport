@@ -60,15 +60,15 @@ func (r RowData) InsertValuesQuery() string {
 }
 
 func (r RowData) InsertOnConstraintUpdateQuery() string {
-	updateStatements := make([]string, len(r.EscapedCols))
+	updateStatements := make([]string, 0)
 
 	for _, col := range r.EscapedCols {
-		statement := fmt.Sprintf(`t.%s = EXCLUDED.%s`, col, col)
+		statement := fmt.Sprintf(`%s = EXCLUDED.%s`, col, col)
 		updateStatements = append(updateStatements, statement)
 	}
 
 	return fmt.Sprintf(`
-		INSERT INTO "%s"."%s" AS t (%s) VALUES (%s)
+		INSERT INTO "%s"."%s" (%s) VALUES (%s)
 		ON CONFLICT (%s) DO UPDATE
 		SET %s;`,
 		r.SchemaName,
@@ -206,7 +206,6 @@ func (f OnConflictUpserter) upsert(data *RowData, c *Context) error {
 		data.InsertOnConstraintUpdateQuery(),
 		data.Values...,
 	)
-
 	return err
 }
 
