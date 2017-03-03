@@ -2,6 +2,9 @@
 	"ImportPath": "github.com/pagarme/teleport",
 	"GoVersion": "go1.7",
 	"GodepVersion": "v79",
+	"Packages": [
+		"./..."
+	],
 	"Deps": [
 		{
 			"ImportPath": "github.com/Sirupsen/logrus",
@@ -49,6 +52,14 @@
 			"ImportPath": "github.com/jmoiron/sqlx/reflectx",
 			"Comment": "sqlx-v1.1-65-ga7f971f",
 			"Rev": "a7f971fe8ea891a1a74ddb40c623f5722e28e8a8"
+		},
+		{
+			"ImportPath": "github.com/kylelemons/godebug/diff",
+			"Rev": "a616ab194758ae0a11290d87ca46ee8c440117b0"
+		},
+		{
+			"ImportPath": "github.com/kylelemons/godebug/pretty",
+			"Rev": "a616ab194758ae0a11290d87ca46ee8c440117b0"
 		},
 		{
 			"ImportPath": "github.com/lib/pq",
