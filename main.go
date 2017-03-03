@@ -64,22 +64,28 @@ func main() {
 
 	db := database.New(config.Database)
 
+	// Start db
+	if err = db.Start(); err != nil {
+		log.Panicf("Error starting database: %v", err)
+	}
+
+	// Initilize upsert method in the InsertRow action
 	versionString, err := db.DBVersion()
 
 	if err != nil {
 		log.Panicf("Error when getting database version: %v", err)
 	}
 
-	currentVersion, err := semver.Make(versionString)
+	currentVersion, err := semver.ParseTolerant(versionString)
 
 	if err != nil {
-		log.Panicf("Error when getting database version: %v", err)
+		log.Panicf("Error when parsing version: %v", err)
 	}
 
-	onConflictUpsertVersion, err := semver.Make("9.5")
+	onConflictUpsertVersion, err := semver.ParseTolerant("9.5")
 
 	if err != nil {
-		log.Panicf("Error when getting database version: %v", err)
+		log.Panicf("Error when parsing version: %v", err)
 	}
 
 	if currentVersion.GTE(onConflictUpsertVersion) {
@@ -87,15 +93,6 @@ func main() {
 	} else {
 		action.SetUpsertMethod(action.FallbackUpserter{})
 	}
-
-	// Start db
-	if err = db.Start(); err != nil {
-		log.Panicf("Error starting database: %v", err)
-	}
-
-	// Initilize upsert method in the InsertRow action
-	db.Start()
-	// action.SetUpsertMethod()
 
 	db.InstallDDLTriggers(config.UseEventTriggers)
 
