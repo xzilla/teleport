@@ -70,6 +70,18 @@ END;
 \$\$ LANGUAGE plpgsql IMMUTABLE;
 
 CREATE INDEX test_table_color_ind ON test_table (test_func_index());
+
+CREATE TABLE conflict_table (id SERIAL PRIMARY KEY, text TEXT);
+INSERT INTO conflict_table (text) VALUES ('hello there');
+INSERT INTO conflict_table (text) VALUES ('good bye');
+"
+
+# We prepack the target with some data to assert the UPSERT (INSERT otherwise UPDATE) feature works correctly
+docker-compose run --rm $POSTGRES psql -h $POSTGRES -U postgres postgres2 -c "
+CREATE TABLE conflict_table (id SERIAL PRIMARY KEY, text TEXT);
+INSERT INTO conflict_table (text) VALUES ('missing data');
+INSERT INTO conflict_table (text) VALUES ('wrong information');
+INSERT INTO conflict_table (text) VALUES ('should be overritten');
 "
 
 # Start teleport source/target
@@ -115,26 +127,35 @@ DELETE FROM test_table WHERE id = 2;
 INSERT INTO test_table (obj, num) VALUES ('{\"testing_this4\":true}'::json, 126);
 UPDATE test_table SET color = 'green';
 INSERT INTO test_table (obj, num, color) VALUES ('{\"testing_this3\":0}'::json, 125, 'yellow');
+INSERT INTO conflict_table (text) VALUES ('overrites data correctly');
 "
 
-# Get output from source
-docker-compose run --rm $POSTGRES psql -h $POSTGRES -U postgres postgres -c "
-SELECT *, test_func() FROM test_table ORDER BY 1;
-" > /tmp/source_diff.txt
+assert_synchronized() {
+  SOURCE_QUERY=$1
+  TARGET_QUERY=$2
+  # Get output from source
+  docker-compose run --rm $POSTGRES psql -h $POSTGRES -U postgres postgres -c "$SOURCE_QUERY" > /tmp/source_diff.txt
 
-# And compare to target
-docker-compose run --rm $POSTGRES psql -h $POSTGRES -U postgres postgres2 -c "
-SELECT *, test.test_func() FROM test.test_table ORDER BY 1;
-" > /tmp/target_diff.txt
+  # And compare to target
+  docker-compose run --rm $POSTGRES psql -h $POSTGRES -U postgres postgres2 -c "$TARGET_QUERY" > /tmp/target_diff.txt
 
-# Check is source_diff isn't empty
-[ $(cat /tmp/source_diff.txt | wc -c) -ne 0 ]
+  # Check is source_diff isn't empty
+  [ $(cat /tmp/source_diff.txt | wc -c) -ne 0 ]
 
-# Check if target_diff isn't empty
-[ $(cat /tmp/target_diff.txt | wc -c) -ne 0 ]
+  # Check if target_diff isn't empty
+  [ $(cat /tmp/target_diff.txt | wc -c) -ne 0 ]
 
-# Check if files aren't different from one another
-diff /tmp/source_diff.txt /tmp/target_diff.txt
+  # Check if files aren't different from one another
+  diff /tmp/source_diff.txt /tmp/target_diff.txt
+}
+
+assert_synchronized \
+  "SELECT *, test_func() FROM test_table ORDER BY 1;" \
+  "SELECT *, test.test_func() FROM test.test_table ORDER BY 1;"
+
+assert_synchronized \
+  "SELECT * FROM conflict_table ORDER BY 1;" \
+  "SELECT * FROM test.conflict_table ORDER BY 1;"
 
 # Stop processes
 docker-compose stop
