@@ -6,6 +6,8 @@ import (
 	"github.com/evalphobia/logrus_sentry"
 	"time"
 
+	"github.com/blang/semver"
+	"github.com/pagarme/teleport/action"
 	"github.com/pagarme/teleport/applier"
 	"github.com/pagarme/teleport/batcher"
 	"github.com/pagarme/teleport/client"
@@ -65,6 +67,31 @@ func main() {
 	// Start db
 	if err = db.Start(); err != nil {
 		log.Panicf("Error starting database: %v", err)
+	}
+
+	// Initilize upsert method in the InsertRow action
+	versionString, err := db.DBVersion()
+
+	if err != nil {
+		log.Panicf("Error when getting database version: %v", err)
+	}
+
+	currentVersion, err := semver.ParseTolerant(versionString)
+
+	if err != nil {
+		log.Panicf("Error when parsing version: %v", err)
+	}
+
+	onConflictUpsertVersion, err := semver.ParseTolerant("9.5")
+
+	if err != nil {
+		log.Panicf("Error when parsing version: %v", err)
+	}
+
+	if currentVersion.GTE(onConflictUpsertVersion) {
+		action.SetUpsertMethod(action.OnConflictUpserter{})
+	} else {
+		action.SetUpsertMethod(action.FallbackUpserter{})
 	}
 
 	db.InstallDDLTriggers(config.UseEventTriggers)
