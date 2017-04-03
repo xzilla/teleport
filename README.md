@@ -194,3 +194,12 @@ $ docker-compose run test
 The MIT license.
 
 [aws_event_triggers](http://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/CHAP_PostgreSQL.html#PostgreSQL.Concepts.General.FeatureSupport.EventTriggers)
+
+## Troubleshooting
+
+- Since version 0.4.0, the ids of Teleport's internal tables were changed to
+  `bigserial` and `bigint`. The cose is backwards compatible, and works with
+  the previous version, which used `serial` and `int`. If you are having
+  problems with integer overflow, it will be necessary to either drop the
+  current tables or manually alter them. See the [changelog](CHANGELOG.md) for
+  details.
