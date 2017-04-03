@@ -55,12 +55,12 @@ DO $$
 BEGIN
 	IF NOT EXISTS (SELECT 1 FROM pg_tables WHERE schemaname = 'teleport' AND tablename = 'event') THEN
 		CREATE TABLE teleport.event (
-			id serial primary key,
+			id bigserial primary key,
 			kind teleport.event_kind,
 			status teleport.event_status,
 			trigger_tag text,
 			trigger_event text,
-			transaction_id int,
+			transaction_id bigint,
 			data text
 		);
 	END IF;
@@ -90,7 +90,7 @@ DO $$
 BEGIN
 	IF NOT EXISTS (SELECT 1 FROM pg_tables WHERE schemaname = 'teleport' AND tablename = 'batch') THEN
 		CREATE TABLE teleport.batch (
-			id serial primary key,
+			id bigserial primary key,
 			status teleport.batch_status,
 			data_status teleport.batch_status,
 			storage_type teleport.batch_storage_type,
@@ -98,7 +98,7 @@ BEGIN
 			source text,
 			target text,
 			waiting_reexecution boolean not null default false,
-			last_executed_statement int default 0
+			last_executed_statement bigint default 0
 		);
 	END IF;
 END
@@ -110,8 +110,8 @@ DO $$
 BEGIN
 	IF NOT EXISTS (SELECT 1 FROM pg_tables WHERE schemaname = 'teleport' AND tablename = 'batch_events') THEN
 		CREATE TABLE teleport.batch_events (
-			batch_id int,
-			event_id int
+			batch_id bigint,
+			event_id bigint
 		);
 	END IF;
 END
