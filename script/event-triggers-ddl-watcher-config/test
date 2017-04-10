@@ -4,7 +4,7 @@ set -e
 DIR=$(cd $(dirname $0) && pwd)
 
 # Setup configuration files
-$DIR/test-bootstrap-event-triggers
+$DIR/bootstrap
 
 # Execute data transformation tests
-$DIR/../test-e2e-after-bootstrap postgres
+$DIR/../tests-for-each-config postgres
