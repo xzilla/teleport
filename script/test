@@ -8,6 +8,5 @@ docker-compose up -d postgres
 # Run golang tests
 docker-compose run --rm test
 
-./script/test-e2e-legacy
-./script/test-e2e-event-triggers
-
+./script/event-triggers-ddl-watcher-config/test-e2e-legacy
+./script/legacy-ddl-watcher-config/test-e2e-event-triggers
