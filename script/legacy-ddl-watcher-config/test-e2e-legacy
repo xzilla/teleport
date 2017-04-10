@@ -3,7 +3,7 @@
 set -e
 
 # Setup configuration files
-./script/test-bootstrap-legacy
+./script/legacy-ddl-watcher-config/test-bootstrap-legacy
 
 # Execute data transformation tests
 ./script/test-e2e-after-bootstrap postgres-legacy
