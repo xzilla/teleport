@@ -8,4 +8,4 @@ docker-compose up -d postgres
 # Run golang tests
 docker-compose run --rm test
 
-find ./script -path '*config/test' -type f -maxdepth 2 | xargs -n 1 -I {} sh -c "{}"
+find ./script -path '*-config/test' -type f -maxdepth 2 | xargs -n 1 -I {} sh -c "{}"
