@@ -1,9 +1,10 @@
 #!/bin/bash
-
 set -e
 
+DIR=$(cd $(dirname $0) && pwd)
+
 # Setup configuration files
-./script/legacy-ddl-watcher-config/test-bootstrap-legacy
+$DIR/test-bootstrap-legacy
 
 # Execute data transformation tests
-./script/test-e2e-after-bootstrap postgres-legacy
+$DIR/../test-e2e-after-bootstrap postgres-legacy
