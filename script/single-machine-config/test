@@ -1,0 +1,10 @@
+#!/bin/bash
+set -e
+
+DIR=$(cd $(dirname $0) && pwd)
+
+# Setup configuration files
+$DIR/bootstrap
+
+# Execute data transformation tests
+$DIR/../tests-for-each-config postgres
