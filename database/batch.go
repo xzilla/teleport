@@ -282,7 +282,7 @@ func (b *Batch) GetActions() ([]action.Action, error) {
 		return actions, err
 	}
 
-	if *data == "" {
+	if data == nil || *data == "" {
 		return actions, nil
 	}
 
