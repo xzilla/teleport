@@ -92,7 +92,7 @@ For each `target` under the `targets` section, it's possible to define a
 expression should be schema-qualified.
 
 You should also set a `apply_schema`, which defines in what schema the data
-will be applied in the target, and a `endpoint` of the target teleport
+will be applied in the target, and an `endpoint` of the target teleport
 instance.
 
 ### Configuring the target instance
@@ -122,13 +122,13 @@ server:
 
 You may have noted this config file does not include a `targets` section,
 simply because this instance will not be the source for any host. You can,
-however, use a instance as both source and target by simply including a
+however, use a singal instance as both source and target by simply including a
 `targets` section.
 
 ### Initial load
 
 It's possible to generate initial-load batches on the source that will be
-transmitted to the target. To do a initial-load, run on source:
+transmitted to the target. To do an initial-load, run on source:
 
 ```
 $ teleport -config source_config.yml -mode initial-load -load-target my-target
@@ -145,7 +145,7 @@ modifications will be replicated and applied later on.
 
 On source, teleport will diff, group and batch events and transmit batches to
 the target. On the target, batches will be applied on the same order as they
-ocurred on the source.
+occurred on the source.
 
 On source, run:
 
@@ -198,7 +198,7 @@ The MIT license.
 ## Troubleshooting
 
 - Since version 0.4.0, the ids of Teleport's internal tables were changed to
-  `bigserial` and `bigint`. The cose is backwards compatible, and works with
+  `bigserial` and `bigint`. The code is backward compatible and works with
   the previous version, which used `serial` and `int`. If you are having
   problems with integer overflow, it will be necessary to either drop the
   current tables or manually alter them. See the [changelog](CHANGELOG.md) for
